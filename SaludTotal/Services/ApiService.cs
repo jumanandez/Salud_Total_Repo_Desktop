@@ -88,35 +88,35 @@ namespace SaludTotal.Desktop.Services
                 return false;
             }
         }
-        public async Task<bool> LoginAsync(string claveAcceso)
-        {
-            try
-            {
-                string url = $"{ApiBaseUrl}login";
-                var loginData = new { clave_acceso = claveAcceso };
+        //public async Task<bool> LoginAsync(string claveAcceso)
+        //{
+        //    try
+        //    {
+        //        string url = $"{ApiBaseUrl}login";
+        //        var loginData = new { clave_acceso = claveAcceso };
 
-                HttpResponseMessage response = await client.PostAsJsonAsync(url, loginData);
+        //        HttpResponseMessage response = await client.PostAsJsonAsync(url, loginData);
 
-                if (response.IsSuccessStatusCode)
-                {
-                    // Leemos el token de la respuesta
-                    var result = await response.Content.ReadFromJsonAsync<LoginResponse>();
-                    if (!string.IsNullOrEmpty(result?.Token))
-                    {
-                        // Almacenamos el token en la cabecera por defecto del HttpClient
-                        // para que TODAS las futuras peticiones lo incluyan.
-                        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", result.Token);
-                        return true;
-                    }
-                }
+        //        if (response.IsSuccessStatusCode)
+        //        {
+        //            // Leemos el token de la respuesta
+        //            var result = await response.Content.ReadFromJsonAsync<LoginResponse>();
+        //            if (!string.IsNullOrEmpty(result?.Token))
+        //            {
+        //                // Almacenamos el token en la cabecera por defecto del HttpClient
+        //                // para que TODAS las futuras peticiones lo incluyan.
+        //                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", result.Token);
+        //                return true;
+        //            }
+        //        }
 
-                return false;
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine($"Error en el login: {e.Message}");
-                return false;
-            }
-        }
+        //        return false;
+        //    }
+        //    catch (Exception e)
+        //    {
+        //        Console.WriteLine($"Error en el login: {e.Message}");
+        //        return false;
+        //    }
+        //}
     }
 }

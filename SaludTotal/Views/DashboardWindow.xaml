@@ -1,0 +1,74 @@
+<Window x:Class="SaludTotal.Desktop.Views.DashboardWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="Salud Total - Menu Principal" Height="720" Width="1280"
+        WindowStartupLocation="CenterScreen" WindowStyle="None" AllowsTransparency="True" ResizeMode="NoResize">
+
+    <Window.Resources>
+        <Style x:Key="DashboardButtonStyle" TargetType="Button">
+            <Setter Property="Height" Value="55"/>
+            <Setter Property="Margin" Value="0,10"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Background" Value="#A8D0F3"/>
+            <Setter Property="Foreground" Value="#2C3E50"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="8">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#C0E0FF"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <Grid>
+        <Border>
+            <Border.Background>
+                <ImageBrush ImageSource="pack://application:,,,/Resources/Img/Fondo_desktop_1.jpg" Stretch="UniformToFill"/>
+            </Border.Background>
+        </Border>
+
+        <Border HorizontalAlignment="Center" 
+                VerticalAlignment="Center" 
+                Width="450" 
+                Height="480"
+                Background="#DD3A5F8A" 
+                CornerRadius="20">
+            <StackPanel Margin="40">
+                <Border Width="150" Height="60" Margin="0,0,0,30">
+                    <Image Width="150" Height="60"
+                           Source="pack://application:,,,/Resources/Img/Salud_total.png"
+                           Stretch="Uniform"/>
+                </Border>
+
+                <Button Content="Administracion de turnos" 
+                        Command="{Binding AdministrarTurnosCommand}"
+                        Style="{StaticResource DashboardButtonStyle}"/>
+
+                <Button Content="Gestion de pacientes" 
+                        Command="{Binding GestionPacientesCommand}"
+                        Style="{StaticResource DashboardButtonStyle}"/>
+
+                <Button Content="Disponibilidades y Horarios" 
+                        Command="{Binding GestionHorariosCommand}"
+                        Style="{StaticResource DashboardButtonStyle}"/>
+
+                <Button Content="Informes de gestion" 
+                        Command="{Binding VerInformesCommand}"
+                        Style="{StaticResource DashboardButtonStyle}"/>
+            </StackPanel>
+        </Border>
+    </Grid>
+</Window>
