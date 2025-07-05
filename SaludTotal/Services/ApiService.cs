@@ -41,7 +41,7 @@ namespace SaludTotal.Desktop.Services
 
                 string jsonResponse = await response.Content.ReadAsStringAsync();
 
-                return JsonConvert.DeserializeObject<List<Turno>>(jsonResponse);
+                return JsonConvert.DeserializeObject<List<Turno>>(jsonResponse) ?? new List<Turno>();
             }
             catch (HttpRequestException e)
             {
@@ -52,6 +52,62 @@ namespace SaludTotal.Desktop.Services
             {
                 Console.WriteLine($"Error de deserialización JSON: {e.Message}");
                 throw;
+            }
+        }
+
+        /// <summary>
+        /// Obtiene turnos filtrados por especialidad.
+        /// </summary>
+        /// <param name="especialidadId">ID de la especialidad a filtrar</param>
+        /// <returns>Una lista de objetos Turno filtrados por especialidad.</returns>
+        public async Task<List<Turno>> GetTurnosPorEspecialidadAsync(int especialidadId)
+        {
+            try
+            {
+                string url = $"{ApiBaseUrl}/turnos/especialidad?especialidad_id={especialidadId}";
+                HttpResponseMessage response = await client.GetAsync(url);
+
+                response.EnsureSuccessStatusCode();
+
+                string jsonResponse = await response.Content.ReadAsStringAsync();
+
+                return JsonConvert.DeserializeObject<List<Turno>>(jsonResponse) ?? new List<Turno>();
+            }
+            catch (HttpRequestException e)
+            {
+                Console.WriteLine($"Error de solicitud HTTP al filtrar por especialidad: {e.Message}");
+                throw;
+            }
+            catch (JsonException e)
+            {
+                Console.WriteLine($"Error de deserialización JSON: {e.Message}");
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Método de prueba para verificar la conectividad con el backend
+        /// </summary>
+        /// <returns>String con información de diagnóstico</returns>
+        public async Task<string> TestConexionAsync()
+        {
+            try
+            {
+                string url = $"{ApiBaseUrl}/turnos/test";
+                HttpResponseMessage response = await client.GetAsync(url);
+
+                response.EnsureSuccessStatusCode();
+
+                string jsonResponse = await response.Content.ReadAsStringAsync();
+                return $"✅ Conexión exitosa: {jsonResponse}";
+            }
+            catch (HttpRequestException e)
+            {
+                return $"❌ Error de conexión HTTP: {e.Message}";
+            }
+            catch (Exception e)
+            {
+                return $"❌ Error general: {e.Message}";
             }
         }
 

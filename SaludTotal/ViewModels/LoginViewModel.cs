@@ -1,58 +1,63 @@
-﻿//// SaludTotal.Desktop/ViewModels/LoginViewModel.cs
-//using CommunityToolkit.Mvvm.ComponentModel;
-//using CommunityToolkit.Mvvm.Input;
-//using SaludTotal.Desktop.Services;
-//using System;
-//using System.Threading.Tasks;
-//using System.Windows.Controls;
+﻿// LoginViewModel.cs - COMPLETAMENTE COMENTADO PARA BYPASS DEL LOGIN
+// Esta clase manejaba la lógica de autenticación de la aplicación
 
-//namespace SaludTotal.Desktop.ViewModels
-//{
-//    public partial class LoginViewModel : ObservableObject
-//    {
-//        private readonly ApiService _apiService;
+/*
+// SaludTotal.Desktop/ViewModels/LoginViewModel.cs
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using SaludTotal.Desktop.Services;
+using System;
+using System.Threading.Tasks;
+using System.Windows.Controls;
 
-//        [ObservableProperty]
-//        private string _errorMessage;
+namespace SaludTotal.Desktop.ViewModels
+{
+    public partial class LoginViewModel : ObservableObject
+    {
+        private readonly ApiService _apiService;
 
-//        [ObservableProperty]
-//        private bool _isLoading;
+        [ObservableProperty]
+        private string _errorMessage;
 
-//        // Propiedades para comunicar el resultado a la vista
-//        public bool LoginExitoso { get; private set; } = false;
-//        public Action CloseAction { get; set; }
+        [ObservableProperty]
+        private bool _isLoading;
 
-//        public LoginViewModel()
-//        {
-//            _apiService = new ApiService();
-//        }
+        // Propiedades para comunicar el resultado a la vista
+        public bool LoginExitoso { get; private set; } = false;
+        public Action CloseAction { get; set; }
 
-//        // Usamos [RelayCommand] para el botón de Login
-//        [RelayCommand]
-//        private async Task Login(PasswordBox passwordBox)
-//        {
-//            if (passwordBox == null || string.IsNullOrWhiteSpace(passwordBox.Password))
-//            {
-//                ErrorMessage = "Por favor, ingrese la clave de acceso.";
-//                return;
-//            }
+        public LoginViewModel()
+        {
+            _apiService = new ApiService();
+        }
 
-//            IsLoading = true;
-//            ErrorMessage = string.Empty;
+        // Usamos [RelayCommand] para el botón de Login
+        [RelayCommand]
+        private async Task Login(PasswordBox passwordBox)
+        {
+            if (passwordBox == null || string.IsNullOrWhiteSpace(passwordBox.Password))
+            {
+                ErrorMessage = "Por favor, ingrese la clave de acceso.";
+                return;
+            }
 
-//            bool success = await _apiService.LoginAsync(passwordBox.Password);
+            IsLoading = true;
+            ErrorMessage = string.Empty;
 
-//            IsLoading = false;
+            bool success = await _apiService.LoginAsync(passwordBox.Password);
 
-//            if (success)
-//            {
-//                LoginExitoso = true;
-//                CloseAction?.Invoke(); // Cierra la ventana de login
-//            }
-//            else
-//            {
-//                ErrorMessage = "Clave de acceso incorrecta.";
-//            }
-//        }
-//    }
-//}
+            IsLoading = false;
+
+            if (success)
+            {
+                LoginExitoso = true;
+                CloseAction?.Invoke(); // Cierra la ventana de login
+            }
+            else
+            {
+                ErrorMessage = "Clave de acceso incorrecta.";
+            }
+        }
+    }
+}
+*/

@@ -28,5 +28,16 @@ namespace SaludTotal.Desktop
         {
             await _viewModel.CancelarTurno();
         }
+
+        // Métodos para controles de ventana
+        private void MinimizeWindow_Click(object sender, RoutedEventArgs e)
+        {
+            this.WindowState = WindowState.Minimized;
+        }
+
+        private void CloseWindow_Click(object sender, RoutedEventArgs e)
+        {
+            this.Close();
+        }
     }
 }

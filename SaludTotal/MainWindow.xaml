@@ -8,60 +8,111 @@
         mc:Ignorable="d"
         Title="Gestión de Turnos - Salud Total" Height="600" Width="900" WindowStartupLocation="CenterScreen">
 
-    <Grid Margin="10">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <!-- Fila para el título -->
-            <RowDefinition Height="*"/>
-            <!-- Fila para el DataGrid, ocupa todo el espacio disponible -->
-            <RowDefinition Height="Auto"/>
-            <!-- Fila para los botones -->
-        </Grid.RowDefinitions>
+    <Window.Resources>
+        <!-- Estilo para botones de ventana (minimizar/cerrar) -->
+        <Style x:Key="WindowButtonStyle" TargetType="Button">
+            <Setter Property="Width" Value="35"/>
+            <Setter Property="Height" Value="35"/>
+            <Setter Property="Background" Value="#4A90E2"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="BorderBrush" Value="#2C3E50"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Margin" Value="2"/>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect Color="Black" Direction="315" ShadowDepth="1" Opacity="0.2" BlurRadius="3"/>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" 
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="6"
+                                Effect="{TemplateBinding Effect}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#A8D0F3"/>
+                                <Setter Property="BorderBrush" Value="#4A90E2"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Background" Value="#2C3E50"/>
+                                <Setter Property="BorderBrush" Value="#34495E"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
 
-        <!-- Título de la ventana -->
-        <TextBlock Grid.Row="0" Text="Listado de Turnos" FontSize="24" FontWeight="Bold" Margin="0,0,0,10"/>
-
-        <!-- El DataGrid que mostrará los turnos -->
-        <DataGrid Grid.Row="1" 
-                  x:Name="TurnosDataGrid"
-                  ItemsSource="{Binding Turnos}" 
-                  SelectedItem="{Binding TurnoSeleccionado, Mode=TwoWay}"
-                  AutoGenerateColumns="False" 
-                  IsReadOnly="True" 
-                  CanUserAddRows="False"
-                  FontSize="14">
-
-            <DataGrid.Columns>
-                <!-- Las columnas se enlazan a propiedades del objeto Turno -->
-                <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="50"/>
-                <DataGridTextColumn Header="Fecha y Hora" Binding="{Binding Fecha, StringFormat='dd/MM/yyyy HH:mm'}" Width="*"/>
-                <DataGridTextColumn Header="Estado" Binding="{Binding Estado}" Width="120">
-                    <DataGridTextColumn.ElementStyle>
-                        <Style TargetType="TextBlock">
-                            <Setter Property="FontWeight" Value="Bold"/>
-                        </Style>
-                    </DataGridTextColumn.ElementStyle>
-                </DataGridTextColumn>
-                <!-- Para objetos anidados, usamos la notación de punto -->
-                <DataGridTextColumn Header="Paciente" Binding="{Binding Paciente.NombreCompleto}" Width="2*"/>
-                <DataGridTextColumn Header="Profesional" Binding="{Binding Profesional.NombreCompleto}" Width="2*"/>
-            </DataGrid.Columns>
-
-        </DataGrid>
-
-        <!-- Indicador de Carga (Overlay) -->
-        <Border Grid.Row="1" Background="#80FFFFFF" Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}">
-            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                <TextBlock Text="Cargando datos..." FontSize="18" FontWeight="SemiBold"/>
-                <ProgressBar IsIndeterminate="True" Width="200" Margin="0,10,0,0"/>
-            </StackPanel>
-        </Border>
-
-        <!-- Panel de Botones de Acción -->
-        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,0,0">
-            <Button Content="Confirmar Turno" Width="150" Height="35" Margin="5" Click="ConfirmarTurno_Click"/>
-            <Button Content="Cancelar Turno" Width="150" Height="35" Margin="5" Click="CancelarTurno_Click" Background="#FFE08282" Foreground="White"/>
-            <Button Content="Nuevo Turno" Width="150" Height="35" Margin="5" Background="#FF87C5A3"/>
+    <Grid>
+        <!-- Botones de ventana (minimizar y cerrar) -->
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,8,8,0" Panel.ZIndex="999">
+            <Button Style="{StaticResource WindowButtonStyle}" Content="⎯" Click="MinimizeWindow_Click" ToolTip="Minimizar"/>
+            <Button Style="{StaticResource WindowButtonStyle}" Content="✕" Click="CloseWindow_Click" ToolTip="Cerrar"/>
         </StackPanel>
+
+        <Grid Margin="10">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <!-- Fila para el título -->
+                <RowDefinition Height="*"/>
+                <!-- Fila para el DataGrid, ocupa todo el espacio disponible -->
+                <RowDefinition Height="Auto"/>
+                <!-- Fila para los botones -->
+            </Grid.RowDefinitions>
+
+            <!-- Título de la ventana -->
+            <TextBlock Grid.Row="0" Text="Listado de Turnos" FontSize="24" FontWeight="Bold" Margin="0,0,0,10"/>
+
+            <!-- El DataGrid que mostrará los turnos -->
+            <DataGrid Grid.Row="1" 
+                      x:Name="TurnosDataGrid"
+                      ItemsSource="{Binding Turnos}" 
+                      SelectedItem="{Binding TurnoSeleccionado, Mode=TwoWay}"
+                      AutoGenerateColumns="False" 
+                      IsReadOnly="True" 
+                      CanUserAddRows="False"
+                      FontSize="14">
+
+                <DataGrid.Columns>
+                    <!-- Las columnas se enlazan a propiedades del objeto Turno -->
+                    <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="50"/>
+                    <DataGridTextColumn Header="Fecha y Hora" Binding="{Binding Fecha, StringFormat='dd/MM/yyyy HH:mm'}" Width="*"/>
+                    <DataGridTextColumn Header="Estado" Binding="{Binding Estado}" Width="120">
+                        <DataGridTextColumn.ElementStyle>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="FontWeight" Value="Bold"/>
+                            </Style>
+                        </DataGridTextColumn.ElementStyle>
+                    </DataGridTextColumn>
+                    <!-- Para objetos anidados, usamos la notación de punto -->
+                    <DataGridTextColumn Header="Paciente" Binding="{Binding Paciente.NombreCompleto}" Width="2*"/>
+                    <DataGridTextColumn Header="Profesional" Binding="{Binding Profesional.NombreCompleto}" Width="2*"/>
+                </DataGrid.Columns>
+
+            </DataGrid>
+
+            <!-- Indicador de Carga (Overlay) -->
+            <Border Grid.Row="1" Background="#80FFFFFF" Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <TextBlock Text="Cargando datos..." FontSize="18" FontWeight="SemiBold"/>
+                    <ProgressBar IsIndeterminate="True" Width="200" Margin="0,10,0,0"/>
+                </StackPanel>
+            </Border>
+
+            <!-- Panel de Botones de Acción -->
+            <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,0,0">
+                <Button Content="Confirmar Turno" Width="150" Height="35" Margin="5" Click="ConfirmarTurno_Click"/>
+                <Button Content="Cancelar Turno" Width="150" Height="35" Margin="5" Click="CancelarTurno_Click" Background="#FFE08282" Foreground="White"/>
+                <Button Content="Nuevo Turno" Width="150" Height="35" Margin="5" Background="#FF87C5A3"/>
+            </StackPanel>
+        </Grid>
     </Grid>
 </Window>

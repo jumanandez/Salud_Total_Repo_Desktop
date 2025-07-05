@@ -1,44 +1,94 @@
+<!-- LoginWindow.xaml - VENTANA DESHABILITADA PARA BYPASS DEL LOGIN -->
+<!-- Esta ventana está presente solo para evitar errores de compilación -->
+<Window x:Class="SaludTotal.Desktop.Views.LoginWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Login Deshabilitado" Height="100" Width="300">
+    
+    <Window.Resources>
+        <!-- Estilo para botones de ventana (minimizar/cerrar) -->
+        <Style x:Key="WindowButtonStyle" TargetType="Button">
+            <Setter Property="Width" Value="30"/>
+            <Setter Property="Height" Value="30"/>
+            <Setter Property="Background" Value="#4A90E2"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="#2C3E50"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Margin" Value="2"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" 
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="4">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#A8D0F3"/>
+                                <Setter Property="BorderBrush" Value="#4A90E2"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Background" Value="#2C3E50"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+    
+    <Grid>
+        <!-- Botones de ventana (minimizar y cerrar) -->
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,5,5,0" Panel.ZIndex="999">
+            <Button Style="{StaticResource WindowButtonStyle}" Content="⎯" Click="MinimizeWindow_Click" ToolTip="Minimizar"/>
+            <Button Style="{StaticResource WindowButtonStyle}" Content="✕" Click="CloseWindow_Click" ToolTip="Cerrar"/>
+        </StackPanel>
+        
+        <TextBlock Text="Login Bypass - Esta ventana no se usa" 
+                   HorizontalAlignment="Center" 
+                   VerticalAlignment="Center"/>
+    </Grid>
+</Window>
+
+<!-- CÓDIGO ORIGINAL COMENTADO:
 <Window x:Class="SaludTotal.Desktop.Views.LoginWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
-        Title="Salud Total - Inicio de Sesi�n" Height="720" Width="1280"
+        Title="Salud Total - Inicio de Sesión" Height="720" Width="1280"
         WindowStartupLocation="CenterScreen" WindowStyle="None" ResizeMode="NoResize" AllowsTransparency="True"
         Background="Transparent">
 
     <Window.Resources>
-        <!-- Efecto de sombra para el panel de login -->
         <DropShadowEffect x:Key="DropShadowEffect" Color="Black" Direction="320" ShadowDepth="5" Opacity="0.3" BlurRadius="10"/>
-        <!-- Conversor para mostrar/ocultar el overlay -->
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
     </Window.Resources>
 
     <Grid>
-        <!-- Fondo de la ventana -->
         <Border Background="LightGray">
             <Image Source="pack://application:,,,/Resources/Img/login-background.jpg" Stretch="UniformToFill"/>
         </Border>
 
-        <!-- Contenedor del Login, centrado -->
         <Border Width="400" Height="300" Background="#F9F9F9" CornerRadius="15"
                 VerticalAlignment="Center" HorizontalAlignment="Center"
                 Effect="{StaticResource DropShadowEffect}">
 
             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Width="300">
-                <!-- Logo -->
                 <Border Width="120" Height="60" Background="#E0E0E0" Margin="0,0,0,30">
                     <Image Width="150" Height="60"
                            Source="pack://application:,,,/Resources/Img/Salud_total_black.jpg"
                            Stretch="Uniform"/>
                 </Border>
 
-                <!-- Campo de clave -->
                 <TextBlock Text="Clave de Acceso" Margin="0,0,0,5" Foreground="#555"/>
                 <PasswordBox x:Name="ClavePasswordBox" Height="40" FontSize="18" VerticalContentAlignment="Center" Padding="10,0"/>
 
-                <!-- Bot�n de login -->
                 <Button Command="{Binding LoginCommand}" CommandParameter="{Binding ElementName=ClavePasswordBox}"
                         Content="Ingresar" Height="45" Margin="0,30,0,0" FontSize="18" 
                         Background="#4A90E2" Foreground="White" BorderThickness="0" Cursor="Hand">
@@ -60,16 +110,15 @@
                     </Button.Style>
                 </Button>
 
-                <!-- Mensaje de error -->
                 <TextBlock Text="{Binding ErrorMessage}" Foreground="Red" HorizontalAlignment="Center"
                            Margin="0,10,0,0" FontWeight="Bold"/>
             </StackPanel>
         </Border>
 
-        <!-- Indicador de carga -->
         <Border Background="#80000000" Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}">
             <TextBlock Text="Verificando..." Foreground="White" FontSize="22" 
                        HorizontalAlignment="Center" VerticalAlignment="Center"/>
         </Border>
     </Grid>
 </Window>
+-->

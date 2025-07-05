@@ -1,4 +1,8 @@
-﻿using System;
+﻿// LoginResponse.cs - MODELO COMENTADO PARA BYPASS DEL LOGIN
+// Esta clase manejaba la respuesta de autenticación de la API
+
+/*
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -13,3 +17,4 @@ namespace SaludTotal.Desktop.Models
         public string Token { get; set; }
     }
 }
+*/

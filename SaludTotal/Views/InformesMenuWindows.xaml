@@ -4,7 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
-        Title="Salud Total - Menú de Informes" Height="720" Width="1280"
+        Title="Salud Total - Menu de Informes" Height="720" Width="1280"
         WindowStartupLocation="CenterOwner" WindowStyle="None" AllowsTransparency="True" ResizeMode="NoResize">
 
     <Window.Resources>
@@ -31,21 +31,74 @@
                 </Setter.Value>
             </Setter>
         </Style>
+        
+        <!-- Estilo para botones de ventana (minimizar/cerrar) -->
+        <Style x:Key="WindowButtonStyle" TargetType="Button">
+            <Setter Property="Width" Value="40"/>
+            <Setter Property="Height" Value="40"/>
+            <Setter Property="Background" Value="#4A90E2"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="BorderBrush" Value="#2C3E50"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontSize" Value="18"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Margin" Value="3"/>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect Color="Black" Direction="315" ShadowDepth="2" Opacity="0.3" BlurRadius="4"/>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" 
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="8"
+                                Effect="{TemplateBinding Effect}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#A8D0F3"/>
+                                <Setter Property="BorderBrush" Value="#4A90E2"/>
+                                <Setter Property="Effect">
+                                    <Setter.Value>
+                                        <DropShadowEffect Color="Black" Direction="315" ShadowDepth="3" Opacity="0.4" BlurRadius="6"/>
+                                    </Setter.Value>
+                                </Setter>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Background" Value="#2C3E50"/>
+                                <Setter Property="BorderBrush" Value="#34495E"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </Window.Resources>
 
     <Grid>
+        <!-- Fondo de la ventana -->
         <Border>
             <Border.Background>
                 <ImageBrush ImageSource="pack://application:,,,/Resources/Img/Fondo_desktop_1.jpg" Stretch="UniformToFill"/>
             </Border.Background>
         </Border>
 
+        <!-- Botones de ventana (minimizar y cerrar) -->
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,15,15,0" Panel.ZIndex="999">
+            <Button Style="{StaticResource WindowButtonStyle}" Content="âŽ¯" Click="MinimizeWindow_Click" ToolTip="Minimizar"/>
+            <Button Style="{StaticResource WindowButtonStyle}" Content="âœ•" Click="CloseWindow_Click" ToolTip="Cerrar"/>
+        </StackPanel>
+
         <Border VerticalAlignment="Top" HorizontalAlignment="Right"
                 Margin="0,20,20,0"
                 Background="#FF2C3E50"
                 CornerRadius="10"
                 Padding="25,10">
-            <TextBlock Text="Informes de gestión" FontSize="20" FontWeight="Bold" Foreground="White"/>
+            <TextBlock Text="Informes de gestiï¿½n" FontSize="20" FontWeight="Bold" Foreground="White"/>
         </Border>
 
         <Border HorizontalAlignment="Center" 
