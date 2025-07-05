@@ -133,11 +133,13 @@ namespace SaludTotal.Desktop.ViewModels
                 EspecialidadSeleccionada = especialidad;
                 
                 // Forzar notificación adicional para asegurar que el UI se actualice
+#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
                 Application.Current.Dispatcher.BeginInvoke(() =>
                 {
                     OnPropertyChanged(nameof(EspecialidadSeleccionada));
                     Console.WriteLine($"FORZANDO ACTUALIZACIÓN UI: EspecialidadSeleccionada='{EspecialidadSeleccionada}'");
                 });
+#pragma warning restore CS4014
                 
                 Console.WriteLine($"EspecialidadSeleccionada actualizada a: {EspecialidadSeleccionada}");
             }
@@ -150,10 +152,12 @@ namespace SaludTotal.Desktop.ViewModels
                 EspecialidadSeleccionada = especialidad;
                 
                 // Forzar notificación también en caso de error
+#pragma warning disable CS4014
                 Application.Current.Dispatcher.BeginInvoke(() =>
                 {
                     OnPropertyChanged(nameof(EspecialidadSeleccionada));
                 });
+#pragma warning restore CS4014
             }
             catch (Exception ex)
             {
@@ -164,10 +168,12 @@ namespace SaludTotal.Desktop.ViewModels
                 EspecialidadSeleccionada = especialidad;
                 
                 // Forzar notificación también en caso de error
+#pragma warning disable CS4014
                 Application.Current.Dispatcher.BeginInvoke(() =>
                 {
                     OnPropertyChanged(nameof(EspecialidadSeleccionada));
                 });
+#pragma warning restore CS4014
             }
             finally
             {

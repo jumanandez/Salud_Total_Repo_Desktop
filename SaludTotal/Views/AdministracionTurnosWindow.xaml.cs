@@ -72,14 +72,6 @@ namespace SaludTotal.Desktop.Views
             Console.WriteLine("=== CLICK EN TODOS ===");
             await _viewModel.FiltrarTurnosPorEspecialidadAsync("Todos");
         }
-
-        private async void TestConexion_Click(object sender, RoutedEventArgs e)
-        {
-            var apiService = new SaludTotal.Desktop.Services.ApiService();
-            string resultado = await apiService.TestConexionAsync();
-            MessageBox.Show(resultado, "Prueba de Conexión", MessageBoxButton.OK, 
-                           resultado.Contains("✅") ? MessageBoxImage.Information : MessageBoxImage.Error);
-        }
         #endregion
         #endregion
     }
