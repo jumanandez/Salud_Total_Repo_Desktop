@@ -2,6 +2,7 @@
 using SaludTotal.Models;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Http.Json; // Necesario para PostAsJsonAsync y PutAsJsonAsync
@@ -40,8 +41,20 @@ namespace SaludTotal.Desktop.Services
                 response.EnsureSuccessStatusCode();
 
                 string jsonResponse = await response.Content.ReadAsStringAsync();
+                
+                // Debug temporal
+                Console.WriteLine($"JSON Response: {jsonResponse}");
 
-                return JsonConvert.DeserializeObject<List<Turno>>(jsonResponse) ?? new List<Turno>();
+                var turnos = JsonConvert.DeserializeObject<List<Turno>>(jsonResponse) ?? new List<Turno>();
+                
+                // Debug temporal - verificar deserialización
+                Console.WriteLine($"Turnos deserializados: {turnos.Count}");
+                foreach (var turno in turnos)
+                {
+                    Console.WriteLine($"Turno {turno.Id}: Paciente={turno.Paciente?.NombreCompleto ?? "NULL"}, Profesional={turno.Profesional?.NombreCompleto ?? "NULL"}, Fecha={turno.Fecha}, Hora={turno.Hora}");
+                }
+
+                return turnos;
             }
             catch (HttpRequestException e)
             {
@@ -65,13 +78,24 @@ namespace SaludTotal.Desktop.Services
             try
             {
                 string url = $"{ApiBaseUrl}/turnos/especialidad?especialidad_id={especialidadId}";
+                Console.WriteLine($"Realizando petición a: {url}");
                 HttpResponseMessage response = await client.GetAsync(url);
 
                 response.EnsureSuccessStatusCode();
 
                 string jsonResponse = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"Respuesta JSON para especialidad {especialidadId}: {jsonResponse}");
 
-                return JsonConvert.DeserializeObject<List<Turno>>(jsonResponse) ?? new List<Turno>();
+                var turnos = JsonConvert.DeserializeObject<List<Turno>>(jsonResponse) ?? new List<Turno>();
+                
+                // Debug temporal - verificar deserialización de turnos filtrados
+                Console.WriteLine($"Turnos filtrados deserializados: {turnos.Count}");
+                foreach (var turno in turnos.Take(2)) // Solo los primeros 2 para no saturar
+                {
+                    Console.WriteLine($"Turno filtrado {turno.Id}: Paciente={turno.Paciente?.NombreCompleto ?? "NULL"}, Profesional={turno.Profesional?.NombreCompleto ?? "NULL"}");
+                }
+
+                return turnos;
             }
             catch (HttpRequestException e)
             {
@@ -115,7 +139,7 @@ namespace SaludTotal.Desktop.Services
         {
             try
             {
-                string url = $"{ApiBaseUrl}turnos/{turnoId}/confirmar";
+                string url = $"{ApiBaseUrl}/turnos/{turnoId}/confirmar";
 
                 HttpResponseMessage response = await client.PutAsync(url, null);
                 response.EnsureSuccessStatusCode();
@@ -132,7 +156,7 @@ namespace SaludTotal.Desktop.Services
         {
             try
             {
-                string url = $"{ApiBaseUrl}turnos/{turnoId}/cancelar";
+                string url = $"{ApiBaseUrl}/turnos/{turnoId}/cancelar";
                 HttpResponseMessage response = await client.PutAsync(url, null);
                 response.EnsureSuccessStatusCode();
 
@@ -174,5 +198,33 @@ namespace SaludTotal.Desktop.Services
         //        return false;
         //    }
         //}
+        /// <summary>
+        /// Método temporal para debug - verificar la deserialización
+        /// </summary>
+        public async Task<string> TestDeserializacionAsync()
+        {
+            try
+            {
+                string url = $"{ApiBaseUrl}/turnos";
+                HttpResponseMessage response = await client.GetAsync(url);
+                response.EnsureSuccessStatusCode();
+                
+                string jsonResponse = await response.Content.ReadAsStringAsync();
+                var turnos = JsonConvert.DeserializeObject<List<Turno>>(jsonResponse) ?? new List<Turno>();
+                
+                string resultado = $"✅ Se deserializaron {turnos.Count} turnos correctamente:\n";
+                
+                foreach (var turno in turnos.Take(3)) // Solo mostrar los primeros 3
+                {
+                    resultado += $"- Turno {turno.Id}: Paciente='{turno.Paciente?.NombreCompleto ?? "NULL"}', Profesional='{turno.Profesional?.NombreCompleto ?? "NULL"}'\n";
+                }
+                
+                return resultado;
+            }
+            catch (Exception e)
+            {
+                return $"❌ Error en deserialización: {e.Message}";
+            }
+        }
     }
 }

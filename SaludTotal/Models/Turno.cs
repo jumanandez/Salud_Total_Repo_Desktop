@@ -14,16 +14,38 @@ namespace SaludTotal.Models
         [JsonProperty("id")]
         public int Id { get; set; }
 
+        [JsonProperty("paciente_id")]
+        public int PacienteId { get; set; }
+
+        [JsonProperty("doctor_id")]
+        public int DoctorId { get; set; }
+
         [JsonProperty("fecha")]
-        public DateTime Fecha { get; set; }
+        public string Fecha { get; set; } = string.Empty;
+
+        [JsonProperty("hora")]
+        public string Hora { get; set; } = string.Empty;
 
         [JsonProperty("estado")]
-        public string Estado { get; set; }
+        public string Estado { get; set; } = string.Empty;
 
         [JsonProperty("paciente")]
-        public Paciente Paciente { get; set; }
+        public Paciente? Paciente { get; set; }
 
-        [JsonProperty("profesional")]
-        public Profesional Profesional { get; set; }
+        [JsonProperty("doctor")]
+        public Profesional? Profesional { get; set; }
+
+        // Propiedad calculada para mostrar fecha y hora juntas
+        public string FechaHora 
+        { 
+            get 
+            {
+                if (!string.IsNullOrEmpty(Fecha) && !string.IsNullOrEmpty(Hora))
+                {
+                    return $"{Fecha} {Hora}";
+                }
+                return string.Empty;
+            }
+        }
     }
 }

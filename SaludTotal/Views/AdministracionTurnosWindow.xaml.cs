@@ -45,26 +45,31 @@ namespace SaludTotal.Desktop.Views
         #region Eventos de Filtros por Especialidad
         private async void FiltrarCardiologia_Click(object sender, RoutedEventArgs e)
         {
+            Console.WriteLine("=== CLICK EN CARDIOLOGÍA ===");
             await _viewModel.FiltrarTurnosPorEspecialidadAsync("Cardiología");
         }
 
         private async void FiltrarGinecologia_Click(object sender, RoutedEventArgs e)
         {
+            Console.WriteLine("=== CLICK EN GINECOLOGÍA ===");
             await _viewModel.FiltrarTurnosPorEspecialidadAsync("Ginecología");
         }
 
         private async void FiltrarPediatria_Click(object sender, RoutedEventArgs e)
         {
+            Console.WriteLine("=== CLICK EN PEDIATRÍA ===");
             await _viewModel.FiltrarTurnosPorEspecialidadAsync("Pediatría");
         }
 
         private async void FiltrarClinicaGeneral_Click(object sender, RoutedEventArgs e)
         {
+            Console.WriteLine("=== CLICK EN CLÍNICA GENERAL ===");
             await _viewModel.FiltrarTurnosPorEspecialidadAsync("Clínica General");
         }
 
         private async void FiltrarTodos_Click(object sender, RoutedEventArgs e)
         {
+            Console.WriteLine("=== CLICK EN TODOS ===");
             await _viewModel.FiltrarTurnosPorEspecialidadAsync("Todos");
         }
 

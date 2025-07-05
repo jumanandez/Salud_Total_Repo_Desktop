@@ -4,6 +4,7 @@ using SaludTotal.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Windows;
@@ -55,8 +56,10 @@ namespace SaludTotal.Desktop.ViewModels
             get { return _especialidadSeleccionada; }
             set
             {
+                Console.WriteLine($"ACTUALIZACIÓN ESPECIALIDAD: Anterior='{_especialidadSeleccionada}', Nueva='{value}'");
                 _especialidadSeleccionada = value;
                 OnPropertyChanged();
+                Console.WriteLine($"DESPUÉS OnPropertyChanged: EspecialidadSeleccionada='{_especialidadSeleccionada}'");
             }
         }
 
@@ -81,11 +84,13 @@ namespace SaludTotal.Desktop.ViewModels
             IsLoading = true;
             try
             {
+                Console.WriteLine($"Filtrando por especialidad: {especialidad}");
                 List<Turno> listaTurnos;
                 
                 if (especialidad == "Todos")
                 {
                     listaTurnos = await _apiService.GetTurnosAsync();
+                    Console.WriteLine($"Obtenidos {listaTurnos.Count} turnos totales");
                 }
                 else
                 {
@@ -99,28 +104,70 @@ namespace SaludTotal.Desktop.ViewModels
                         _ => 0
                     };
 
+                    Console.WriteLine($"Mapeando {especialidad} a ID: {especialidadId}");
+
                     if (especialidadId > 0)
                     {
                         listaTurnos = await _apiService.GetTurnosPorEspecialidadAsync(especialidadId);
+                        Console.WriteLine($"Obtenidos {listaTurnos.Count} turnos para {especialidad}");
                     }
                     else
                     {
                         listaTurnos = new List<Turno>();
+                        Console.WriteLine($"Especialidad {especialidad} no reconocida");
                     }
                 }
 
+                // Debug: verificar qué datos estamos obteniendo
+                foreach (var turno in listaTurnos.Take(3)) // Solo los primeros 3 para no saturar el log
+                {
+                    Console.WriteLine($"Turno {turno.Id}: " +
+                        $"Paciente={turno.Paciente?.NombreCompleto ?? "NULL"}, " +
+                        $"Profesional={turno.Profesional?.NombreCompleto ?? "NULL"}, " +
+                        $"Fecha={turno.Fecha}, Estado={turno.Estado}");
+                }
+
                 Turnos = new ObservableCollection<Turno>(listaTurnos);
+                
+                // IMPORTANTE: Actualizar la especialidad seleccionada DESPUÉS de cargar los datos
                 EspecialidadSeleccionada = especialidad;
+                
+                // Forzar notificación adicional para asegurar que el UI se actualice
+                Application.Current.Dispatcher.BeginInvoke(() =>
+                {
+                    OnPropertyChanged(nameof(EspecialidadSeleccionada));
+                    Console.WriteLine($"FORZANDO ACTUALIZACIÓN UI: EspecialidadSeleccionada='{EspecialidadSeleccionada}'");
+                });
+                
+                Console.WriteLine($"EspecialidadSeleccionada actualizada a: {EspecialidadSeleccionada}");
             }
             catch (HttpRequestException ex)
             {
+                Console.WriteLine($"Error de conexión: {ex.Message}");
                 MessageBox.Show($"Error de conexión: {ex.Message}", "Error de Conexión", MessageBoxButton.OK, MessageBoxImage.Error);
                 Turnos = new ObservableCollection<Turno>();
+                // Mantener la especialidad seleccionada para que el UI refleje el último intento
+                EspecialidadSeleccionada = especialidad;
+                
+                // Forzar notificación también en caso de error
+                Application.Current.Dispatcher.BeginInvoke(() =>
+                {
+                    OnPropertyChanged(nameof(EspecialidadSeleccionada));
+                });
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"Error general: {ex.Message}");
                 MessageBox.Show($"No se pudieron cargar los turnos: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 Turnos = new ObservableCollection<Turno>();
+                // Mantener la especialidad seleccionada para que el UI refleje el último intento
+                EspecialidadSeleccionada = especialidad;
+                
+                // Forzar notificación también en caso de error
+                Application.Current.Dispatcher.BeginInvoke(() =>
+                {
+                    OnPropertyChanged(nameof(EspecialidadSeleccionada));
+                });
             }
             finally
             {
@@ -138,21 +185,7 @@ namespace SaludTotal.Desktop.ViewModels
 
         private async void CargarTurnos()
         {
-            IsLoading = true;
-            try
-            {
-                var listaTurnos = await _apiService.GetTurnosAsync();
-                Turnos = new ObservableCollection<Turno>(listaTurnos);
-            }
-            catch (Exception ex)
-            {
-                // Manejo de errores de cara al usuario
-                MessageBox.Show($"No se pudieron cargar los turnos: {ex.Message}", "Error de Conexión", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-            finally
-            {
-                IsLoading = false;
-            }
+            await FiltrarTurnosPorEspecialidadAsync("Todos");
         }
 
         public async Task ConfirmarTurno()
@@ -168,7 +201,7 @@ namespace SaludTotal.Desktop.ViewModels
             {
                 MessageBox.Show("Turno confirmado exitosamente.", "Éxito", MessageBoxButton.OK, MessageBoxImage.Information);
                 // Refrescamos la lista para ver el cambio de estado.
-                CargarTurnos();
+                await RecargarTurnosAsync();
             }
             else
             {
@@ -189,7 +222,7 @@ namespace SaludTotal.Desktop.ViewModels
             {
                 MessageBox.Show("Turno cancelado exitosamente.", "Éxito", MessageBoxButton.OK, MessageBoxImage.Information);
                 // Refrescamos la lista.
-                CargarTurnos();
+                await RecargarTurnosAsync();
             }
             else
             {
