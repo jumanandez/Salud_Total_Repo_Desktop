@@ -270,21 +270,6 @@
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
-                            
-                            <DataGridTemplateColumn Header="Acciones" Width="120" MinWidth="120">
-                                <DataGridTemplateColumn.CellTemplate>
-                                    <DataTemplate>
-                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                            <Button Content="✓" Width="25" Height="25" Margin="2" 
-                                                    Background="#28A745" Foreground="White" 
-                                                    BorderThickness="0" ToolTip="Confirmar"/>
-                                            <Button Content="✕" Width="25" Height="25" Margin="2" 
-                                                    Background="#DC3545" Foreground="White" 
-                                                    BorderThickness="0" ToolTip="Cancelar"/>
-                                        </StackPanel>
-                                    </DataTemplate>
-                                </DataGridTemplateColumn.CellTemplate>
-                            </DataGridTemplateColumn>
                         </DataGrid.Columns>
                     </DataGrid>
 
@@ -317,4 +302,5 @@
         </Grid>
     </Grid>
 </Window>
+
 
