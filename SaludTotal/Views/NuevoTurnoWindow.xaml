@@ -218,8 +218,6 @@
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="25"/>
                             <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="25"/>
-                            <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
@@ -227,14 +225,13 @@
                             <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
 
-                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Nombre y Apellido" Style="{StaticResource LabelStyle}" FontSize="16"/>
-                        <TextBox Grid.Row="2" Grid.Column="0" x:Name="NombreApellidoTextBox" Style="{StaticResource InputTextBoxStyle}" Height="40" FontSize="16"/>
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Buscar Paciente (nombre, email o DNI)" Style="{StaticResource LabelStyle}" FontSize="16"/>
+                        <TextBox Grid.Row="2" Grid.Column="0" x:Name="BuscarPacienteTextBox" Style="{StaticResource InputTextBoxStyle}" Height="40" FontSize="16" TextChanged="BuscarPacienteTextBox_TextChanged"/>
 
-                        <TextBlock Grid.Row="0" Grid.Column="2" Text="Teléfono" Style="{StaticResource LabelStyle}" FontSize="16"/>
-                        <TextBox Grid.Row="2" Grid.Column="2" x:Name="TelefonoTextBox" Style="{StaticResource InputTextBoxStyle}" Height="40" FontSize="16"/>
-
-                        <TextBlock Grid.Row="0" Grid.Column="4" Text="Email" Style="{StaticResource LabelStyle}" FontSize="16"/>
-                        <TextBox Grid.Row="2" Grid.Column="4" x:Name="EmailTextBox" Style="{StaticResource InputTextBoxStyle}" Height="40" FontSize="16"/>
+                        <TextBlock Grid.Row="0" Grid.Column="2" Text="Seleccionar Paciente" Style="{StaticResource LabelStyle}" FontSize="16"/>
+                        <ComboBox Grid.Row="2" Grid.Column="2" x:Name="PacienteComboBox" Style="{StaticResource InputComboBoxStyle}" Height="40" FontSize="16" DisplayMemberPath="InfoCompleta" SelectionChanged="PacienteComboBox_SelectionChanged">
+                            <!-- Las opciones se cargarán dinámicamente según la búsqueda -->
+                        </ComboBox>
                     </Grid>
                 </StackPanel>
 

@@ -5,6 +5,8 @@ using SaludTotal.Desktop.Services;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Linq;
+using SaludTotal.Models;
+using System.Windows.Threading;
 
 namespace SaludTotal.Desktop.Views
 {
@@ -12,12 +14,28 @@ namespace SaludTotal.Desktop.Views
     {
         private readonly ApiService _apiService;
         private DatosFormularioResponse _datosFormulario;
+        private List<SaludTotal.Models.Paciente> _pacientesEncontrados;
+        private SaludTotal.Models.Paciente? _pacienteSeleccionado;
+        private DispatcherTimer? _busquedaTimer;
 
         public NuevoTurnoWindow()
         {
             InitializeComponent();
             _apiService = new ApiService();
             _datosFormulario = new DatosFormularioResponse();
+            _pacientesEncontrados = new List<SaludTotal.Models.Paciente>();
+            
+            // Configurar timer para búsqueda de pacientes
+            _busquedaTimer = new DispatcherTimer
+            {
+                Interval = TimeSpan.FromMilliseconds(500) // Esperar 500ms después del último carácter
+            };
+            _busquedaTimer.Tick += BusquedaTimer_Tick;
+            
+            // Inicializar ComboBox de pacientes
+            PacienteComboBox.Items.Clear();
+            PacienteComboBox.Items.Add("Escriba para buscar pacientes...");
+            PacienteComboBox.SelectedIndex = 0;
             
             // Establecer fecha actual por defecto
             FechaCalendar.SelectedDate = DateTime.Today;
@@ -303,26 +321,11 @@ namespace SaludTotal.Desktop.Views
 
         private async void CrearTurno_Click(object sender, RoutedEventArgs e)
         {
-            // Validar que todos los campos estén completos
-            if (string.IsNullOrWhiteSpace(NombreApellidoTextBox.Text))
+            // Validar que se haya seleccionado un paciente
+            if (_pacienteSeleccionado == null)
             {
-                MessageBox.Show("Por favor, ingrese el nombre y apellido del paciente.", "Campo requerido", MessageBoxButton.OK, MessageBoxImage.Warning);
-                NombreApellidoTextBox.Focus();
-                return;
-            }
-
-            if (string.IsNullOrWhiteSpace(EmailTextBox.Text))
-            {
-                MessageBox.Show("Por favor, ingrese el email del paciente.", "Campo requerido", MessageBoxButton.OK, MessageBoxImage.Warning);
-                EmailTextBox.Focus();
-                return;
-            }
-
-            // Validar formato del email
-            if (!IsValidEmail(EmailTextBox.Text))
-            {
-                MessageBox.Show("Por favor, ingrese un email válido.", "Email inválido", MessageBoxButton.OK, MessageBoxImage.Warning);
-                EmailTextBox.Focus();
+                MessageBox.Show("Por favor, busque y seleccione un paciente.", "Campo requerido", MessageBoxButton.OK, MessageBoxImage.Warning);
+                BuscarPacienteTextBox.Focus();
                 return;
             }
 
@@ -384,9 +387,7 @@ namespace SaludTotal.Desktop.Views
                 // Crear el objeto de solicitud
                 var nuevoTurnoRequest = new NuevoTurnoRequest
                 {
-                    PacienteNombreApellido = NombreApellidoTextBox.Text.Trim(),
-                    PacienteTelefono = string.IsNullOrWhiteSpace(TelefonoTextBox.Text) ? null : TelefonoTextBox.Text.Trim(),
-                    PacienteEmail = EmailTextBox.Text.Trim(),
+                    PacienteId = _pacienteSeleccionado.Id,
                     DoctorId = doctorId,
                     Fecha = FechaCalendar.SelectedDate.Value.ToString("yyyy-MM-dd"),
                     Hora = horaSeleccionada,
@@ -399,7 +400,7 @@ namespace SaludTotal.Desktop.Views
                 // Mostrar mensaje de éxito
                 var mensaje = $"Turno creado exitosamente:\n\n" +
                              $"ID del Turno: {turnoCreado.Id}\n" +
-                             $"Paciente: {turnoCreado.Paciente?.NombreCompleto ?? nuevoTurnoRequest.PacienteNombreApellido}\n" +
+                             $"Paciente: {_pacienteSeleccionado.NombreCompleto}\n" +
                              $"Doctor: {turnoCreado.Profesional?.NombreCompleto ?? "No disponible"}\n" +
                              $"Fecha: {FechaCalendar.SelectedDate.Value:dd/MM/yyyy}\n" +
                              $"Hora: {nuevoTurnoRequest.Hora}";
@@ -422,19 +423,6 @@ namespace SaludTotal.Desktop.Views
                     botonCrear.IsEnabled = true;
                     botonCrear.Content = "Nuevo Turno";
                 }
-            }
-        }
-
-        private bool IsValidEmail(string email)
-        {
-            try
-            {
-                var addr = new System.Net.Mail.MailAddress(email);
-                return addr.Address == email;
-            }
-            catch
-            {
-                return false;
             }
         }
 
@@ -502,16 +490,113 @@ namespace SaludTotal.Desktop.Views
 
         private void LimpiarFormulario()
         {
-            NombreApellidoTextBox.Text = string.Empty;
-            TelefonoTextBox.Text = string.Empty;
-            EmailTextBox.Text = string.Empty;
+            BuscarPacienteTextBox.Text = string.Empty;
+            PacienteComboBox.Items.Clear();
+            PacienteComboBox.Items.Add("Escriba para buscar pacientes...");
+            _pacientesEncontrados.Clear();
+            _pacienteSeleccionado = null;
+            
             EspecialidadComboBox.SelectedIndex = 0;
             DoctorComboBox.SelectedIndex = 0;
             FechaCalendar.SelectedDate = DateTime.Today;
             HoraComboBox.SelectedIndex = 0;
             
             // Dar foco al primer campo
-            NombreApellidoTextBox.Focus();
+            BuscarPacienteTextBox.Focus();
+        }
+
+        /// <summary>
+        /// Evento del timer para búsqueda de pacientes.
+        /// </summary>
+        private async void BusquedaTimer_Tick(object? sender, EventArgs e)
+        {
+            if (_busquedaTimer != null)
+            {
+                _busquedaTimer.Stop();
+                await BuscarPacientesAsync();
+            }
+        }
+
+        /// <summary>
+        /// Evento cuando cambia el texto de búsqueda de paciente.
+        /// </summary>
+        private void BuscarPacienteTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (_busquedaTimer != null)
+            {
+                _busquedaTimer.Stop();
+                _busquedaTimer.Start();
+            }
+        }
+
+        /// <summary>
+        /// Evento cuando cambia la selección del paciente.
+        /// </summary>
+        private void PacienteComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (PacienteComboBox.SelectedItem is SaludTotal.Models.Paciente paciente)
+            {
+                _pacienteSeleccionado = paciente;
+            }
+            else
+            {
+                _pacienteSeleccionado = null;
+            }
+        }
+
+        /// <summary>
+        /// Busca pacientes basado en el texto de búsqueda.
+        /// </summary>
+        private async Task BuscarPacientesAsync()
+        {
+            try
+            {
+                string query = BuscarPacienteTextBox.Text?.Trim() ?? "";
+                
+                if (string.IsNullOrWhiteSpace(query))
+                {
+                    PacienteComboBox.Items.Clear();
+                    PacienteComboBox.Items.Add("Escriba para buscar pacientes...");
+                    _pacientesEncontrados.Clear();
+                    return;
+                }
+
+                if (query.Length < 2)
+                {
+                    return; // No buscar con menos de 2 caracteres
+                }
+
+                PacienteComboBox.IsEnabled = false;
+                PacienteComboBox.Items.Clear();
+                PacienteComboBox.Items.Add("Buscando...");
+
+                _pacientesEncontrados = await _apiService.BuscarPacientesAsync(query);
+
+                PacienteComboBox.Items.Clear();
+                
+                if (_pacientesEncontrados.Any())
+                {
+                    PacienteComboBox.Items.Add("Seleccione un paciente...");
+                    foreach (var paciente in _pacientesEncontrados)
+                    {
+                        PacienteComboBox.Items.Add(paciente);
+                    }
+                }
+                else
+                {
+                    PacienteComboBox.Items.Add("No se encontraron pacientes");
+                }
+
+                PacienteComboBox.SelectedIndex = 0;
+                PacienteComboBox.IsEnabled = true;
+            }
+            catch (Exception ex)
+            {
+                PacienteComboBox.Items.Clear();
+                PacienteComboBox.Items.Add("Error en la búsqueda");
+                PacienteComboBox.IsEnabled = true;
+                MessageBox.Show($"Error al buscar pacientes:\n{ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
         }
     }
 }

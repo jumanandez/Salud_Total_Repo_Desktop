@@ -401,6 +401,98 @@ namespace SaludTotal.Desktop.Services
                 throw new Exception($"Error en el formato de respuesta: {e.Message}");
             }
         }
+
+        /// <summary>
+        /// Obtiene todos los pacientes desde la API.
+        /// </summary>
+        /// <returns>Una lista de objetos Paciente.</returns>
+        public async Task<List<SaludTotal.Models.Paciente>> GetPacientesAsync()
+        {
+            try
+            {
+                string url = $"{ApiBaseUrl}/api/pacientes";
+                Console.WriteLine($"Obteniendo pacientes desde: {url}");
+                
+                HttpResponseMessage response = await client.GetAsync(url);
+                string responseContent = await response.Content.ReadAsStringAsync();
+                
+                Console.WriteLine($"Respuesta del servidor: {responseContent}");
+                response.EnsureSuccessStatusCode();
+
+                // Deserializar la respuesta que viene en formato { "success": true, "data": [...] }
+                dynamic responseObj = JsonConvert.DeserializeObject(responseContent);
+                if (responseObj?.success != true || responseObj?.data == null)
+                {
+                    throw new Exception($"Error en la respuesta del servidor: {responseObj?.error ?? "Respuesta inválida"}");
+                }
+                
+                var pacientesJson = JsonConvert.SerializeObject(responseObj.data);
+                var pacientes = JsonConvert.DeserializeObject<List<SaludTotal.Models.Paciente>>(pacientesJson) ?? new List<SaludTotal.Models.Paciente>();
+                
+                Console.WriteLine($"Pacientes obtenidos: {pacientes.Count}");
+                return pacientes;
+            }
+            catch (HttpRequestException e)
+            {
+                Console.WriteLine($"Error de solicitud HTTP al obtener pacientes: {e.Message}");
+                throw new Exception($"Error de conexión: {e.Message}");
+            }
+            catch (JsonException e)
+            {
+                Console.WriteLine($"Error de deserialización JSON al obtener pacientes: {e.Message}");
+                throw new Exception($"Error en el formato de respuesta: {e.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Busca pacientes por nombre, email o DNI.
+        /// </summary>
+        /// <param name="query">Término de búsqueda para nombre, email o DNI</param>
+        /// <returns>Una lista de objetos Paciente que coinciden con la búsqueda</returns>
+        public async Task<List<SaludTotal.Models.Paciente>> BuscarPacientesAsync(string query)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(query))
+                {
+                    return new List<SaludTotal.Models.Paciente>();
+                }
+
+                string url = $"{ApiBaseUrl}/api/desktop/pacientes/buscar?busqueda={Uri.EscapeDataString(query)}";
+                Console.WriteLine($"Buscando pacientes en: {url}");
+                
+                HttpResponseMessage response = await client.GetAsync(url);
+                string responseContent = await response.Content.ReadAsStringAsync();
+                
+                Console.WriteLine($"Respuesta del servidor: {responseContent}");
+                response.EnsureSuccessStatusCode();
+
+                // Deserializar la respuesta que viene en formato { "success": true, "data": [...] }
+                dynamic responseObj = JsonConvert.DeserializeObject(responseContent);
+                if (responseObj?.success != true || responseObj?.data == null)
+                {
+                    throw new Exception($"Error en la respuesta del servidor: {responseObj?.error ?? "Respuesta inválida"}");
+                }
+                
+                var pacientesJson = JsonConvert.SerializeObject(responseObj.data);
+                var pacientes = JsonConvert.DeserializeObject<List<SaludTotal.Models.Paciente>>(pacientesJson) ?? new List<SaludTotal.Models.Paciente>();
+                
+                Console.WriteLine($"Pacientes encontrados: {pacientes.Count}");
+                return pacientes;
+            }
+            catch (HttpRequestException e)
+            {
+                Console.WriteLine($"Error de solicitud HTTP al buscar pacientes: {e.Message}");
+                throw new Exception($"Error de conexión: {e.Message}");
+            }
+            catch (JsonException e)
+            {
+                Console.WriteLine($"Error de deserialización JSON al buscar pacientes: {e.Message}");
+                throw new Exception($"Error en el formato de respuesta: {e.Message}");
+            }
+        }
+
+        // ...existing code...
     }
 
     /// <summary>
@@ -408,14 +500,8 @@ namespace SaludTotal.Desktop.Services
     /// </summary>
     public class NuevoTurnoRequest
     {
-        [JsonProperty("paciente_nombre_apellido")]
-        public string PacienteNombreApellido { get; set; } = string.Empty;
-
-        [JsonProperty("paciente_telefono")]
-        public string? PacienteTelefono { get; set; }
-
-        [JsonProperty("paciente_email")]
-        public string PacienteEmail { get; set; } = string.Empty;
+        [JsonProperty("paciente_id")]
+        public int PacienteId { get; set; }
 
         [JsonProperty("doctor_id")]
         public int DoctorId { get; set; }

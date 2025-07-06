@@ -12,20 +12,25 @@ namespace SaludTotal.Models
         [JsonProperty("id")]
         public int Id { get; set; }
 
-        [JsonProperty("name")]
-        public string Name { get; set; } = string.Empty;
+        [JsonProperty("nombre_apellido")]
+        public string NombreApellido { get; set; } = string.Empty;
 
         [JsonProperty("email")]
         public string Email { get; set; } = string.Empty;
 
-        [JsonProperty("nombre")]
-        public string Nombre { get; set; } = string.Empty;
+        [JsonProperty("telefono")]
+        public string Telefono { get; set; } = string.Empty;
 
-        [JsonProperty("apellido")]
-        public string Apellido { get; set; } = string.Empty;
+        [JsonProperty("dni")]
+        public string Dni { get; set; } = string.Empty;
 
-        // Propiedad extra para facilitar la visualización en la UI
-        // Si viene 'name' del endpoint, lo usa, sino combina nombre y apellido
-        public string NombreCompleto => !string.IsNullOrEmpty(Name) ? Name : $"{Nombre} {Apellido}".Trim();
+        // Propiedades para compatibilidad con el código existente
+        public string NombreCompleto => NombreApellido;
+        public string Name => NombreApellido;
+        public string Nombre => NombreApellido.Split(' ').FirstOrDefault() ?? "";
+        public string Apellido => string.Join(" ", NombreApellido.Split(' ').Skip(1));
+        
+        // Propiedad para mostrar información del paciente en el ComboBox
+        public string InfoCompleta => $"{NombreApellido} - {Email}{(!string.IsNullOrEmpty(Dni) ? $" - DNI: {Dni}" : "")}";
     }
 }
