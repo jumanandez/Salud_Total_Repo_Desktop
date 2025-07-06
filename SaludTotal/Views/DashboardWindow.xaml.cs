@@ -23,6 +23,9 @@ namespace SaludTotal.Desktop.Views
         {
             var administracionWindow = new AdministracionTurnosWindow();
             administracionWindow.Show();
+            
+            // Cerrar la ventana actual del Dashboard
+            this.Close();
         }
 
         private void GestionPacientes_Click(object sender, RoutedEventArgs e)

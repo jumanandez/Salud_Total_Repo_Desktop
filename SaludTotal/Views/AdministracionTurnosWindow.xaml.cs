@@ -127,5 +127,15 @@ namespace SaludTotal.Desktop.Views
             }
         }
         #endregion
+
+        private void VolverInicio_Click(object sender, RoutedEventArgs e)
+        {
+            // Crear y mostrar la ventana Dashboard
+            var dashboardWindow = new DashboardWindow();
+            dashboardWindow.Show();
+            
+            // Cerrar la ventana actual
+            this.Close();
+        }
     }
 }
