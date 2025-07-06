@@ -74,5 +74,58 @@ namespace SaludTotal.Desktop.Views
         }
         #endregion
         #endregion
+
+        #region Eventos del Buscador
+        private async void SearchButton_Click(object sender, RoutedEventArgs e)
+        {
+            await RealizarBusqueda();
+        }
+
+        private async void SearchTextBox_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            if (e.Key == System.Windows.Input.Key.Enter)
+            {
+                await RealizarBusqueda();
+            }
+        }
+
+        private void SearchTypeCombo_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        {
+            if (_viewModel != null && SearchTypeCombo.SelectedItem != null)
+            {
+                var selectedItem = (System.Windows.Controls.ComboBoxItem)SearchTypeCombo.SelectedItem;
+                var tipoBusqueda = selectedItem.Content?.ToString()?.ToLower() ?? "doctor";
+                
+                // Mapear los valores del ComboBox a los valores esperados por la API
+                _viewModel.TipoBusqueda = tipoBusqueda switch
+                {
+                    "doctor" => "doctor",
+                    "paciente" => "paciente", 
+                    "fecha" => "fecha",
+                    _ => "doctor"
+                };
+                
+                Console.WriteLine($"Tipo de búsqueda cambiado a: {_viewModel.TipoBusqueda}");
+            }
+        }
+
+        private async void ClearSearchButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (_viewModel != null)
+            {
+                SearchTextBox.Text = string.Empty;
+                await _viewModel.LimpiarBusquedaAsync();
+            }
+        }
+
+        private async Task RealizarBusqueda()
+        {
+            if (_viewModel != null)
+            {
+                _viewModel.TerminoBusqueda = SearchTextBox.Text?.Trim() ?? string.Empty;
+                await _viewModel.BuscarTurnosAsync();
+            }
+        }
+        #endregion
     }
 }

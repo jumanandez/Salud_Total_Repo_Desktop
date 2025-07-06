@@ -178,19 +178,25 @@
                     <!-- Búsqueda -->
                     <StackPanel Grid.Row="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,0,10">
                         <TextBlock Text="Buscar por:" FontWeight="Medium" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                        <ComboBox x:Name="SearchTypeCombo" Width="120" Height="30" SelectedIndex="0" Margin="0,0,10,0">
+                        <ComboBox x:Name="SearchTypeCombo" Width="120" Height="30" SelectedIndex="0" Margin="0,0,10,0"
+                                  SelectionChanged="SearchTypeCombo_SelectionChanged">
                             <ComboBoxItem Content="Doctor"/>
                             <ComboBoxItem Content="Paciente"/>
                             <ComboBoxItem Content="Fecha"/>
-                            <ComboBoxItem Content="Estado"/>
                         </ComboBox>
                         <TextBox x:Name="SearchTextBox" Width="300" Height="30" 
                                  VerticalContentAlignment="Center" 
                                  Padding="10,0"
                                  BorderBrush="#A8D0F3"
-                                 BorderThickness="2"/>
-                        <Button Content="🔍" Width="40" Height="30" Margin="5,0,0,0" 
-                                Background="#4A90E2" Foreground="White" BorderThickness="0"/>
+                                 BorderThickness="2"
+                                 KeyDown="SearchTextBox_KeyDown"/>
+                        <Button x:Name="SearchButton" Content="🔍" Width="40" Height="30" Margin="5,0,0,0" 
+                                Background="#4A90E2" Foreground="White" BorderThickness="0"
+                                Click="SearchButton_Click"/>
+                        <Button x:Name="ClearSearchButton" Content="✖" Width="40" Height="30" Margin="5,0,0,0" 
+                                Background="#E74C3C" Foreground="White" BorderThickness="0"
+                                Click="ClearSearchButton_Click"
+                                ToolTip="Limpiar búsqueda"/>
                     </StackPanel>
 
                     <!-- Filtros por especialidad -->

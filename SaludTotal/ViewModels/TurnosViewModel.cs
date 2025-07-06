@@ -63,6 +63,29 @@ namespace SaludTotal.Desktop.ViewModels
             }
         }
 
+        // Propiedades para el buscador
+        private string _terminoBusqueda = string.Empty;
+        public string TerminoBusqueda
+        {
+            get { return _terminoBusqueda; }
+            set
+            {
+                _terminoBusqueda = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private string _tipoBusqueda = "doctor";
+        public string TipoBusqueda
+        {
+            get { return _tipoBusqueda; }
+            set
+            {
+                _tipoBusqueda = value;
+                OnPropertyChanged();
+            }
+        }
+
         // --- Constructor ---
         public TurnosViewModel()
         {
@@ -119,8 +142,10 @@ namespace SaludTotal.Desktop.ViewModels
                 }
 
                 // Debug: verificar qué datos estamos obteniendo
-                foreach (var turno in listaTurnos.Take(3)) // Solo los primeros 3 para no saturar el log
+                int maxTurnos = Math.Min(3, listaTurnos.Count);
+                for (int i = 0; i < maxTurnos; i++)
                 {
+                    var turno = listaTurnos[i];
                     Console.WriteLine($"Turno {turno.Id}: " +
                         $"Paciente={turno.Paciente?.NombreCompleto ?? "NULL"}, " +
                         $"Profesional={turno.Profesional?.NombreCompleto ?? "NULL"}, " +
@@ -228,6 +253,62 @@ namespace SaludTotal.Desktop.ViewModels
             {
                 MessageBox.Show("Ocurrió un error al cancelar el turno.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
+        }
+
+        /// <summary>
+        /// Busca turnos según el término y tipo de búsqueda especificados
+        /// </summary>
+        public async Task BuscarTurnosAsync()
+        {
+            if (string.IsNullOrWhiteSpace(TerminoBusqueda))
+            {
+                // Si no hay término de búsqueda, mostrar todos los turnos
+                await RecargarTurnosAsync();
+                return;
+            }
+
+            IsLoading = true;
+            try
+            {
+                Console.WriteLine($"Buscando turnos por {TipoBusqueda}: {TerminoBusqueda}");
+                
+                var listaTurnos = await _apiService.BuscarTurnosAsync(TipoBusqueda, TerminoBusqueda);
+                
+                Console.WriteLine($"Búsqueda completada. Encontrados: {listaTurnos.Count} turnos");
+                
+                Turnos = new ObservableCollection<Turno>(listaTurnos);
+                
+                // Resetear la especialidad seleccionada ya que estamos mostrando resultados de búsqueda
+                EspecialidadSeleccionada = "Búsqueda";
+            }
+            catch (ArgumentException ex)
+            {
+                Console.WriteLine($"Error de argumento en búsqueda: {ex.Message}");
+                MessageBox.Show($"Parámetro de búsqueda inválido: {ex.Message}", "Error de Búsqueda", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+            catch (HttpRequestException ex)
+            {
+                Console.WriteLine($"Error de conexión en búsqueda: {ex.Message}");
+                MessageBox.Show($"Error de conexión: {ex.Message}", "Error de Conexión", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error general en búsqueda: {ex.Message}");
+                MessageBox.Show($"Error al realizar la búsqueda: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            finally
+            {
+                IsLoading = false;
+            }
+        }
+
+        /// <summary>
+        /// Limpia la búsqueda y muestra todos los turnos
+        /// </summary>
+        public async Task LimpiarBusquedaAsync()
+        {
+            TerminoBusqueda = string.Empty;
+            await RecargarTurnosAsync();
         }
     }
 }
