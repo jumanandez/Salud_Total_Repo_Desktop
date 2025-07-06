@@ -59,22 +59,45 @@
         <!-- Estilo para TextBox -->
         <Style x:Key="InputTextBoxStyle" TargetType="TextBox">
             <Setter Property="Height" Value="35"/>
-            <Setter Property="Padding" Value="10,8"/>
+            <Setter Property="Padding" Value="8,6"/>
             <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="Normal"/>
+            <Setter Property="Foreground" Value="#2C3E50"/>
+            <Setter Property="Background" Value="White"/>
             <Setter Property="BorderBrush" Value="#D0D0D0"/>
             <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Background" Value="White"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="CaretBrush" Value="#2C3E50"/>
+            <Setter Property="SelectionBrush" Value="#4A90E2"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="TextBox">
-                        <Border Background="{TemplateBinding Background}" 
+                        <Border Name="Border"
+                                Background="{TemplateBinding Background}" 
                                 BorderBrush="{TemplateBinding BorderBrush}"
                                 BorderThickness="{TemplateBinding BorderThickness}"
-                                CornerRadius="4"
-                                Padding="{TemplateBinding Padding}">
-                            <ScrollViewer x:Name="PART_ContentHost"/>
+                                CornerRadius="4">
+                            <ScrollViewer x:Name="PART_ContentHost" 
+                                          Margin="8,0,8,0"
+                                          VerticalAlignment="Center"
+                                          Focusable="False"
+                                          HorizontalScrollBarVisibility="Hidden"
+                                          VerticalScrollBarVisibility="Hidden"/>
                         </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsFocused" Value="True">
+                                <Setter TargetName="Border" Property="BorderBrush" Value="#4A90E2"/>
+                                <Setter TargetName="Border" Property="BorderThickness" Value="2"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Border" Property="BorderBrush" Value="#7BB3F0"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="Border" Property="Background" Value="#F5F5F5"/>
+                                <Setter Property="Foreground" Value="#999999"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
