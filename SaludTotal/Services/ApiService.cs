@@ -310,7 +310,7 @@ namespace SaludTotal.Desktop.Services
         {
             try
             {
-                string url = $"{ApiBaseUrl}/api/turnos";
+                string url = $"{ApiBaseUrl}/api/turnos/store-desktop";
                 
                 // Debug temporal
                 Console.WriteLine($"Creando turno en: {url}");
