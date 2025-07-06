@@ -1,13 +1,21 @@
-﻿<Window x:Class="SaludTotal.Desktop.Views.AdministracionTurnosWindow"
+<Window x:Class="SaludTotal.Desktop.Views.AdministracionTurnosWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:converters="clr-namespace:SaludTotal.Desktop.Converters"
         mc:Ignorable="d"
         Title="Salud Total - Administración de Turnos" Height="800" Width="1400" 
         WindowStartupLocation="CenterScreen" WindowStyle="None" AllowsTransparency="True" ResizeMode="NoResize">
 
     <Window.Resources>
+        <!-- Converters -->
+        <converters:EspecialidadToBrushConverter x:Key="EspecialidadToBrushConverter"/>
+        <converters:EspecialidadToForegroundConverter x:Key="EspecialidadToForegroundConverter"/>
+        
+        <!-- Convertidor Boolean a Visibility ya incluido en WPF -->
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+        
         <!-- Estilo para botones de ventana (minimizar/cerrar) -->
         <Style x:Key="WindowButtonStyle" TargetType="Button">
             <Setter Property="Width" Value="40"/>
@@ -84,6 +92,14 @@
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
+        </Style>
+
+        <!-- Estilo para filtros/botones de especialidad cuando están activos -->
+        <Style x:Key="ActiveFilterButtonStyle" TargetType="Button" BasedOn="{StaticResource FilterButtonStyle}">
+            <Setter Property="Background" Value="#4A90E2"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderBrush" Value="#2C3E50"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
         </Style>
 
         <!-- Estilo para botón de acción principal -->
@@ -180,11 +196,21 @@
                     <!-- Filtros por especialidad -->
                     <StackPanel Grid.Row="1" Orientation="Horizontal" VerticalAlignment="Center">
                         <TextBlock Text="Especialidades:" FontWeight="Medium" VerticalAlignment="Center" Margin="0,0,15,0"/>
-                        <Button Content="Cardiología" Style="{StaticResource FilterButtonStyle}" Click="FiltrarCardiologia_Click"/>
-                        <Button Content="Ginecología" Style="{StaticResource FilterButtonStyle}" Click="FiltrarGinecologia_Click"/>
-                        <Button Content="Pediatría" Style="{StaticResource FilterButtonStyle}" Click="FiltrarPediatria_Click"/>
-                        <Button Content="Clínica General" Style="{StaticResource FilterButtonStyle}" Click="FiltrarClinicaGeneral_Click"/>
-                        <Button Content="Todos" Style="{StaticResource FilterButtonStyle}" Background="#4A90E2" Foreground="White" Click="FiltrarTodos_Click"/>
+                        <Button Content="Cardiología" Style="{StaticResource FilterButtonStyle}" Click="FiltrarCardiologia_Click"
+                                Background="{Binding EspecialidadSeleccionada, Converter={StaticResource EspecialidadToBrushConverter}, ConverterParameter=Cardiología}"
+                                Foreground="{Binding EspecialidadSeleccionada, Converter={StaticResource EspecialidadToForegroundConverter}, ConverterParameter=Cardiología}"/>
+                        <Button Content="Ginecología" Style="{StaticResource FilterButtonStyle}" Click="FiltrarGinecologia_Click"
+                                Background="{Binding EspecialidadSeleccionada, Converter={StaticResource EspecialidadToBrushConverter}, ConverterParameter=Ginecología}"
+                                Foreground="{Binding EspecialidadSeleccionada, Converter={StaticResource EspecialidadToForegroundConverter}, ConverterParameter=Ginecología}"/>
+                        <Button Content="Pediatría" Style="{StaticResource FilterButtonStyle}" Click="FiltrarPediatria_Click"
+                                Background="{Binding EspecialidadSeleccionada, Converter={StaticResource EspecialidadToBrushConverter}, ConverterParameter=Pediatría}"
+                                Foreground="{Binding EspecialidadSeleccionada, Converter={StaticResource EspecialidadToForegroundConverter}, ConverterParameter=Pediatría}"/>
+                        <Button Content="Clínica General" Style="{StaticResource FilterButtonStyle}" Click="FiltrarClinicaGeneral_Click"
+                                Background="{Binding EspecialidadSeleccionada, Converter={StaticResource EspecialidadToBrushConverter}, ConverterParameter=Clínica General}"
+                                Foreground="{Binding EspecialidadSeleccionada, Converter={StaticResource EspecialidadToForegroundConverter}, ConverterParameter=Clínica General}"/>
+                        <Button Content="Todos" Style="{StaticResource FilterButtonStyle}" Click="FiltrarTodos_Click"
+                                Background="{Binding EspecialidadSeleccionada, Converter={StaticResource EspecialidadToBrushConverter}, ConverterParameter=Todos}"
+                                Foreground="{Binding EspecialidadSeleccionada, Converter={StaticResource EspecialidadToForegroundConverter}, ConverterParameter=Todos}"/>
                     </StackPanel>
                 </Grid>
             </Border>
@@ -234,13 +260,29 @@
                             
                             <DataGridTextColumn Header="Fecha y Hora" Width="200" MinWidth="180">
                                 <DataGridTextColumn.Binding>
-                                    <Binding Path="Fecha" StringFormat="dd/MM/yyyy HH:mm"/>
+                                    <Binding Path="FechaHora"/>
                                 </DataGridTextColumn.Binding>
                             </DataGridTextColumn>
                             
-                            <DataGridTextColumn Header="Paciente" Binding="{Binding Paciente.NombreCompleto}" Width="*" MinWidth="200"/>
+                            <DataGridTemplateColumn Header="Paciente" Width="*" MinWidth="200">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Paciente.NombreCompleto, FallbackValue='N/A'}" 
+                                                   VerticalAlignment="Center" 
+                                                   Padding="5,0"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
                             
-                            <DataGridTextColumn Header="Profesional" Binding="{Binding Profesional.NombreCompleto}" Width="*" MinWidth="200"/>
+                            <DataGridTemplateColumn Header="Profesional" Width="*" MinWidth="200">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Profesional.NombreCompleto, FallbackValue='N/A'}" 
+                                                   VerticalAlignment="Center" 
+                                                   Padding="5,0"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
                             
                             <DataGridTemplateColumn Header="Estado" Width="150" MinWidth="120">
                                 <DataGridTemplateColumn.CellTemplate>
@@ -288,7 +330,7 @@
             <!-- Panel de botones de acción -->
             <Border Grid.Row="3" Background="White" BorderBrush="#E0E0E0" BorderThickness="1,0,1,1" CornerRadius="0,0,10,10" Padding="20,15">
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-<Button Content="�🔄 Actualizar" 
+                    <Button Content="🔄 Actualizar" 
                             Style="{StaticResource FilterButtonStyle}" 
                             Margin="0,0,10,0"
                             Background="#6C757D" 
@@ -302,5 +344,3 @@
         </Grid>
     </Grid>
 </Window>
-
-
