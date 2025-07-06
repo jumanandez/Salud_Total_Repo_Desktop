@@ -346,6 +346,61 @@ namespace SaludTotal.Desktop.Services
                 throw new Exception($"Error en el formato de respuesta: {e.Message}");
             }
         }
+
+        /// <summary>
+        /// Obtiene los datos necesarios para el formulario de nuevo turno (especialidades, doctores, horarios).
+        /// </summary>
+        /// <param name="doctorId">ID del doctor para obtener horarios disponibles (opcional).</param>
+        /// <param name="fecha">Fecha para obtener horarios disponibles (opcional).</param>
+        /// <returns>Datos del formulario incluyendo especialidades, doctores y horarios disponibles.</returns>
+        public async Task<DatosFormularioResponse> GetDatosFormularioAsync(int? doctorId = null, string? fecha = null)
+        {
+            try
+            {
+                string url = $"{ApiBaseUrl}/api/turnos/datos-formulario";
+                
+                // Agregar parámetros de consulta si se proporcionan
+                var queryParams = new List<string>();
+                if (doctorId.HasValue)
+                    queryParams.Add($"doctor_id={doctorId.Value}");
+                if (!string.IsNullOrEmpty(fecha))
+                    queryParams.Add($"fecha={Uri.EscapeDataString(fecha)}");
+                
+                if (queryParams.Any())
+                    url += "?" + string.Join("&", queryParams);
+                
+                Console.WriteLine($"Obteniendo datos del formulario desde: {url}");
+                
+                HttpResponseMessage response = await client.GetAsync(url);
+                string responseContent = await response.Content.ReadAsStringAsync();
+                
+                Console.WriteLine($"Respuesta del servidor: {responseContent}");
+                response.EnsureSuccessStatusCode();
+
+                // Deserializar la respuesta que viene en formato { "success": true, "data": {...} }
+                dynamic responseObj = JsonConvert.DeserializeObject(responseContent);
+                if (responseObj?.success != true || responseObj?.data == null)
+                {
+                    throw new Exception($"Error en la respuesta del servidor: {responseObj?.message ?? "Respuesta inválida"}");
+                }
+                
+                var datosJson = JsonConvert.SerializeObject(responseObj.data);
+                var datos = JsonConvert.DeserializeObject<DatosFormularioResponse>(datosJson);
+                
+                Console.WriteLine($"Datos obtenidos: {datos?.Especialidades?.Count ?? 0} especialidades, {datos?.DoctoresPorEspecialidad?.Count ?? 0} grupos de doctores");
+                return datos ?? throw new Exception("No se pudieron deserializar los datos del formulario");
+            }
+            catch (HttpRequestException e)
+            {
+                Console.WriteLine($"Error de solicitud HTTP al obtener datos del formulario: {e.Message}");
+                throw new Exception($"Error de conexión: {e.Message}");
+            }
+            catch (JsonException e)
+            {
+                Console.WriteLine($"Error de deserialización JSON al obtener datos del formulario: {e.Message}");
+                throw new Exception($"Error en el formato de respuesta: {e.Message}");
+            }
+        }
     }
 
     /// <summary>
@@ -373,5 +428,62 @@ namespace SaludTotal.Desktop.Services
 
         [JsonProperty("especialidad_id")]
         public int EspecialidadId { get; set; }
+    }
+
+    /// <summary>
+    /// Clase para recibir datos del formulario desde la API.
+    /// </summary>
+    public class DatosFormularioResponse
+    {
+        [JsonProperty("especialidades")]
+        public List<EspecialidadDto> Especialidades { get; set; } = new List<EspecialidadDto>();
+
+        [JsonProperty("doctores_por_especialidad")]
+        public List<DoctoresPorEspecialidadDto> DoctoresPorEspecialidad { get; set; } = new List<DoctoresPorEspecialidadDto>();
+
+        [JsonProperty("horarios_disponibles")]
+        public List<HorarioDisponibleDto> HorariosDisponibles { get; set; } = new List<HorarioDisponibleDto>();
+    }
+
+    public class EspecialidadDto
+    {
+        [JsonProperty("id")]
+        public int Id { get; set; }
+
+        [JsonProperty("nombre")]
+        public string Nombre { get; set; } = string.Empty;
+    }
+
+    public class DoctoresPorEspecialidadDto
+    {
+        [JsonProperty("especialidad_id")]
+        public int EspecialidadId { get; set; }
+
+        [JsonProperty("especialidad_nombre")]
+        public string EspecialidadNombre { get; set; } = string.Empty;
+
+        [JsonProperty("doctores")]
+        public List<DoctorDto> Doctores { get; set; } = new List<DoctorDto>();
+    }
+
+    public class DoctorDto
+    {
+        [JsonProperty("id")]
+        public int Id { get; set; }
+
+        [JsonProperty("nombre_completo")]
+        public string NombreCompleto { get; set; } = string.Empty;
+    }
+
+    public class HorarioDisponibleDto
+    {
+        [JsonProperty("hora")]
+        public string Hora { get; set; } = string.Empty;
+
+        [JsonProperty("disponible")]
+        public bool Disponible { get; set; }
+
+        [JsonProperty("display")]
+        public string Display { get; set; } = string.Empty;
     }
 }
