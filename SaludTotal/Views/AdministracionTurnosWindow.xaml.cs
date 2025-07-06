@@ -35,11 +35,10 @@ namespace SaludTotal.Desktop.Views
 
         private void NuevoTurno_Click(object sender, RoutedEventArgs e)
         {
-            // TODO: Implementar funcionalidad para crear nuevo turno
-            MessageBox.Show("Funcionalidad 'Nuevo Turno' estará disponible próximamente.", 
-                           "Información", 
-                           MessageBoxButton.OK, 
-                           MessageBoxImage.Information);
+            // Abrir la ventana de Nuevo Turno
+            var nuevoTurnoWindow = new NuevoTurnoWindow();
+            nuevoTurnoWindow.Show();
+            this.Close();
         }
 
         #region Eventos de Filtros por Especialidad

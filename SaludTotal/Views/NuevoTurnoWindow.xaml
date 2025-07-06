@@ -1,0 +1,367 @@
+<Window x:Class="SaludTotal.Desktop.Views.NuevoTurnoWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="Salud Total - Nuevo Turno" Height="800" Width="1400" 
+        WindowStartupLocation="CenterScreen" WindowStyle="None" AllowsTransparency="True" ResizeMode="NoResize">
+
+    <Window.Resources>
+        <!-- Estilo para botones de ventana (minimizar/cerrar) -->
+        <Style x:Key="WindowButtonStyle" TargetType="Button">
+            <Setter Property="Width" Value="40"/>
+            <Setter Property="Height" Value="40"/>
+            <Setter Property="Background" Value="#4A90E2"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="BorderBrush" Value="#2C3E50"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontSize" Value="18"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Margin" Value="3"/>
+            <Setter Property="Padding" Value="8,6"/>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect Color="Black" Direction="315" ShadowDepth="2" Opacity="0.3" BlurRadius="4"/>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" 
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="4"
+                                Effect="{TemplateBinding Effect}"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#A8D0F3"/>
+                                <Setter Property="BorderBrush" Value="#4A90E2"/>
+                                <Setter Property="Effect">
+                                    <Setter.Value>
+                                        <DropShadowEffect Color="Black" Direction="315" ShadowDepth="3" Opacity="0.4" BlurRadius="6"/>
+                                    </Setter.Value>
+                                </Setter>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Background" Value="#2C3E50"/>
+                                <Setter Property="BorderBrush" Value="#34495E"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Estilo para TextBox -->
+        <Style x:Key="InputTextBoxStyle" TargetType="TextBox">
+            <Setter Property="Height" Value="35"/>
+            <Setter Property="Padding" Value="10,8"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="BorderBrush" Value="#D0D0D0"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border Background="{TemplateBinding Background}" 
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="4"
+                                Padding="{TemplateBinding Padding}">
+                            <ScrollViewer x:Name="PART_ContentHost"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Estilo para ComboBox -->
+        <Style x:Key="InputComboBoxStyle" TargetType="ComboBox">
+            <Setter Property="Height" Value="35"/>
+            <Setter Property="Padding" Value="10,8"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="BorderBrush" Value="#D0D0D0"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ComboBox">
+                        <Grid>
+                            <Border Background="{TemplateBinding Background}" 
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    CornerRadius="4">
+                                <Grid>
+                                    <ContentPresenter ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
+                                                      Content="{TemplateBinding SelectionBoxItem}"
+                                                      ContentStringFormat="{TemplateBinding SelectionBoxItemStringFormat}"
+                                                      HorizontalAlignment="Left"
+                                                      VerticalAlignment="Center"
+                                                      Margin="10,8"/>
+                                    <ToggleButton Grid.Column="1" 
+                                                  x:Name="ToggleButton"
+                                                  Background="Transparent"
+                                                  BorderThickness="0"
+                                                  IsChecked="{Binding Path=IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
+                                                  ClickMode="Press"
+                                                  HorizontalAlignment="Right"
+                                                  Width="30">
+                                        <Path Data="M 0 0 L 4 4 L 8 0 Z" Fill="#666" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </ToggleButton>
+                                </Grid>
+                            </Border>
+                            <Popup Name="Popup"
+                                   Placement="Bottom"
+                                   IsOpen="{TemplateBinding IsDropDownOpen}"
+                                   AllowsTransparency="True"
+                                   Focusable="False"
+                                   PopupAnimation="Slide">
+                                <Border Background="White" BorderBrush="#D0D0D0" BorderThickness="1" CornerRadius="4">
+                                    <ScrollViewer>
+                                        <StackPanel IsItemsHost="True"/>
+                                    </ScrollViewer>
+                                </Border>
+                            </Popup>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Estilo para etiquetas -->
+        <Style x:Key="LabelStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="Medium"/>
+            <Setter Property="Foreground" Value="#2C3E50"/>
+            <Setter Property="Margin" Value="0,0,0,5"/>
+        </Style>
+    </Window.Resources>
+
+    <Grid>
+        <!-- Fondo de la ventana -->
+        <Border>
+            <Border.Background>
+                <ImageBrush ImageSource="pack://application:,,,/Resources/Img/Fondo_desktop_1.jpg" Stretch="UniformToFill"/>
+            </Border.Background>
+        </Border>
+
+        <!-- Botones de ventana (minimizar y cerrar) -->
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,15,15,0" Panel.ZIndex="999">
+            <Button Style="{StaticResource WindowButtonStyle}" Content="⎯" Click="MinimizeWindow_Click" ToolTip="Minimizar"/>
+            <Button Style="{StaticResource WindowButtonStyle}" Content="✕" Click="CloseWindow_Click" ToolTip="Cerrar"/>
+        </StackPanel>
+
+        <!-- Contenido del formulario -->
+        <Border HorizontalAlignment="Center" 
+                VerticalAlignment="Top" 
+                Width="1100" 
+                Height="600"
+                Margin="0,50,0,0"
+                Background="#F0FFFFFF" 
+                CornerRadius="10"
+                BorderThickness="1"
+                BorderBrush="#E0E0E0">
+            <Grid Margin="50,30,50,30">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <!-- Header -->
+                    <RowDefinition Height="Auto"/>
+                    <!-- Paciente -->
+                    <RowDefinition Height="Auto"/>
+                    <!-- Doctor -->
+                    <RowDefinition Height="*"/>
+                    <!-- Fecha y Hora -->
+                </Grid.RowDefinitions>
+
+                <!-- Header -->
+                <Border Grid.Row="0" Background="#1E3A8A" CornerRadius="6" Padding="35,15" Margin="0,0,0,25">
+                    <TextBlock Text="Nuevo Turno" 
+                               FontSize="28" 
+                               FontWeight="Bold" 
+                               Foreground="White" 
+                               HorizontalAlignment="Center"/>
+                </Border>
+
+                <!-- Sección Paciente -->
+                <StackPanel Grid.Row="1" Margin="0,0,0,25">
+                    <TextBlock Text="Paciente" Style="{StaticResource LabelStyle}" FontSize="20" FontWeight="SemiBold" Margin="0,0,0,15"/>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="25"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="25"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="10"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Nombre y Apellido" Style="{StaticResource LabelStyle}" FontSize="16"/>
+                        <TextBox Grid.Row="2" Grid.Column="0" x:Name="NombreApellidoTextBox" Style="{StaticResource InputTextBoxStyle}" Height="40" FontSize="16"/>
+
+                        <TextBlock Grid.Row="0" Grid.Column="2" Text="Teléfono" Style="{StaticResource LabelStyle}" FontSize="16"/>
+                        <TextBox Grid.Row="2" Grid.Column="2" x:Name="TelefonoTextBox" Style="{StaticResource InputTextBoxStyle}" Height="40" FontSize="16"/>
+
+                        <TextBlock Grid.Row="0" Grid.Column="4" Text="Email" Style="{StaticResource LabelStyle}" FontSize="16"/>
+                        <TextBox Grid.Row="2" Grid.Column="4" x:Name="EmailTextBox" Style="{StaticResource InputTextBoxStyle}" Height="40" FontSize="16"/>
+                    </Grid>
+                </StackPanel>
+
+                <!-- Sección Doctor -->
+                <StackPanel Grid.Row="2" Margin="0,0,0,15">
+                    <TextBlock Text="Doctor" Style="{StaticResource LabelStyle}" FontSize="20" FontWeight="SemiBold" Margin="0,0,0,10"/>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="50"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="10"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Especialidad" Style="{StaticResource LabelStyle}" FontSize="16"/>
+                        <ComboBox Grid.Row="2" Grid.Column="0" x:Name="EspecialidadComboBox" Style="{StaticResource InputComboBoxStyle}" Height="40" FontSize="16">
+                            <ComboBoxItem Content="Cardiología"/>
+                            <ComboBoxItem Content="Ginecología"/>
+                            <ComboBoxItem Content="Pediatría"/>
+                            <ComboBoxItem Content="Clínica General"/>
+                        </ComboBox>
+
+                        <TextBlock Grid.Row="0" Grid.Column="2" Text="Doctor" Style="{StaticResource LabelStyle}" FontSize="16"/>
+                        <ComboBox Grid.Row="2" Grid.Column="2" x:Name="DoctorComboBox" Style="{StaticResource InputComboBoxStyle}" Height="40" FontSize="16">
+                            <ComboBoxItem Content="Dr. Juan Pérez"/>
+                            <ComboBoxItem Content="Dra. María García"/>
+                            <ComboBoxItem Content="Dr. Carlos López"/>
+                            <ComboBoxItem Content="Dra. Ana Martínez"/>
+                        </ComboBox>
+                    </Grid>
+                </StackPanel>
+
+                <!-- Sección Fecha y Hora -->
+                <StackPanel Grid.Row="3" Margin="0,-20,0,0" VerticalAlignment="Top">
+                    <TextBlock Text="Fecha y Hora" Style="{StaticResource LabelStyle}" FontSize="20" FontWeight="SemiBold" Margin="0,0,0,10"/>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="450"/>
+                            <ColumnDefinition Width="50"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Calendario -->
+                        <Calendar Grid.Column="0" x:Name="FechaCalendar" 
+                                  Background="White"
+                                  BorderBrush="#D0D0D0"
+                                  BorderThickness="1"
+                                  HorizontalAlignment="Left"
+                                  VerticalAlignment="Top"
+                                  FontSize="16"/>
+
+                        <!-- ComboBox de Hora -->
+                        <StackPanel Grid.Column="2" VerticalAlignment="Top">
+                            <TextBlock Text="hora" Style="{StaticResource LabelStyle}" FontSize="16"/>
+                            <ComboBox x:Name="HoraComboBox" Style="{StaticResource InputComboBoxStyle}" Width="200" Height="40" FontSize="16" HorizontalAlignment="Left">
+                                <ComboBoxItem Content="08:00"/>
+                                <ComboBoxItem Content="08:30"/>
+                                <ComboBoxItem Content="09:00"/>
+                                <ComboBoxItem Content="09:30"/>
+                                <ComboBoxItem Content="10:00"/>
+                                <ComboBoxItem Content="10:30"/>
+                                <ComboBoxItem Content="11:00"/>
+                                <ComboBoxItem Content="11:30"/>
+                                <ComboBoxItem Content="12:00"/>
+                                <ComboBoxItem Content="12:30"/>
+                                <ComboBoxItem Content="13:00"/>
+                                <ComboBoxItem Content="13:30"/>
+                                <ComboBoxItem Content="14:00"/>
+                                <ComboBoxItem Content="14:30"/>
+                                <ComboBoxItem Content="15:00"/>
+                                <ComboBoxItem Content="15:30"/>
+                                <ComboBoxItem Content="16:00"/>
+                                <ComboBoxItem Content="16:30"/>
+                                <ComboBoxItem Content="17:00"/>
+                                <ComboBoxItem Content="17:30"/>
+                                <ComboBoxItem Content="18:00"/>
+                            </ComboBox>
+                        </StackPanel>
+                    </Grid>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Botones en las esquinas inferiores -->
+        <!-- Botón Cancelar - Esquina inferior izquierda -->
+        <Button Content="Cancelar" 
+                HorizontalAlignment="Left" 
+                VerticalAlignment="Bottom" 
+                Width="180"
+                Height="50"
+                Padding="25,12"
+                Margin="50,0,0,50"
+                FontSize="18"
+                FontWeight="SemiBold"
+                Background="#E74C3C"
+                Foreground="White"
+                BorderThickness="0"
+                Click="Cancelar_Click"
+                ToolTip="Cancelar y volver">
+            <Button.Template>
+                <ControlTemplate TargetType="Button">
+                    <Border Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Background" Value="#EC7063"/>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter Property="Background" Value="#C0392B"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Button.Template>
+        </Button>
+
+        <!-- Botón Nuevo Turno - Esquina inferior derecha -->
+        <Button Content="Nuevo Turno" 
+                HorizontalAlignment="Right" 
+                VerticalAlignment="Bottom" 
+                Width="180"
+                Height="50"
+                Padding="25,12"
+                Margin="0,0,50,50"
+                FontSize="18"
+                FontWeight="SemiBold"
+                Background="#28A745"
+                Foreground="White"
+                BorderThickness="0"
+                Click="CrearTurno_Click"
+                ToolTip="Crear nuevo turno">
+            <Button.Template>
+                <ControlTemplate TargetType="Button">
+                    <Border Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Background" Value="#34CE57"/>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter Property="Background" Value="#1E7E34"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Button.Template>
+        </Button>
+    </Grid>
+</Window>

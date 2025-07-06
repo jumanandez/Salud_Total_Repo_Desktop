@@ -300,5 +300,78 @@ namespace SaludTotal.Desktop.Services
                 throw;
             }
         }
+
+        /// <summary>
+        /// Crea un nuevo turno en la API.
+        /// </summary>
+        /// <param name="nuevoTurno">Objeto con los datos del nuevo turno.</param>
+        /// <returns>El turno creado con todos sus datos.</returns>
+        public async Task<Turno> CrearTurnoAsync(NuevoTurnoRequest nuevoTurno)
+        {
+            try
+            {
+                string url = $"{ApiBaseUrl}/api/turnos";
+                
+                // Debug temporal
+                Console.WriteLine($"Creando turno en: {url}");
+                Console.WriteLine($"Datos del turno: {JsonConvert.SerializeObject(nuevoTurno, Formatting.Indented)}");
+                
+                HttpResponseMessage response = await client.PostAsJsonAsync(url, nuevoTurno);
+                string responseContent = await response.Content.ReadAsStringAsync();
+                
+                Console.WriteLine($"Respuesta del servidor: {responseContent}");
+                response.EnsureSuccessStatusCode();
+
+                // Deserializar la respuesta que viene en formato { "success": true, "message": "...", "data": {...} }
+                dynamic responseObj = JsonConvert.DeserializeObject(responseContent);
+                if (responseObj?.success != true || responseObj?.data == null)
+                {
+                    throw new Exception($"Error en la respuesta del servidor: {responseObj?.message ?? "Respuesta inválida"}");
+                }
+                
+                var turnoJson = JsonConvert.SerializeObject(responseObj.data);
+                var turno = JsonConvert.DeserializeObject<Turno>(turnoJson);
+                
+                Console.WriteLine($"Turno creado exitosamente: ID={turno?.Id}");
+                return turno ?? throw new Exception("No se pudo deserializar el turno creado");
+            }
+            catch (HttpRequestException e)
+            {
+                Console.WriteLine($"Error de solicitud HTTP al crear turno: {e.Message}");
+                throw new Exception($"Error de conexión: {e.Message}");
+            }
+            catch (JsonException e)
+            {
+                Console.WriteLine($"Error de deserialización JSON al crear turno: {e.Message}");
+                throw new Exception($"Error en el formato de respuesta: {e.Message}");
+            }
+        }
+    }
+
+    /// <summary>
+    /// Clase para enviar datos de nuevo turno a la API.
+    /// </summary>
+    public class NuevoTurnoRequest
+    {
+        [JsonProperty("paciente_nombre_apellido")]
+        public string PacienteNombreApellido { get; set; } = string.Empty;
+
+        [JsonProperty("paciente_telefono")]
+        public string? PacienteTelefono { get; set; }
+
+        [JsonProperty("paciente_email")]
+        public string PacienteEmail { get; set; } = string.Empty;
+
+        [JsonProperty("doctor_id")]
+        public int DoctorId { get; set; }
+
+        [JsonProperty("fecha")]
+        public string Fecha { get; set; } = string.Empty;
+
+        [JsonProperty("hora")]
+        public string Hora { get; set; } = string.Empty;
+
+        [JsonProperty("especialidad_id")]
+        public int EspecialidadId { get; set; }
     }
 }
