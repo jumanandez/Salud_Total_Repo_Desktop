@@ -9,6 +9,32 @@ namespace SaludTotal.Desktop.Views
             InitializeComponent();
         }
 
+        private void VolverInicio_Click(object sender, RoutedEventArgs e)
+        {
+            // Crear y mostrar la ventana Dashboard
+            var dashboardWindow = new DashboardWindow();
+            dashboardWindow.Show();
+            
+            // Cerrar la ventana actual
+            this.Close();
+        }
+
+        private void InformesProfesionales_Click(object sender, RoutedEventArgs e)
+        {
+            // TODO: Implementar la lógica para mostrar informes de profesionales
+            MessageBox.Show("Funcionalidad para ver informes de profesionales en desarrollo.", "Información", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+
+        private void InformesEmpresa_Click(object sender, RoutedEventArgs e)
+        {
+            // Crear y mostrar la ventana de Informes de Empresa
+            var informesEmpresaWindow = new InformesEmpresaWindow();
+            informesEmpresaWindow.Show();
+            
+            // Cerrar la ventana actual
+            this.Close();
+        }
+
         private void MinimizeWindow_Click(object sender, RoutedEventArgs e)
         {
             this.WindowState = WindowState.Minimized;
