@@ -21,8 +21,12 @@ namespace SaludTotal.Desktop.Views
 
         private void InformesProfesionales_Click(object sender, RoutedEventArgs e)
         {
-            // TODO: Implementar la lógica para mostrar informes de profesionales
-            MessageBox.Show("Funcionalidad para ver informes de profesionales en desarrollo.", "Información", MessageBoxButton.OK, MessageBoxImage.Information);
+            // Crear y mostrar la ventana de Informes de Profesionales
+            var informesProfesionalesWindow = new InformesProfesionalesWindow();
+            informesProfesionalesWindow.Show();
+            
+            // Cerrar la ventana actual
+            this.Close();
         }
 
         private void InformesEmpresa_Click(object sender, RoutedEventArgs e)
