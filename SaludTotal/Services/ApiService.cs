@@ -222,7 +222,7 @@ namespace SaludTotal.Desktop.Services
         {
             try
             {
-                string url = $"{ApiBaseUrl}/api/desktop/turnos/disponibles";
+                string url = $"{ApiBaseUrl}/api/turnos/disponibles";
                 var queryParams = new List<string>();
                 if (doctorId.HasValue)
                     queryParams.Add($"doctor_id={doctorId.Value}");
@@ -338,7 +338,7 @@ namespace SaludTotal.Desktop.Services
                     return new List<SaludTotal.Models.Paciente>();
                 }
 
-                string url = $"{ApiBaseUrl}/api/desktop/pacientes/buscar?busqueda={Uri.EscapeDataString(query)}";
+                string url = $"{ApiBaseUrl}/api/pacientes/buscar?busqueda={Uri.EscapeDataString(query)}";
                 Console.WriteLine($"Buscando pacientes en: {url}");
                 
                 HttpResponseMessage response = await client.GetAsync(url);
@@ -386,7 +386,7 @@ namespace SaludTotal.Desktop.Services
         {
             try
             {
-                string url = $"{ApiBaseUrl}/api/desktop/turnos/disponibles?doctor_id={doctorId}&fecha={Uri.EscapeDataString(fecha)}";
+                string url = $"{ApiBaseUrl}/api/turnos/disponibles?doctor_id={doctorId}&fecha={Uri.EscapeDataString(fecha)}";
                 Console.WriteLine($"Obteniendo horarios desde: {url}");
                 HttpResponseMessage response = await client.GetAsync(url);
                 string responseContent = await response.Content.ReadAsStringAsync();
@@ -427,7 +427,7 @@ namespace SaludTotal.Desktop.Services
         /// <returns>Datos con especialidades y doctores por especialidad.</returns>
         public async Task<(List<EspecialidadDto> Especialidades, List<DoctoresPorEspecialidadDto> DoctoresPorEspecialidad)> GetEspecialidadesYDoctoresAsync()
         {
-            string url = $"{ApiBaseUrl}/api/desktop/turnos/especialidades";
+            string url = $"{ApiBaseUrl}/api/turnos/especialidades";
             Console.WriteLine($"Obteniendo especialidades y doctores desde: {url}");
             HttpResponseMessage response = await client.GetAsync(url);
             string responseContent = await response.Content.ReadAsStringAsync();
@@ -465,7 +465,7 @@ namespace SaludTotal.Desktop.Services
         /// <returns>Lista de especialidades.</returns>
         public async Task<List<EspecialidadDto>> GetEspecialidadesAsync()
         {
-            string url = $"{ApiBaseUrl}/api/desktop/profesionales/especialidades";
+            string url = $"{ApiBaseUrl}/api/profesionales/especialidades";
             Console.WriteLine($"Obteniendo especialidades desde: {url}");
             HttpResponseMessage response = await client.GetAsync(url);
             string responseContent = await response.Content.ReadAsStringAsync();
@@ -494,7 +494,7 @@ namespace SaludTotal.Desktop.Services
         /// <returns>Lista de doctores para la especialidad.</returns>
         public async Task<List<DoctorDto>> GetDoctoresByEspecialidadAsync(int especialidadId)
         {
-            string url = $"{ApiBaseUrl}/api/desktop/profesionales/especialidades/{especialidadId}/doctores";
+            string url = $"{ApiBaseUrl}/api/profesionales/especialidades/{especialidadId}/doctores";
             Console.WriteLine($"Obteniendo doctores para especialidad {especialidadId} desde: {url}");
             HttpResponseMessage response = await client.GetAsync(url);
             string responseContent = await response.Content.ReadAsStringAsync();
@@ -523,7 +523,7 @@ namespace SaludTotal.Desktop.Services
         /// <returns>Lista de horarios laborales.</returns>
         public async Task<List<HorarioLaboralDto>> GetHorariosLaboralesAsync(int doctorId)
         {
-            string url = $"{ApiBaseUrl}/api/desktop/profesionales/{doctorId}/horarios";
+            string url = $"{ApiBaseUrl}/api/profesionales/{doctorId}/horarios";
             Console.WriteLine($"Obteniendo horarios laborales para doctor {doctorId} desde: {url}");
             HttpResponseMessage response = await client.GetAsync(url);
             string responseContent = await response.Content.ReadAsStringAsync();
@@ -553,7 +553,7 @@ namespace SaludTotal.Desktop.Services
         /// <returns>Lista de slots disponibles.</returns>
         public async Task<List<SlotTurnoDto>> GetSlotsTurnosDisponiblesAsync(int doctorId, string fecha)
         {
-            string url = $"{ApiBaseUrl}/api/desktop/turnos/disponibles?doctor_id={doctorId}&fecha={Uri.EscapeDataString(fecha)}";
+            string url = $"{ApiBaseUrl}/api/turnos/disponibles?doctor_id={doctorId}&fecha={Uri.EscapeDataString(fecha)}";
             Console.WriteLine($"Obteniendo slots de turnos disponibles para doctor {doctorId} y fecha {fecha} desde: {url}");
             HttpResponseMessage response = await client.GetAsync(url);
             string responseContent = await response.Content.ReadAsStringAsync();
