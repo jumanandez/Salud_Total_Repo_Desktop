@@ -11,7 +11,7 @@ namespace SaludTotal.Models
 {
     public class Turno
     {
-        [JsonProperty("id")]
+        [JsonProperty("turno_id")]
         public int Id { get; set; }
 
         [JsonProperty("paciente_id")]

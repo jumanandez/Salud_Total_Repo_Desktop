@@ -122,7 +122,16 @@ namespace SaludTotal.Desktop.Views
             if (_viewModel != null)
             {
                 _viewModel.TerminoBusqueda = SearchTextBox.Text?.Trim() ?? string.Empty;
-                await _viewModel.BuscarTurnosAsync();
+                // Usar el método de filtrado centralizado
+                string? especialidad = null, fecha = null, doctor = null, paciente = null;
+                switch (_viewModel.TipoBusqueda.ToLower())
+                {
+                    case "doctor": doctor = _viewModel.TerminoBusqueda; break;
+                    case "paciente": paciente = _viewModel.TerminoBusqueda; break;
+                    case "fecha": fecha = _viewModel.TerminoBusqueda; break;
+                    case "especialidad": especialidad = _viewModel.TerminoBusqueda; break;
+                }
+                await _viewModel.FiltrarTurnosAsync(especialidad, fecha, doctor, paciente);
             }
         }
         #endregion

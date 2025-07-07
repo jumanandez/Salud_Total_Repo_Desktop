@@ -8,6 +8,18 @@ using System.Linq;
 using SaludTotal.Models;
 using System.Windows.Threading;
 
+// Enum para los días de la semana (Lunes=1, ..., Domingo=7)
+public enum DiasSemana
+{
+    Lunes = 1,
+    Martes = 2,
+    Miercoles = 3,
+    Jueves = 4,
+    Viernes = 5,
+    Sabado = 6,
+    Domingo = 7
+}
+
 namespace SaludTotal.Desktop.Views
 {
     public partial class NuevoTurnoWindow : Window
@@ -51,27 +63,20 @@ namespace SaludTotal.Desktop.Views
         {
             try
             {
-                // Mostrar indicador de carga
                 EspecialidadComboBox.IsEnabled = false;
                 DoctorComboBox.IsEnabled = false;
                 HoraComboBox.IsEnabled = false;
 
-                // Obtener datos del formulario
-                _datosFormulario = await _apiService.GetDatosFormularioAsync();
-
-                // Cargar especialidades
+                // Obtener especialidades
+                var especialidades = await _apiService.GetEspecialidadesAsync();
+                _datosFormulario.Especialidades = especialidades.Select(e => new EspecialidadDto { Id = e.Id, Nombre = e.Nombre }).ToList();
                 CargarEspecialidades();
-                
-                // Habilitar controles
+
                 EspecialidadComboBox.IsEnabled = true;
-                DoctorComboBox.IsEnabled = true;
-                HoraComboBox.IsEnabled = true;
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error al cargar datos del formulario:\n{ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                
-                // En caso de error, cargar datos estáticos como fallback
+                MessageBox.Show($"Error al cargar especialidades:\n{ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 CargarDatosEstaticos();
             }
         }
@@ -107,154 +112,89 @@ namespace SaludTotal.Desktop.Views
         /// <summary>
         /// Carga los doctores de la especialidad seleccionada.
         /// </summary>
-        private void CargarDoctoresPorEspecialidad(int especialidadId)
+        private async Task CargarDoctoresPorEspecialidadAsync(int especialidadId)
         {
             DoctorComboBox.Items.Clear();
-            
-            // Agregar elemento por defecto
-            DoctorComboBox.Items.Add(new ComboBoxItem 
-            { 
-                Content = "Seleccionar doctor...", 
-                Tag = -1,
-                IsEnabled = false
-            });
+            DoctorComboBox.IsEnabled = false;
+            DoctorComboBox.Items.Add(new ComboBoxItem { Content = "Cargando doctores...", IsEnabled = false });
 
-            // Buscar doctores de la especialidad
-            var grupoEspecialidad = _datosFormulario.DoctoresPorEspecialidad
-                .FirstOrDefault(g => g.EspecialidadId == especialidadId);
-
-            if (grupoEspecialidad != null)
+            try
             {
-                foreach (var doctor in grupoEspecialidad.Doctores)
+                var doctores = await _apiService.GetDoctoresByEspecialidadAsync(especialidadId);
+                DoctorComboBox.Items.Clear();
+                DoctorComboBox.Items.Add(new ComboBoxItem { Content = "Seleccionar doctor...", Tag = -1, IsEnabled = false });
+                foreach (var doctor in doctores)
                 {
-                    DoctorComboBox.Items.Add(new ComboBoxItem
-                    {
-                        Content = doctor.NombreCompleto,
-                        Tag = doctor.Id
-                    });
+                    DoctorComboBox.Items.Add(new ComboBoxItem { Content = doctor.NombreCompleto, Tag = doctor.Id });
                 }
+                DoctorComboBox.SelectedIndex = 0;
+                DoctorComboBox.IsEnabled = true;
             }
-
-            DoctorComboBox.SelectedIndex = 0;
-            
-            // Limpiar horarios al cambiar especialidad
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error al cargar doctores:\n{ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                DoctorComboBox.Items.Clear();
+                DoctorComboBox.Items.Add(new ComboBoxItem { Content = "Error al cargar doctores", IsEnabled = false });
+                DoctorComboBox.SelectedIndex = 0;
+            }
             LimpiarHorarios();
         }
 
         /// <summary>
-        /// Carga horarios disponibles para el doctor y fecha seleccionados.
+        /// Carga horarios laborales disponibles para el doctor seleccionado.
         /// </summary>
-        private async Task CargarHorariosDisponiblesAsync(int doctorId, DateTime fecha)
+        private async Task CargarHorariosLaboralesAsync(int doctorId)
         {
             try
             {
-                HoraComboBox.IsEnabled = false;
-                HoraComboBox.Items.Clear();
-                
-                // Agregar indicador de carga
-                HoraComboBox.Items.Add(new ComboBoxItem 
-                { 
-                    Content = "Cargando horarios...", 
-                    IsEnabled = false 
-                });
-
-                // Obtener horarios disponibles
-                var datosConHorarios = await _apiService.GetDatosFormularioAsync(doctorId, fecha.ToString("yyyy-MM-dd"));
-                
-                HoraComboBox.Items.Clear();
-                
-                // Agregar elemento por defecto
-                HoraComboBox.Items.Add(new ComboBoxItem 
-                { 
-                    Content = "Seleccionar hora...", 
-                    Tag = "",
-                    IsEnabled = false
-                });
-
-                // Agregar horarios disponibles
-                if (datosConHorarios.HorariosDisponibles.Any())
+                var horarios = await _apiService.GetHorariosLaboralesAsync(doctorId);
+                // Mostrar los días y horarios laborales en un TextBlock (por ejemplo: DiasLaboralesTextBlock)
+                if (DiasLaboralesTextBlock != null)
                 {
-                    foreach (var horario in datosConHorarios.HorariosDisponibles.Where(h => h.Disponible))
+                    if (horarios.Any())
                     {
-                        HoraComboBox.Items.Add(new ComboBoxItem
-                        {
-                            Content = horario.Display,
-                            Tag = horario.Hora
-                        });
+                        var dias = horarios.Select(h => $"{((DiasSemana)h.DiaSemana).ToString()}: {h.HoraInicio} - {h.HoraFin}");
+                        DiasLaboralesTextBlock.Text = "Días laborales: " + string.Join(", ", dias);
+                    }
+                    else
+                    {
+                        DiasLaboralesTextBlock.Text = "El doctor no tiene días laborales configurados.";
                     }
                 }
-                else
-                {
-                    HoraComboBox.Items.Add(new ComboBoxItem 
-                    { 
-                        Content = "No hay horarios disponibles", 
-                        IsEnabled = false 
-                    });
-                }
+            }
+            catch (Exception ex)
+            {
+                if (DiasLaboralesTextBlock != null)
+                    DiasLaboralesTextBlock.Text = "Error al cargar días laborales.";
+                MessageBox.Show($"Error al cargar días laborales:\n{ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        }
 
+        /// <summary>
+        /// Carga los slots de turnos disponibles para el doctor y fecha seleccionados.
+        /// </summary>
+        private async Task CargarSlotsTurnosDisponiblesAsync(int doctorId, DateTime fecha)
+        {
+            HoraComboBox.Items.Clear();
+            HoraComboBox.IsEnabled = false;
+            HoraComboBox.Items.Add(new ComboBoxItem { Content = "Cargando turnos...", IsEnabled = false });
+            try
+            {
+                var slots = await _apiService.GetSlotsTurnosDisponiblesAsync(doctorId, fecha.ToString("yyyy-MM-dd"));
+                HoraComboBox.Items.Clear();
+                HoraComboBox.Items.Add(new ComboBoxItem { Content = "Seleccionar hora...", Tag = "", IsEnabled = false });
+                foreach (var slot in slots)
+                {
+                    HoraComboBox.Items.Add(new ComboBoxItem { Content = slot.Hora, Tag = slot.Hora });
+                }
                 HoraComboBox.SelectedIndex = 0;
                 HoraComboBox.IsEnabled = true;
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error al cargar horarios:\n{ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show($"Error al cargar turnos disponibles:\n{ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
                 CargarHorariosEstaticos();
             }
-        }
-
-        /// <summary>
-        /// Limpia los horarios disponibles.
-        /// </summary>
-        private void LimpiarHorarios()
-        {
-            HoraComboBox.Items.Clear();
-            HoraComboBox.Items.Add(new ComboBoxItem 
-            { 
-                Content = "Seleccione doctor y fecha primero", 
-                IsEnabled = false 
-            });
-            HoraComboBox.SelectedIndex = 0;
-        }
-
-        /// <summary>
-        /// Carga datos estáticos como fallback en caso de error de API.
-        /// </summary>
-        private void CargarDatosEstaticos()
-        {
-            // Cargar especialidades estáticas
-            EspecialidadComboBox.Items.Clear();
-            EspecialidadComboBox.Items.Add(new ComboBoxItem { Content = "Cardiología", Tag = 1 });
-            EspecialidadComboBox.Items.Add(new ComboBoxItem { Content = "Ginecología", Tag = 2 });
-            EspecialidadComboBox.Items.Add(new ComboBoxItem { Content = "Pediatría", Tag = 3 });
-            EspecialidadComboBox.Items.Add(new ComboBoxItem { Content = "Clínica General", Tag = 4 });
-            EspecialidadComboBox.SelectedIndex = 0;
-
-            // Cargar doctores estáticos
-            DoctorComboBox.Items.Clear();
-            DoctorComboBox.Items.Add(new ComboBoxItem { Content = "Dr. Juan Pérez", Tag = 1 });
-            DoctorComboBox.Items.Add(new ComboBoxItem { Content = "Dra. María García", Tag = 2 });
-            DoctorComboBox.Items.Add(new ComboBoxItem { Content = "Dr. Carlos López", Tag = 3 });
-            DoctorComboBox.Items.Add(new ComboBoxItem { Content = "Dra. Ana Martínez", Tag = 4 });
-            DoctorComboBox.SelectedIndex = 0;
-
-            CargarHorariosEstaticos();
-        }
-
-        /// <summary>
-        /// Carga horarios estáticos como fallback.
-        /// </summary>
-        private void CargarHorariosEstaticos()
-        {
-            HoraComboBox.Items.Clear();
-            var horas = new[] { "08:00", "08:30", "09:00", "09:30", "10:00", "10:30", "11:00", "11:30", 
-                               "12:00", "12:30", "13:00", "13:30", "14:00", "14:30", "15:00", "15:30", 
-                               "16:00", "16:30", "17:00", "17:30", "18:00" };
-
-            foreach (var hora in horas)
-            {
-                HoraComboBox.Items.Add(new ComboBoxItem { Content = hora, Tag = hora });
-            }
-            HoraComboBox.SelectedIndex = 0;
         }
 
         /// <summary>
@@ -264,7 +204,7 @@ namespace SaludTotal.Desktop.Views
         {
             if (EspecialidadComboBox.SelectedItem is ComboBoxItem item && item.Tag is int especialidadId && especialidadId > 0)
             {
-                CargarDoctoresPorEspecialidad(especialidadId);
+                _ = CargarDoctoresPorEspecialidadAsync(especialidadId);
             }
         }
 
@@ -273,6 +213,10 @@ namespace SaludTotal.Desktop.Views
         /// </summary>
         private void DoctorComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            if (DoctorComboBox.SelectedItem is ComboBoxItem item && item.Tag is int doctorId && doctorId > 0)
+            {
+                _ = CargarHorariosLaboralesAsync(doctorId);
+            }
             ActualizarHorariosSegunSeleccion();
         }
 
@@ -293,7 +237,22 @@ namespace SaludTotal.Desktop.Views
                 doctorItem.Tag is int doctorId && doctorId > 0 &&
                 FechaCalendar.SelectedDate.HasValue)
             {
-                await CargarHorariosDisponiblesAsync(doctorId, FechaCalendar.SelectedDate.Value);
+                // Obtener días laborales del doctor
+                var horarios = await _apiService.GetHorariosLaboralesAsync(doctorId);
+                var diaSeleccionado = (int)FechaCalendar.SelectedDate.Value.DayOfWeek;
+                // Ajustar para que Lunes=1 ... Domingo=7
+                diaSeleccionado = diaSeleccionado == 0 ? 7 : diaSeleccionado;
+                if (horarios.Any(h => h.DiaSemana == diaSeleccionado))
+                {
+                    await CargarSlotsTurnosDisponiblesAsync(doctorId, FechaCalendar.SelectedDate.Value);
+                }
+                else
+                {
+                    LimpiarHorarios();
+                    HoraComboBox.Items.Clear();
+                    HoraComboBox.Items.Add(new ComboBoxItem { Content = "El doctor no trabaja este día", IsEnabled = false });
+                    HoraComboBox.SelectedIndex = 0;
+                }
             }
             else
             {
@@ -363,65 +322,45 @@ namespace SaludTotal.Desktop.Views
                 return;
             }
 
-            try
+            // Mapear especialidades y doctores a IDs desde los datos dinámicos
+            var especialidadId = GetEspecialidadIdFromSelection();
+            var doctorId = GetDoctorIdFromSelection();
+            var horaSeleccionada = GetHoraFromSelection();
+            var especialidadNombre = (EspecialidadComboBox.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "";
+            var doctorNombre = (DoctorComboBox.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "";
+            var fechaSeleccionada = FechaCalendar.SelectedDate.Value.ToString("yyyy/MM/dd");
+
+            if (especialidadId == -1 || doctorId == -1 || string.IsNullOrEmpty(horaSeleccionada))
             {
-                // Deshabilitar el botón para evitar doble envío
-                var botonCrear = sender as Button;
-                if (botonCrear != null)
-                {
-                    botonCrear.IsEnabled = false;
-                    botonCrear.Content = "Creando...";
-                }
-
-                // Mapear especialidades y doctores a IDs desde los datos dinámicos
-                var especialidadId = GetEspecialidadIdFromSelection();
-                var doctorId = GetDoctorIdFromSelection();
-                var horaSeleccionada = GetHoraFromSelection();
-                
-                if (especialidadId == -1 || doctorId == -1 || string.IsNullOrEmpty(horaSeleccionada))
-                {
-                    MessageBox.Show("Por favor, complete todos los campos del formulario.", "Datos incompletos", MessageBoxButton.OK, MessageBoxImage.Warning);
-                    return;
-                }
-                
-                // Crear el objeto de solicitud
-                var nuevoTurnoRequest = new NuevoTurnoRequest
-                {
-                    PacienteId = _pacienteSeleccionado.Id,
-                    DoctorId = doctorId,
-                    Fecha = FechaCalendar.SelectedDate.Value.ToString("yyyy-MM-dd"),
-                    Hora = horaSeleccionada,
-                    EspecialidadId = especialidadId
-                };
-
-                // Llamar a la API para crear el turno
-                var turnoCreado = await _apiService.CrearTurnoAsync(nuevoTurnoRequest);
-
-                // Mostrar mensaje de éxito
-                var mensaje = $"Turno creado exitosamente:\n\n" +
-                             $"ID del Turno: {turnoCreado.Id}\n" +
-                             $"Paciente: {_pacienteSeleccionado.NombreCompleto}\n" +
-                             $"Doctor: {turnoCreado.Profesional?.NombreCompleto ?? "No disponible"}\n" +
-                             $"Fecha: {FechaCalendar.SelectedDate.Value:dd/MM/yyyy}\n" +
-                             $"Hora: {nuevoTurnoRequest.Hora}";
-
-                MessageBox.Show(mensaje, "Turno Creado", MessageBoxButton.OK, MessageBoxImage.Information);
-
-                // Limpiar formulario después de crear el turno
-                LimpiarFormulario();
+                MessageBox.Show("Por favor, complete todos los campos del formulario.", "Datos incompletos", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
             }
-            catch (Exception ex)
+
+            // Mostrar ventana modal de detalle
+            var detalleWindow = new DetalleTurnoWindow(_pacienteSeleccionado, especialidadNombre, doctorNombre, fechaSeleccionada, horaSeleccionada)
             {
-                MessageBox.Show($"Error al crear el turno:\n{ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-            finally
+                Owner = this
+            };
+            var result = detalleWindow.ShowDialog();
+            if (result == true && detalleWindow.Confirmado)
             {
-                // Rehabilitar el botón
-                var botonCrear = sender as Button;
-                if (botonCrear != null)
+                // Envío real al backend
+                try
                 {
-                    botonCrear.IsEnabled = true;
-                    botonCrear.Content = "Nuevo Turno";
+                    var request = new SaludTotal.Desktop.Services.NuevoTurnoRequest
+                    {
+                        PacienteId = _pacienteSeleccionado?.Id ?? 0,
+                        DoctorId = doctorId,
+                        Fecha = FechaCalendar.SelectedDate.Value.ToString("yyyy-MM-dd"),
+                        Hora = horaSeleccionada
+                    };
+                    await _apiService.CrearTurnoAsync(request);
+                    MessageBox.Show("Turno creado exitosamente.", "Éxito", MessageBoxButton.OK, MessageBoxImage.Information);
+                    LimpiarFormulario();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Error al crear el turno:\n{ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
         }
@@ -597,6 +536,44 @@ namespace SaludTotal.Desktop.Views
                 PacienteComboBox.IsEnabled = true;
                 MessageBox.Show($"Error al buscar pacientes:\n{ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
+        }
+
+        // Implementación básica para compilar y fallback visual
+        private void CargarDatosEstaticos()
+        {
+            EspecialidadComboBox.Items.Clear();
+            EspecialidadComboBox.Items.Add(new ComboBoxItem { Content = "Cardiología", Tag = 1 });
+            EspecialidadComboBox.Items.Add(new ComboBoxItem { Content = "Ginecología", Tag = 2 });
+            EspecialidadComboBox.Items.Add(new ComboBoxItem { Content = "Pediatría", Tag = 3 });
+            EspecialidadComboBox.Items.Add(new ComboBoxItem { Content = "Clínica General", Tag = 4 });
+            EspecialidadComboBox.SelectedIndex = 0;
+
+            DoctorComboBox.Items.Clear();
+            DoctorComboBox.Items.Add(new ComboBoxItem { Content = "Dr. Juan Pérez", Tag = 1 });
+            DoctorComboBox.Items.Add(new ComboBoxItem { Content = "Dra. María García", Tag = 2 });
+            DoctorComboBox.Items.Add(new ComboBoxItem { Content = "Dr. Carlos López", Tag = 3 });
+            DoctorComboBox.Items.Add(new ComboBoxItem { Content = "Dra. Ana Martínez", Tag = 4 });
+            DoctorComboBox.SelectedIndex = 0;
+
+            CargarHorariosEstaticos();
+        }
+
+        private void LimpiarHorarios()
+        {
+            HoraComboBox.Items.Clear();
+            HoraComboBox.Items.Add(new ComboBoxItem { Content = "Seleccione doctor y fecha primero", IsEnabled = false });
+            HoraComboBox.SelectedIndex = 0;
+        }
+
+        private void CargarHorariosEstaticos()
+        {
+            HoraComboBox.Items.Clear();
+            var horas = new[] { "08:00", "08:30", "09:00", "09:30", "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "13:00", "13:30", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00" };
+            foreach (var hora in horas)
+            {
+                HoraComboBox.Items.Add(new ComboBoxItem { Content = hora, Tag = hora });
+            }
+            HoraComboBox.SelectedIndex = 0;
         }
     }
 }
