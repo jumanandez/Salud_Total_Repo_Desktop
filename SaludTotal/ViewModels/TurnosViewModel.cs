@@ -146,43 +146,6 @@ namespace SaludTotal.Desktop.ViewModels
         }
 
         /// <summary>
-        /// Busca turnos según el término y tipo de búsqueda especificados
-        /// </summary>
-        public async Task BuscarTurnosAsync()
-        {
-            if (string.IsNullOrWhiteSpace(TerminoBusqueda))
-            {
-                await RecargarTurnosAsync();
-                return;
-            }
-
-            IsLoading = true;
-            try
-            {
-                // Solo un filtro activo a la vez en búsqueda
-                string? especialidad = null, fecha = null, doctor = null, paciente = null;
-                switch (TipoBusqueda.ToLower())
-                {
-                    case "doctor": doctor = TerminoBusqueda; break;
-                    case "paciente": paciente = TerminoBusqueda; break;
-                    case "fecha": fecha = TerminoBusqueda; break;
-                    case "especialidad": especialidad = TerminoBusqueda; break;
-                }
-                var listaTurnos = await _apiService.GetTurnosAsync(especialidad, fecha, doctor, paciente);
-                Turnos = new ObservableCollection<Turno>(listaTurnos);
-                EspecialidadSeleccionada = "Búsqueda";
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error al realizar la búsqueda: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-            finally
-            {
-                IsLoading = false;
-            }
-        }
-
-        /// <summary>
         /// Limpia la búsqueda y muestra todos los turnos
         /// </summary>
         public async Task LimpiarBusquedaAsync()

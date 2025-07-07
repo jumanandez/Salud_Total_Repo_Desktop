@@ -55,7 +55,7 @@ namespace SaludTotal.Desktop.Services
 
                 HttpResponseMessage response = await client.GetAsync(url);
                 response.EnsureSuccessStatusCode();
-
+    
                 string jsonResponse = await response.Content.ReadAsStringAsync();
                 var turnos = JsonConvert.DeserializeObject<List<Turno>>(jsonResponse) ?? new List<Turno>();
                 return turnos;
@@ -126,39 +126,6 @@ namespace SaludTotal.Desktop.Services
                 return false;
             }
         }
-        //public async Task<bool> LoginAsync(string claveAcceso)
-        //{
-        //    try
-        //    {
-        //        string url = $"{ApiBaseUrl}login";
-        //        var loginData = new { clave_acceso = claveAcceso };
-
-        //        HttpResponseMessage response = await client.PostAsJsonAsync(url, loginData);
-
-        //        if (response.IsSuccessStatusCode)
-        //        {
-        //            // Leemos el token de la respuesta
-        //            var result = await response.Content.ReadFromJsonAsync<LoginResponse>();
-        //            if (!string.IsNullOrEmpty(result?.Token))
-        //            {
-        //                // Almacenamos el token en la cabecera por defecto del HttpClient
-        //                // para que TODAS las futuras peticiones lo incluyan.
-        //                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", result.Token);
-        //                return true;
-        //            }
-        //        }
-
-        //        return false;
-        //    }
-        //    catch (Exception e)
-        //    {
-        //        Console.WriteLine($"Error en el login: {e.Message}");
-        //        return false;
-        //    }
-        //}
-        /// <summary>
-        /// Método temporal para debug - verificar la deserialización
-        /// </summary>
         public async Task<string> TestDeserializacionAsync()
         {
             try
@@ -185,73 +152,6 @@ namespace SaludTotal.Desktop.Services
             catch (Exception e)
             {
                 return $"❌ Error en deserialización: {e.Message}";
-            }
-        }
-
-        /// <summary>
-        /// Busca turnos por un campo específico (doctor, paciente, especialidad, fecha)
-        /// </summary>
-        /// <param name="campo">Campo por el cual buscar (doctor, paciente, especialidad, fecha)</param>
-        /// <param name="valor">Valor a buscar en el campo especificado</param>
-        /// <returns>Una lista de objetos Turno que coinciden con la búsqueda</returns>
-        public async Task<List<Turno>> BuscarTurnosAsync(string campo, string valor)
-        {
-            try
-            {
-                // Validar que el campo sea válido
-                var camposValidos = new[] { "doctor", "paciente", "especialidad", "fecha" };
-                if (!camposValidos.Contains(campo.ToLower()))
-                {
-                    throw new ArgumentException($"Campo '{campo}' no es válido. Campos permitidos: {string.Join(", ", camposValidos)}");
-                }
-
-                string url = $"{ApiBaseUrl}/turnos/buscar?campo={Uri.EscapeDataString(campo)}&valor={Uri.EscapeDataString(valor)}";
-                Console.WriteLine($"Realizando búsqueda en: {url}");
-                
-                HttpResponseMessage response = await client.GetAsync(url);
-                response.EnsureSuccessStatusCode();
-
-                string jsonResponse = await response.Content.ReadAsStringAsync();
-                Console.WriteLine($"Respuesta JSON de búsqueda: {jsonResponse}");
-
-                // Deserializar la respuesta que viene en formato { "data": [...], "filtro_aplicado": {...} }
-                dynamic responseObj = JsonConvert.DeserializeObject(jsonResponse);
-                if (responseObj?.data == null)
-                {
-                    Console.WriteLine("No se encontraron datos en la respuesta de búsqueda");
-                    return new List<Turno>();
-                }
-                
-                var turnosJson = JsonConvert.SerializeObject(responseObj.data);
-                var turnos = JsonConvert.DeserializeObject<List<Turno>>(turnosJson) ?? new List<Turno>();
-                
-                // Debug temporal - verificar deserialización de turnos de búsqueda
-                Console.WriteLine($"Turnos encontrados en búsqueda: {turnos.Count}");
-                
-                // Mostrar solo los primeros 2 turnos para debug
-                int maxTurnos = Math.Min(2, turnos.Count);
-                for (int i = 0; i < maxTurnos; i++)
-                {
-                    var turno = turnos[i];
-                    Console.WriteLine($"Turno encontrado {turno.Id}: Paciente={turno.Paciente?.NombreCompleto ?? "NULL"}, Profesional={turno.Profesional?.NombreCompleto ?? "NULL"}");
-                }
-
-                return turnos;
-            }
-            catch (HttpRequestException e)
-            {
-                Console.WriteLine($"Error de solicitud HTTP en búsqueda: {e.Message}");
-                throw;
-            }
-            catch (JsonException e)
-            {
-                Console.WriteLine($"Error de deserialización JSON en búsqueda: {e.Message}");
-                throw;
-            }
-            catch (ArgumentException e)
-            {
-                Console.WriteLine($"Error de argumento en búsqueda: {e.Message}");
-                throw;
             }
         }
 
@@ -311,38 +211,35 @@ namespace SaludTotal.Desktop.Services
         {
             try
             {
-                string url = $"{ApiBaseUrl}/api/turnos/datos-formulario";
-                
-                // Agregar parámetros de consulta si se proporcionan
+                string url = $"{ApiBaseUrl}/api/desktop/turnos/disponibles";
                 var queryParams = new List<string>();
                 if (doctorId.HasValue)
                     queryParams.Add($"doctor_id={doctorId.Value}");
                 if (!string.IsNullOrEmpty(fecha))
                     queryParams.Add($"fecha={Uri.EscapeDataString(fecha)}");
-                
                 if (queryParams.Any())
                     url += "?" + string.Join("&", queryParams);
-                
                 Console.WriteLine($"Obteniendo datos del formulario desde: {url}");
-                
                 HttpResponseMessage response = await client.GetAsync(url);
                 string responseContent = await response.Content.ReadAsStringAsync();
-                
                 Console.WriteLine($"Respuesta del servidor: {responseContent}");
                 response.EnsureSuccessStatusCode();
-
-                // Deserializar la respuesta que viene en formato { "success": true, "data": {...} }
                 dynamic responseObj = JsonConvert.DeserializeObject(responseContent);
-                if (responseObj?.success != true || responseObj?.data == null)
+                if (responseObj?.success == true && responseObj?.data != null)
                 {
-                    throw new Exception($"Error en la respuesta del servidor: {responseObj?.message ?? "Respuesta inválida"}");
+                    var datosJson = JsonConvert.SerializeObject(responseObj.data);
+                    var datos = JsonConvert.DeserializeObject<DatosFormularioResponse>(datosJson);
+                    Console.WriteLine($"Datos obtenidos: {datos?.Especialidades?.Count ?? 0} especialidades, {datos?.DoctoresPorEspecialidad?.Count ?? 0} grupos de doctores");
+                    return datos ?? throw new Exception("No se pudieron deserializar los datos del formulario");
                 }
-                
-                var datosJson = JsonConvert.SerializeObject(responseObj.data);
-                var datos = JsonConvert.DeserializeObject<DatosFormularioResponse>(datosJson);
-                
-                Console.WriteLine($"Datos obtenidos: {datos?.Especialidades?.Count ?? 0} especialidades, {datos?.DoctoresPorEspecialidad?.Count ?? 0} grupos de doctores");
-                return datos ?? throw new Exception("No se pudieron deserializar los datos del formulario");
+                else if (responseObj?.mensaje != null)
+                {
+                    throw new Exception($"Mensaje del backend: {responseObj.mensaje}");
+                }
+                else
+                {
+                    throw new Exception($"Error en la respuesta del servidor: {responseObj?.error ?? "Respuesta inválida"}");
+                }
             }
             catch (HttpRequestException e)
             {
@@ -417,22 +314,26 @@ namespace SaludTotal.Desktop.Services
                 
                 HttpResponseMessage response = await client.GetAsync(url);
                 string responseContent = await response.Content.ReadAsStringAsync();
-                
-                Console.WriteLine($"Respuesta del servidor: {responseContent}");
-                response.EnsureSuccessStatusCode();
 
-                // Deserializar la respuesta que viene en formato { "success": true, "data": [...] }
+                // Intenta deserializar como objeto con success/data
                 dynamic responseObj = JsonConvert.DeserializeObject(responseContent);
-                if (responseObj?.success != true || responseObj?.data == null)
+
+                if (responseObj?.success == true && responseObj?.data != null)
+                {
+                    var pacientesJson = JsonConvert.SerializeObject(responseObj.data);
+                    var pacientes = JsonConvert.DeserializeObject<List<SaludTotal.Models.Paciente>>(pacientesJson) ?? new List<SaludTotal.Models.Paciente>();
+                    Console.WriteLine($"Pacientes encontrados: {pacientes.Count}");
+                    return pacientes;
+                }
+                else if (responseObj?.mensaje != null)
+                {
+                    Console.WriteLine($"Mensaje del backend: {responseObj.mensaje}");
+                    return new List<SaludTotal.Models.Paciente>();
+                }
+                else
                 {
                     throw new Exception($"Error en la respuesta del servidor: {responseObj?.error ?? "Respuesta inválida"}");
                 }
-                
-                var pacientesJson = JsonConvert.SerializeObject(responseObj.data);
-                var pacientes = JsonConvert.DeserializeObject<List<SaludTotal.Models.Paciente>>(pacientesJson) ?? new List<SaludTotal.Models.Paciente>();
-                
-                Console.WriteLine($"Pacientes encontrados: {pacientes.Count}");
-                return pacientes;
             }
             catch (HttpRequestException e)
             {
