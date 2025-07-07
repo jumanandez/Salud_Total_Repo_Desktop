@@ -164,28 +164,39 @@ namespace SaludTotal.Desktop.Services
         {
             try
             {
-                string url = $"{ApiBaseUrl}/api/turnos/store-desktop";
-                
-                // Debug temporal
+                string url = $"{ApiBaseUrl}/api/turnos/store";
                 Console.WriteLine($"Creando turno en: {url}");
                 Console.WriteLine($"Datos del turno: {JsonConvert.SerializeObject(nuevoTurno, Formatting.Indented)}");
-                
+
                 HttpResponseMessage response = await client.PostAsJsonAsync(url, nuevoTurno);
                 string responseContent = await response.Content.ReadAsStringAsync();
-                
                 Console.WriteLine($"Respuesta del servidor: {responseContent}");
-                response.EnsureSuccessStatusCode();
 
-                // Deserializar la respuesta que viene en formato { "success": true, "message": "...", "data": {...} }
-                dynamic responseObj = JsonConvert.DeserializeObject(responseContent);
-                if (responseObj?.success != true || responseObj?.data == null)
+                if (response.StatusCode == System.Net.HttpStatusCode.UnprocessableEntity) // 422
                 {
-                    throw new Exception($"Error en la respuesta del servidor: {responseObj?.message ?? "Respuesta inválida"}");
+                    // Errores de validación
+                    dynamic errorObj = JsonConvert.DeserializeObject(responseContent);
+                    string mensaje = errorObj?.mensaje ?? "Error de validación";
+                    string errores = errorObj?.errores != null ? JsonConvert.SerializeObject(errorObj.errores) : "";
+                    throw new Exception($"{mensaje}\n{errores}");
                 }
-                
-                var turnoJson = JsonConvert.SerializeObject(responseObj.data);
+                else if ((int)response.StatusCode >= 400)
+                {
+                    // Otros errores
+                    dynamic errorObj = JsonConvert.DeserializeObject(responseContent);
+                    string mensaje = errorObj?.mensaje ?? "Error desconocido";
+                    string detalle = errorObj?.detalle != null ? errorObj.detalle.ToString() : "";
+                    throw new Exception($"{mensaje}\n{detalle}");
+                }
+
+                // Éxito: buscar el objeto Turno
+                dynamic responseObj = JsonConvert.DeserializeObject(responseContent);
+                if (responseObj?.Turno == null)
+                {
+                    throw new Exception($"Error en la respuesta del servidor: {responseObj?.mensaje ?? "Respuesta inválida"}");
+                }
+                var turnoJson = JsonConvert.SerializeObject(responseObj.Turno);
                 var turno = JsonConvert.DeserializeObject<Turno>(turnoJson);
-                
                 Console.WriteLine($"Turno creado exitosamente: ID={turno?.Id}");
                 return turno ?? throw new Exception("No se pudo deserializar el turno creado");
             }
@@ -224,21 +235,39 @@ namespace SaludTotal.Desktop.Services
                 string responseContent = await response.Content.ReadAsStringAsync();
                 Console.WriteLine($"Respuesta del servidor: {responseContent}");
                 response.EnsureSuccessStatusCode();
-                dynamic responseObj = JsonConvert.DeserializeObject(responseContent);
-                if (responseObj?.success == true && responseObj?.data != null)
+
+                var token = Newtonsoft.Json.Linq.JToken.Parse(responseContent);
+                if (token is Newtonsoft.Json.Linq.JObject obj)
                 {
-                    var datosJson = JsonConvert.SerializeObject(responseObj.data);
-                    var datos = JsonConvert.DeserializeObject<DatosFormularioResponse>(datosJson);
-                    Console.WriteLine($"Datos obtenidos: {datos?.Especialidades?.Count ?? 0} especialidades, {datos?.DoctoresPorEspecialidad?.Count ?? 0} grupos de doctores");
-                    return datos ?? throw new Exception("No se pudieron deserializar los datos del formulario");
+                    var successToken = obj["success"];
+                    var dataToken = obj["data"];
+                    if (successToken != null && successToken.Type != Newtonsoft.Json.Linq.JTokenType.Null && successToken.ToObject<bool>() && dataToken != null)
+                    {
+                        var datos = dataToken.ToObject<DatosFormularioResponse>();
+                        Console.WriteLine($"Datos obtenidos: {datos?.Especialidades?.Count ?? 0} especialidades, {datos?.DoctoresPorEspecialidad?.Count ?? 0} grupos de doctores");
+                        return datos ?? throw new Exception("No se pudieron deserializar los datos del formulario");
+                    }
+                    else if (obj["mensaje"] != null)
+                    {
+                        throw new Exception($"Mensaje del backend: {obj["mensaje"]}");
+                    }
+                    else
+                    {
+                        throw new Exception($"Error en la respuesta del servidor: {obj["error"] ?? "Respuesta inválida"}");
+                    }
                 }
-                else if (responseObj?.mensaje != null)
+                else if (token is Newtonsoft.Json.Linq.JArray arr)
                 {
-                    throw new Exception($"Mensaje del backend: {responseObj.mensaje}");
+                    // Si el backend responde con un array directo (legacy)
+                    var horarios = arr.ToObject<List<HorarioDisponibleDto>>() ?? new List<HorarioDisponibleDto>();
+                    var datos = new DatosFormularioResponse {
+                        HorariosDisponibles = horarios
+                    };
+                    return datos;
                 }
                 else
                 {
-                    throw new Exception($"Error en la respuesta del servidor: {responseObj?.error ?? "Respuesta inválida"}");
+                    throw new Exception("Respuesta inesperada del backend");
                 }
             }
             catch (HttpRequestException e)
@@ -347,7 +376,215 @@ namespace SaludTotal.Desktop.Services
             }
         }
 
-        // ...existing code...
+        /// <summary>
+        /// Obtiene los horarios disponibles para un doctor y una fecha.
+        /// </summary>
+        /// <param name="doctorId">ID del doctor</param>
+        /// <param name="fecha">Fecha en formato YYYY-MM-DD</param>
+        /// <returns>Lista de strings con los horarios disponibles</returns>
+        public async Task<List<string>> GetHorariosDisponiblesAsync(int doctorId, string fecha)
+        {
+            try
+            {
+                string url = $"{ApiBaseUrl}/api/desktop/turnos/disponibles?doctor_id={doctorId}&fecha={Uri.EscapeDataString(fecha)}";
+                Console.WriteLine($"Obteniendo horarios desde: {url}");
+                HttpResponseMessage response = await client.GetAsync(url);
+                string responseContent = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"Respuesta del servidor: {responseContent}");
+                response.EnsureSuccessStatusCode();
+
+                var token = Newtonsoft.Json.Linq.JToken.Parse(responseContent);
+                if (token is Newtonsoft.Json.Linq.JArray arr)
+                {
+                    // El backend responde con un array de strings
+                    var horarios = arr.ToObject<List<string>>() ?? new List<string>();
+                    return horarios;
+                }
+                else if (token is Newtonsoft.Json.Linq.JObject obj && obj["mensaje"] != null)
+                {
+                    throw new Exception($"Mensaje del backend: {obj["mensaje"]}");
+                }
+                else
+                {
+                    throw new Exception("Respuesta inesperada del backend al obtener horarios disponibles");
+                }
+            }
+            catch (HttpRequestException e)
+            {
+                Console.WriteLine($"Error de solicitud HTTP al obtener horarios: {e.Message}");
+                throw new Exception($"Error de conexión: {e.Message}");
+            }
+            catch (JsonException e)
+            {
+                Console.WriteLine($"Error de deserialización JSON al obtener horarios: {e.Message}");
+                throw new Exception($"Error en el formato de respuesta: {e.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Obtiene solo las especialidades y los doctores agrupados por especialidad.
+        /// </summary>
+        /// <returns>Datos con especialidades y doctores por especialidad.</returns>
+        public async Task<(List<EspecialidadDto> Especialidades, List<DoctoresPorEspecialidadDto> DoctoresPorEspecialidad)> GetEspecialidadesYDoctoresAsync()
+        {
+            string url = $"{ApiBaseUrl}/api/desktop/turnos/especialidades";
+            Console.WriteLine($"Obteniendo especialidades y doctores desde: {url}");
+            HttpResponseMessage response = await client.GetAsync(url);
+            string responseContent = await response.Content.ReadAsStringAsync();
+            response.EnsureSuccessStatusCode();
+
+            var token = Newtonsoft.Json.Linq.JToken.Parse(responseContent);
+            if (token is Newtonsoft.Json.Linq.JObject obj)
+            {
+                var successToken = obj["success"];
+                var dataToken = obj["data"];
+                if (successToken != null && successToken.Type != Newtonsoft.Json.Linq.JTokenType.Null && successToken.ToObject<bool>() && dataToken != null)
+                {
+                    var especialidades = dataToken["especialidades"]?.ToObject<List<EspecialidadDto>>() ?? new List<EspecialidadDto>();
+                    var doctoresPorEspecialidad = dataToken["doctores_por_especialidad"]?.ToObject<List<DoctoresPorEspecialidadDto>>() ?? new List<DoctoresPorEspecialidadDto>();
+                    return (especialidades, doctoresPorEspecialidad);
+                }
+                else if (obj["mensaje"] != null)
+                {
+                    throw new Exception($"Mensaje del backend: {obj["mensaje"]}");
+                }
+                else
+                {
+                    throw new Exception($"Error en la respuesta del servidor: {obj["error"] ?? "Respuesta inválida"}");
+                }
+            }
+            else
+            {
+                throw new Exception("Respuesta inesperada del backend");
+            }
+        }
+
+        /// <summary>
+        /// Obtiene la lista de especialidades desde la API.
+        /// </summary>
+        /// <returns>Lista de especialidades.</returns>
+        public async Task<List<EspecialidadDto>> GetEspecialidadesAsync()
+        {
+            string url = $"{ApiBaseUrl}/api/desktop/profesionales/especialidades";
+            Console.WriteLine($"Obteniendo especialidades desde: {url}");
+            HttpResponseMessage response = await client.GetAsync(url);
+            string responseContent = await response.Content.ReadAsStringAsync();
+            response.EnsureSuccessStatusCode();
+
+            var obj = Newtonsoft.Json.Linq.JObject.Parse(responseContent);
+            if (obj["especialidades"] != null)
+            {
+                var especialidades = obj["especialidades"].ToObject<List<EspecialidadDto>>() ?? new List<EspecialidadDto>();
+                return especialidades;
+            }
+            else if (obj["mensaje"] != null)
+            {
+                throw new Exception($"Mensaje del backend: {obj["mensaje"]}");
+            }
+            else
+            {
+                throw new Exception("Respuesta inesperada del backend al obtener especialidades");
+            }
+        }
+
+        /// <summary>
+        /// Obtiene la lista de doctores para una especialidad específica.
+        /// </summary>
+        /// <param name="especialidadId">ID de la especialidad</param>
+        /// <returns>Lista de doctores para la especialidad.</returns>
+        public async Task<List<DoctorDto>> GetDoctoresByEspecialidadAsync(int especialidadId)
+        {
+            string url = $"{ApiBaseUrl}/api/desktop/profesionales/especialidades/{especialidadId}/doctores";
+            Console.WriteLine($"Obteniendo doctores para especialidad {especialidadId} desde: {url}");
+            HttpResponseMessage response = await client.GetAsync(url);
+            string responseContent = await response.Content.ReadAsStringAsync();
+            response.EnsureSuccessStatusCode();
+
+            var obj = Newtonsoft.Json.Linq.JObject.Parse(responseContent);
+            if (obj["doctores_by_especialidad"] != null)
+            {
+                var doctores = obj["doctores_by_especialidad"].ToObject<List<DoctorDto>>() ?? new List<DoctorDto>();
+                return doctores;
+            }
+            else if (obj["mensaje"] != null)
+            {
+                throw new Exception($"Mensaje del backend: {obj["mensaje"]}");
+            }
+            else
+            {
+                throw new Exception("Respuesta inesperada del backend al obtener doctores por especialidad");
+            }
+        }
+
+        /// <summary>
+        /// Obtiene los horarios laborales de un doctor.
+        /// </summary>
+        /// <param name="doctorId">ID del doctor</param>
+        /// <returns>Lista de horarios laborales.</returns>
+        public async Task<List<HorarioLaboralDto>> GetHorariosLaboralesAsync(int doctorId)
+        {
+            string url = $"{ApiBaseUrl}/api/desktop/profesionales/{doctorId}/horarios";
+            Console.WriteLine($"Obteniendo horarios laborales para doctor {doctorId} desde: {url}");
+            HttpResponseMessage response = await client.GetAsync(url);
+            string responseContent = await response.Content.ReadAsStringAsync();
+            response.EnsureSuccessStatusCode();
+
+            var obj = Newtonsoft.Json.Linq.JObject.Parse(responseContent);
+            if (obj["horarios_laborales"] != null)
+            {
+                var horarios = obj["horarios_laborales"].ToObject<List<HorarioLaboralDto>>() ?? new List<HorarioLaboralDto>();
+                return horarios;
+            }
+            else if (obj["mensaje"] != null)
+            {
+                throw new Exception($"Mensaje del backend: {obj["mensaje"]}");
+            }
+            else
+            {
+                throw new Exception("Respuesta inesperada del backend al obtener horarios laborales");
+            }
+        }
+
+        /// <summary>
+        /// Obtiene los slots de turnos disponibles para un doctor y una fecha.
+        /// </summary>
+        /// <param name="doctorId">ID del doctor</param>
+        /// <param name="fecha">Fecha en formato YYYY-MM-DD</param>
+        /// <returns>Lista de slots disponibles.</returns>
+        public async Task<List<SlotTurnoDto>> GetSlotsTurnosDisponiblesAsync(int doctorId, string fecha)
+        {
+            string url = $"{ApiBaseUrl}/api/desktop/turnos/disponibles?doctor_id={doctorId}&fecha={Uri.EscapeDataString(fecha)}";
+            Console.WriteLine($"Obteniendo slots de turnos disponibles para doctor {doctorId} y fecha {fecha} desde: {url}");
+            HttpResponseMessage response = await client.GetAsync(url);
+            string responseContent = await response.Content.ReadAsStringAsync();
+            response.EnsureSuccessStatusCode();
+
+            var obj = Newtonsoft.Json.Linq.JToken.Parse(responseContent);
+            if (obj["slots"] != null)
+            {
+                if (obj["slots"].Type == Newtonsoft.Json.Linq.JTokenType.Array && obj["slots"].First?.Type == Newtonsoft.Json.Linq.JTokenType.String)
+                {
+                    // Si es un array de strings, mapear a SlotTurnoDto
+                    var horas = obj["slots"].ToObject<List<string>>() ?? new List<string>();
+                    return horas.Select(h => new SlotTurnoDto { Hora = h }).ToList();
+                }
+                else
+                {
+                    // Si es un array de objetos SlotTurnoDto
+                    var slots = obj["slots"].ToObject<List<SlotTurnoDto>>() ?? new List<SlotTurnoDto>();
+                    return slots;
+                }
+            }
+            else if (obj["mensaje"] != null)
+            {
+                throw new Exception($"Mensaje del backend: {obj["mensaje"]}");
+            }
+            else
+            {
+                throw new Exception("Respuesta inesperada del backend al obtener slots de turnos disponibles");
+            }
+        }
+
     }
 
     /// <summary>
@@ -366,9 +603,6 @@ namespace SaludTotal.Desktop.Services
 
         [JsonProperty("hora")]
         public string Hora { get; set; } = string.Empty;
-
-        [JsonProperty("especialidad_id")]
-        public int EspecialidadId { get; set; }
     }
 
     /// <summary>
@@ -388,7 +622,7 @@ namespace SaludTotal.Desktop.Services
 
     public class EspecialidadDto
     {
-        [JsonProperty("id")]
+        [JsonProperty("especialidad_id")]
         public int Id { get; set; }
 
         [JsonProperty("nombre")]
@@ -409,10 +643,10 @@ namespace SaludTotal.Desktop.Services
 
     public class DoctorDto
     {
-        [JsonProperty("id")]
+        [JsonProperty("doctor_id")]
         public int Id { get; set; }
 
-        [JsonProperty("nombre_completo")]
+        [JsonProperty("nombre_apellido")]
         public string NombreCompleto { get; set; } = string.Empty;
     }
 
@@ -426,5 +660,38 @@ namespace SaludTotal.Desktop.Services
 
         [JsonProperty("display")]
         public string Display { get; set; } = string.Empty;
+    }
+
+    public class HorarioLaboralDto
+    {
+        [JsonProperty("disponibilidad_id")]
+        public int DisponibilidadId { get; set; }
+
+        [JsonProperty("doctor_id")]
+        public int DoctorId { get; set; }
+
+        [JsonProperty("dia_semana")]
+        public int DiaSemana { get; set; }
+
+        [JsonProperty("hora_inicio")]
+        public string HoraInicio { get; set; } = string.Empty;
+
+        [JsonProperty("hora_fin")]
+        public string HoraFin { get; set; } = string.Empty;
+
+        [JsonProperty("estado")]
+        public int Estado { get; set; }
+
+        [JsonProperty("created_at")]
+        public string? CreatedAt { get; set; }
+
+        [JsonProperty("updated_at")]
+        public string? UpdatedAt { get; set; }
+    }
+
+    public class SlotTurnoDto
+    {
+        [JsonProperty("hora")]
+        public string Hora { get; set; } = string.Empty;
     }
 }

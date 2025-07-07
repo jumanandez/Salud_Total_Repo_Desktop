@@ -1,0 +1,29 @@
+<Window x:Class="SaludTotal.Desktop.Views.DetalleTurnoWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Detalle del Turno" Height="350" Width="500" WindowStartupLocation="CenterOwner" WindowStyle="ToolWindow" ResizeMode="NoResize">
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <TextBlock Text="Detalle del Turno" FontSize="22" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,20"/>
+        <StackPanel Grid.Row="1" Margin="0,0,0,20">
+            <TextBlock Text="Paciente:" FontWeight="SemiBold"/>
+            <TextBlock x:Name="PacienteTextBlock" Margin="0,0,0,10"/>
+            <TextBlock Text="Especialidad:" FontWeight="SemiBold"/>
+            <TextBlock x:Name="EspecialidadTextBlock" Margin="0,0,0,10"/>
+            <TextBlock Text="Doctor:" FontWeight="SemiBold"/>
+            <TextBlock x:Name="DoctorTextBlock" Margin="0,0,0,10"/>
+            <TextBlock Text="Fecha y Hora:" FontWeight="SemiBold"/>
+            <TextBlock x:Name="FechaTextBlock" Margin="0,0,0,10"/>
+            <TextBlock Text="Hora:" FontWeight="SemiBold"/>
+            <TextBlock x:Name="HoraTurnoTextBlock" Margin="0,0,0,10"/>
+        </StackPanel>
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,10,0,0">
+            <Button Content="Enviar" Width="120" Margin="10,0" Click="Enviar_Click"/>
+            <Button Content="Cancelar" Width="120" Margin="10,0" Click="Cancelar_Click"/>
+        </StackPanel>
+    </Grid>
+</Window>

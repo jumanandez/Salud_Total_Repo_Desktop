@@ -3,6 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:sys="clr-namespace:System;assembly=mscorlib"
         mc:Ignorable="d"
         Title="Salud Total - Nuevo Turno" Height="800" Width="1400" 
         WindowStartupLocation="CenterScreen" WindowStyle="None" AllowsTransparency="True" ResizeMode="NoResize">
@@ -225,7 +226,7 @@
                             <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
 
-                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Buscar Paciente (nombre, email o DNI)" Style="{StaticResource LabelStyle}" FontSize="16"/>
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Buscar Paciente (nombre o DNI)" Style="{StaticResource LabelStyle}" FontSize="16"/>
                         <TextBox Grid.Row="2" Grid.Column="0" x:Name="BuscarPacienteTextBox" Style="{StaticResource InputTextBoxStyle}" Height="40" FontSize="16" TextChanged="BuscarPacienteTextBox_TextChanged"/>
 
                         <TextBlock Grid.Row="0" Grid.Column="2" Text="Seleccionar Paciente" Style="{StaticResource LabelStyle}" FontSize="16"/>
@@ -260,6 +261,8 @@
                             <!-- Las opciones se cargarán dinámicamente según la especialidad seleccionada -->
                         </ComboBox>
                     </Grid>
+
+                    <TextBlock Grid.Row="0" Grid.Column="1" x:Name="DiasLaboralesTextBlock" Text="" Style="{StaticResource LabelStyle}" FontSize="14" Foreground="#1E3A8A" TextWrapping="Wrap" VerticalAlignment="Top" Margin="10,0,10,0"/>
                 </StackPanel>
 
                 <!-- Sección Fecha y Hora -->
@@ -280,7 +283,8 @@
                                   HorizontalAlignment="Left"
                                   VerticalAlignment="Top"
                                   FontSize="16"
-                                  SelectedDatesChanged="FechaCalendar_SelectedDatesChanged"/>
+                                  SelectedDatesChanged="FechaCalendar_SelectedDatesChanged"
+                                  DisplayDateStart="{x:Static sys:DateTime.Today}"/>
 
                         <!-- ComboBox de Hora -->
                         <StackPanel Grid.Column="2" VerticalAlignment="Top">
