@@ -363,7 +363,7 @@
                                             <Border.Style>
                                                 <Style TargetType="Border">
                                                     <Style.Triggers>
-                                                        <DataTrigger Binding="{Binding Estado}" Value="Confirmado">
+                                                        <DataTrigger Binding="{Binding Estado}" Value="Activo">
                                                             <Setter Property="Background" Value="#28A745"/>
                                                         </DataTrigger>
                                                         <DataTrigger Binding="{Binding Estado}" Value="Pendiente">

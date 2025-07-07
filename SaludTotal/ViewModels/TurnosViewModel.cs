@@ -99,82 +99,16 @@ namespace SaludTotal.Desktop.ViewModels
         // --- Lógica de Comandos ---
 
         /// <summary>
-        /// Filtra turnos por especialidad específica
+        /// Filtra turnos usando todos los filtros posibles (especialidad, fecha, doctor, paciente)
         /// </summary>
-        /// <param name="especialidad">Nombre de la especialidad</param>
-        public async Task FiltrarTurnosPorEspecialidadAsync(string especialidad)
+        public async Task FiltrarTurnosAsync(string? especialidad = null, string? fecha = null, string? doctor = null, string? paciente = null)
         {
             IsLoading = true;
             try
             {
-                Console.WriteLine($"Filtrando por especialidad: {especialidad}");
-                List<Turno> listaTurnos;
-                
-                if (especialidad == "Todos")
-                {
-                    listaTurnos = await _apiService.GetTurnosAsync();
-                    Console.WriteLine($"Obtenidos {listaTurnos.Count} turnos totales");
-                }
-                else
-                {
-                    // Mapear especialidades a IDs (esto debería venir de la base de datos idealmente)
-                    int especialidadId = especialidad switch
-                    {
-                        "Cardiología" => 1,
-                        "Ginecología" => 2,
-                        "Pediatría" => 3,
-                        "Clínica General" => 4,
-                        _ => 0
-                    };
-
-                    Console.WriteLine($"Mapeando {especialidad} a ID: {especialidadId}");
-
-                    if (especialidadId > 0)
-                    {
-                        listaTurnos = await _apiService.GetTurnosPorEspecialidadAsync(especialidadId);
-                        Console.WriteLine($"Obtenidos {listaTurnos.Count} turnos para {especialidad}");
-                    }
-                    else
-                    {
-                        listaTurnos = new List<Turno>();
-                        Console.WriteLine($"Especialidad {especialidad} no reconocida");
-                    }
-                }
-
-                // Debug: verificar qué datos estamos obteniendo
-                int maxTurnos = Math.Min(3, listaTurnos.Count);
-                for (int i = 0; i < maxTurnos; i++)
-                {
-                    var turno = listaTurnos[i];
-                    Console.WriteLine($"Turno {turno.Id}: " +
-                        $"Paciente={turno.Paciente?.NombreCompleto ?? "NULL"}, " +
-                        $"Profesional={turno.Profesional?.NombreCompleto ?? "NULL"}, " +
-                        $"Fecha={turno.Fecha}, Estado={turno.Estado}");
-                }
-
+                var listaTurnos = await _apiService.GetTurnosAsync(especialidad, fecha, doctor, paciente);
                 Turnos = new ObservableCollection<Turno>(listaTurnos);
-                
-                // IMPORTANTE: Actualizar la especialidad seleccionada DESPUÉS de cargar los datos
-                EspecialidadSeleccionada = especialidad;
-                
-                // Forzar notificación adicional para asegurar que el UI se actualice
-                Application.Current.Dispatcher.BeginInvoke(() =>
-                {
-                    OnPropertyChanged(nameof(EspecialidadSeleccionada));
-                    Console.WriteLine($"FORZANDO ACTUALIZACIÓN UI: EspecialidadSeleccionada='{EspecialidadSeleccionada}'");
-                });
-                
-                Console.WriteLine($"EspecialidadSeleccionada actualizada a: {EspecialidadSeleccionada}");
-            }
-            catch (HttpRequestException ex)
-            {
-                Console.WriteLine($"Error de conexión: {ex.Message}");
-                MessageBox.Show($"Error de conexión: {ex.Message}", "Error de Conexión", MessageBoxButton.OK, MessageBoxImage.Error);
-                Turnos = new ObservableCollection<Turno>();
-                // Mantener la especialidad seleccionada para que el UI refleje el último intento
-                EspecialidadSeleccionada = especialidad;
-                
-                // Forzar notificación también en caso de error
+                EspecialidadSeleccionada = especialidad ?? "Todos";
                 Application.Current.Dispatcher.BeginInvoke(() =>
                 {
                     OnPropertyChanged(nameof(EspecialidadSeleccionada));
@@ -182,17 +116,7 @@ namespace SaludTotal.Desktop.ViewModels
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error general: {ex.Message}");
-                MessageBox.Show($"No se pudieron cargar los turnos: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                Turnos = new ObservableCollection<Turno>();
-                // Mantener la especialidad seleccionada para que el UI refleje el último intento
-                EspecialidadSeleccionada = especialidad;
-                
-                // Forzar notificación también en caso de error
-                Application.Current.Dispatcher.BeginInvoke(() =>
-                {
-                    OnPropertyChanged(nameof(EspecialidadSeleccionada));
-                });
+                MessageBox.Show($"Error al obtener turnos: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
             finally
             {
@@ -205,12 +129,66 @@ namespace SaludTotal.Desktop.ViewModels
         /// </summary>
         public async Task RecargarTurnosAsync()
         {
-            await FiltrarTurnosPorEspecialidadAsync("Todos");
+            await FiltrarTurnosAsync();
         }
 
         private async void CargarTurnos()
         {
-            await FiltrarTurnosPorEspecialidadAsync("Todos");
+            await RecargarTurnosAsync();
+        }
+
+        /// <summary>
+        /// Filtra turnos por especialidad (para los botones de filtro)
+        /// </summary>
+        public async Task FiltrarTurnosPorEspecialidadAsync(string especialidad)
+        {
+            await FiltrarTurnosAsync(especialidad: especialidad == "Todos" ? null : especialidad);
+        }
+
+        /// <summary>
+        /// Busca turnos según el término y tipo de búsqueda especificados
+        /// </summary>
+        public async Task BuscarTurnosAsync()
+        {
+            if (string.IsNullOrWhiteSpace(TerminoBusqueda))
+            {
+                await RecargarTurnosAsync();
+                return;
+            }
+
+            IsLoading = true;
+            try
+            {
+                // Solo un filtro activo a la vez en búsqueda
+                string? especialidad = null, fecha = null, doctor = null, paciente = null;
+                switch (TipoBusqueda.ToLower())
+                {
+                    case "doctor": doctor = TerminoBusqueda; break;
+                    case "paciente": paciente = TerminoBusqueda; break;
+                    case "fecha": fecha = TerminoBusqueda; break;
+                    case "especialidad": especialidad = TerminoBusqueda; break;
+                }
+                var listaTurnos = await _apiService.GetTurnosAsync(especialidad, fecha, doctor, paciente);
+                Turnos = new ObservableCollection<Turno>(listaTurnos);
+                EspecialidadSeleccionada = "Búsqueda";
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error al realizar la búsqueda: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            finally
+            {
+                IsLoading = false;
+            }
+        }
+
+        /// <summary>
+        /// Limpia la búsqueda y muestra todos los turnos
+        /// </summary>
+        public async Task LimpiarBusquedaAsync()
+        {
+            TerminoBusqueda = string.Empty;
+            await RecargarTurnosAsync();
         }
 
         public async Task ConfirmarTurno()
@@ -225,7 +203,6 @@ namespace SaludTotal.Desktop.ViewModels
             if (success)
             {
                 MessageBox.Show("Turno confirmado exitosamente.", "Éxito", MessageBoxButton.OK, MessageBoxImage.Information);
-                // Refrescamos la lista para ver el cambio de estado.
                 await RecargarTurnosAsync();
             }
             else
@@ -246,69 +223,12 @@ namespace SaludTotal.Desktop.ViewModels
             if (success)
             {
                 MessageBox.Show("Turno cancelado exitosamente.", "Éxito", MessageBoxButton.OK, MessageBoxImage.Information);
-                // Refrescamos la lista.
                 await RecargarTurnosAsync();
             }
             else
             {
                 MessageBox.Show("Ocurrió un error al cancelar el turno.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
-        }
-
-        /// <summary>
-        /// Busca turnos según el término y tipo de búsqueda especificados
-        /// </summary>
-        public async Task BuscarTurnosAsync()
-        {
-            if (string.IsNullOrWhiteSpace(TerminoBusqueda))
-            {
-                // Si no hay término de búsqueda, mostrar todos los turnos
-                await RecargarTurnosAsync();
-                return;
-            }
-
-            IsLoading = true;
-            try
-            {
-                Console.WriteLine($"Buscando turnos por {TipoBusqueda}: {TerminoBusqueda}");
-                
-                var listaTurnos = await _apiService.BuscarTurnosAsync(TipoBusqueda, TerminoBusqueda);
-                
-                Console.WriteLine($"Búsqueda completada. Encontrados: {listaTurnos.Count} turnos");
-                
-                Turnos = new ObservableCollection<Turno>(listaTurnos);
-                
-                // Resetear la especialidad seleccionada ya que estamos mostrando resultados de búsqueda
-                EspecialidadSeleccionada = "Búsqueda";
-            }
-            catch (ArgumentException ex)
-            {
-                Console.WriteLine($"Error de argumento en búsqueda: {ex.Message}");
-                MessageBox.Show($"Parámetro de búsqueda inválido: {ex.Message}", "Error de Búsqueda", MessageBoxButton.OK, MessageBoxImage.Warning);
-            }
-            catch (HttpRequestException ex)
-            {
-                Console.WriteLine($"Error de conexión en búsqueda: {ex.Message}");
-                MessageBox.Show($"Error de conexión: {ex.Message}", "Error de Conexión", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error general en búsqueda: {ex.Message}");
-                MessageBox.Show($"Error al realizar la búsqueda: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-            finally
-            {
-                IsLoading = false;
-            }
-        }
-
-        /// <summary>
-        /// Limpia la búsqueda y muestra todos los turnos
-        /// </summary>
-        public async Task LimpiarBusquedaAsync()
-        {
-            TerminoBusqueda = string.Empty;
-            await RecargarTurnosAsync();
         }
     }
 }

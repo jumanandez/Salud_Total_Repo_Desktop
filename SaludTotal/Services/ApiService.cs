@@ -28,87 +28,41 @@ namespace SaludTotal.Desktop.Services
         // --- MÉTODOS PARA INTERACTUAR CON LA API ---
 
         /// <summary>
-        /// Obtiene la lista completa de turnos desde la API.
+        /// Obtiene la lista de turnos desde la API, permitiendo filtrar por especialidad, fecha, doctor y paciente.
         /// </summary>
+        /// <param name="especialidad">Nombre de la especialidad</param>
+        /// <param name="fecha">Fecha del turno</param>
+        /// <param name="doctor">Nombre del doctor</param>
+        /// <param name="paciente">Nombre del paciente</param>
         /// <returns>Una lista de objetos Turno.</returns>
-        public async Task<List<Turno>> GetTurnosAsync()
+        public async Task<List<Turno>> GetTurnosAsync(string? especialidad = null, string? fecha = null, string? doctor = null, string? paciente = null)
         {
             try
             {
+                var queryParams = new List<string>();
+                if (!string.IsNullOrEmpty(especialidad))
+                    queryParams.Add($"especialidad={Uri.EscapeDataString(especialidad)}");
+                if (!string.IsNullOrEmpty(fecha))
+                    queryParams.Add($"fecha={Uri.EscapeDataString(fecha)}");
+                if (!string.IsNullOrEmpty(doctor))
+                    queryParams.Add($"doctor={Uri.EscapeDataString(doctor)}");
+                if (!string.IsNullOrEmpty(paciente))
+                    queryParams.Add($"paciente={Uri.EscapeDataString(paciente)}");
+
                 string url = $"{ApiBaseUrl}/turnos";
-                HttpResponseMessage response = await client.GetAsync(url);
+                if (queryParams.Any())
+                    url += "?" + string.Join("&", queryParams);
 
+                HttpResponseMessage response = await client.GetAsync(url);
                 response.EnsureSuccessStatusCode();
 
                 string jsonResponse = await response.Content.ReadAsStringAsync();
-                
-                // Debug temporal
-                Console.WriteLine($"JSON Response: {jsonResponse}");
-
                 var turnos = JsonConvert.DeserializeObject<List<Turno>>(jsonResponse) ?? new List<Turno>();
-                
-                // Debug temporal - verificar deserialización
-                Console.WriteLine($"Turnos deserializados: {turnos.Count}");
-                foreach (var turno in turnos)
-                {
-                    Console.WriteLine($"Turno {turno.Id}: Paciente={turno.Paciente?.NombreCompleto ?? "NULL"}, Profesional={turno.Profesional?.NombreCompleto ?? "NULL"}, Fecha={turno.Fecha}, Hora={turno.Hora}");
-                }
-
                 return turnos;
             }
-            catch (HttpRequestException e)
+            catch (Exception e)
             {
-                Console.WriteLine($"Error de solicitud HTTP: {e.Message}");
-                throw;
-            }
-            catch (JsonException e)
-            {
-                Console.WriteLine($"Error de deserialización JSON: {e.Message}");
-                throw;
-            }
-        }
-
-        /// <summary>
-        /// Obtiene turnos filtrados por especialidad.
-        /// </summary>
-        /// <param name="especialidadId">ID de la especialidad a filtrar</param>
-        /// <returns>Una lista de objetos Turno filtrados por especialidad.</returns>
-        public async Task<List<Turno>> GetTurnosPorEspecialidadAsync(int especialidadId)
-        {
-            try
-            {
-                string url = $"{ApiBaseUrl}/turnos/especialidad?especialidad_id={especialidadId}";
-                Console.WriteLine($"Realizando petición a: {url}");
-                HttpResponseMessage response = await client.GetAsync(url);
-
-                response.EnsureSuccessStatusCode();
-
-                string jsonResponse = await response.Content.ReadAsStringAsync();
-                Console.WriteLine($"Respuesta JSON para especialidad {especialidadId}: {jsonResponse}");
-
-                var turnos = JsonConvert.DeserializeObject<List<Turno>>(jsonResponse) ?? new List<Turno>();
-                
-                // Debug temporal - verificar deserialización de turnos filtrados
-                Console.WriteLine($"Turnos filtrados deserializados: {turnos.Count}");
-                
-                // Mostrar solo los primeros 2 turnos para debug
-                int maxTurnos = Math.Min(2, turnos.Count);
-                for (int i = 0; i < maxTurnos; i++)
-                {
-                    var turno = turnos[i];
-                    Console.WriteLine($"Turno filtrado {turno.Id}: Paciente={turno.Paciente?.NombreCompleto ?? "NULL"}, Profesional={turno.Profesional?.NombreCompleto ?? "NULL"}");
-                }
-
-                return turnos;
-            }
-            catch (HttpRequestException e)
-            {
-                Console.WriteLine($"Error de solicitud HTTP al filtrar por especialidad: {e.Message}");
-                throw;
-            }
-            catch (JsonException e)
-            {
-                Console.WriteLine($"Error de deserialización JSON: {e.Message}");
+                Console.WriteLine($"Error en GetTurnosAsync: {e.Message}");
                 throw;
             }
         }

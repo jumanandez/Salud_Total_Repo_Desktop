@@ -9,7 +9,7 @@ namespace SaludTotal.Models
 {
     public class Paciente
     {
-        [JsonProperty("id")]
+        [JsonProperty("paciente_id")]
         public int Id { get; set; }
 
         [JsonProperty("nombre_apellido")]
