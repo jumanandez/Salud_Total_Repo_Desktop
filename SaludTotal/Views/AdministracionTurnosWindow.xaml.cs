@@ -1,5 +1,9 @@
+using System;
+using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 using SaludTotal.Desktop.ViewModels;
+using SaludTotal.Models;
 
 namespace SaludTotal.Desktop.Views
 {
@@ -39,6 +43,22 @@ namespace SaludTotal.Desktop.Views
             var nuevoTurnoWindow = new NuevoTurnoWindow();
             nuevoTurnoWindow.Show();
             this.Close();
+        }
+
+        private void GestionarTurno_Click(object sender, RoutedEventArgs e)
+        {
+            // Obtener el turno del botón clickeado
+            var button = sender as Button;
+            var turno = button?.Tag as Turno;
+            
+            if (turno != null)
+            {
+                // TODO: Abrir la ventana de gestión de turnos con los detalles del turno
+                MessageBox.Show($"Gestionar turno ID: {turno.Id}\nPaciente: {turno.Paciente?.NombreCompleto ?? "N/A"}\nEstado actual: {turno.Estado}", 
+                               "Gestionar Turno", 
+                               MessageBoxButton.OK, 
+                               MessageBoxImage.Information);
+            }
         }
         #endregion
 
