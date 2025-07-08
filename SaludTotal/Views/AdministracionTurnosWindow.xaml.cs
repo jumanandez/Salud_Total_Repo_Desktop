@@ -53,11 +53,9 @@ namespace SaludTotal.Desktop.Views
             
             if (turno != null)
             {
-                // TODO: Abrir la ventana de gestión de turnos con los detalles del turno
-                MessageBox.Show($"Gestionar turno ID: {turno.Id}\nPaciente: {turno.Paciente?.NombreCompleto ?? "N/A"}\nEstado actual: {turno.Estado}", 
-                               "Gestionar Turno", 
-                               MessageBoxButton.OK, 
-                               MessageBoxImage.Information);
+                // Abrir la ventana de gestión de turnos con los detalles del turno
+                var detalleTurnoWindow = new DetalleTurnoWindow(turno);
+                detalleTurnoWindow.ShowDialog();
             }
         }
         #endregion

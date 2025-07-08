@@ -336,32 +336,24 @@ namespace SaludTotal.Desktop.Views
                 return;
             }
 
-            // Mostrar ventana modal de detalle
-            var detalleWindow = new DetalleTurnoWindow(_pacienteSeleccionado, especialidadNombre, doctorNombre, fechaSeleccionada, horaSeleccionada)
+            // Crear el turno directamente
+            try
             {
-                Owner = this
-            };
-            var result = detalleWindow.ShowDialog();
-            if (result == true && detalleWindow.Confirmado)
+                var request = new SaludTotal.Desktop.Services.NuevoTurnoRequest
+                {
+                    PacienteId = _pacienteSeleccionado?.Id ?? 0,
+                    DoctorId = doctorId,
+                    Fecha = FechaCalendar.SelectedDate.Value.ToString("yyyy-MM-dd"),
+                    Hora = horaSeleccionada
+                };
+                
+                await _apiService.CrearTurnoAsync(request);
+                MessageBox.Show("Turno creado exitosamente.", "Éxito", MessageBoxButton.OK, MessageBoxImage.Information);
+                LimpiarFormulario();
+            }
+            catch (Exception ex)
             {
-                // Envío real al backend
-                try
-                {
-                    var request = new SaludTotal.Desktop.Services.NuevoTurnoRequest
-                    {
-                        PacienteId = _pacienteSeleccionado?.Id ?? 0,
-                        DoctorId = doctorId,
-                        Fecha = FechaCalendar.SelectedDate.Value.ToString("yyyy-MM-dd"),
-                        Hora = horaSeleccionada
-                    };
-                    await _apiService.CrearTurnoAsync(request);
-                    MessageBox.Show("Turno creado exitosamente.", "Éxito", MessageBoxButton.OK, MessageBoxImage.Information);
-                    LimpiarFormulario();
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"Error al crear el turno:\n{ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                }
+                MessageBox.Show($"Error al crear el turno:\n{ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
