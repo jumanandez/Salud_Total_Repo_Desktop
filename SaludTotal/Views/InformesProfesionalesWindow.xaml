@@ -89,7 +89,13 @@
             </Setter>
         </Style>
 
-        <!-- Estilo para botón de acción principal -->
+        <!-- Estilo para filtros/botones de especialidad cuando están activos -->
+        <Style x:Key="ActiveFilterButtonStyle" TargetType="Button" BasedOn="{StaticResource FilterButtonStyle}">
+            <Setter Property="Background" Value="#4A90E2"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderBrush" Value="#2C3E50"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+        </Style>
         <Style x:Key="ActionButtonStyle" TargetType="Button">
             <Setter Property="Height" Value="45"/>
             <Setter Property="Padding" Value="25,10"/>
@@ -194,11 +200,11 @@
                     <!-- Filtros por especialidad -->
                     <StackPanel Grid.Row="0" Orientation="Horizontal" VerticalAlignment="Center">
                         <TextBlock Text="Especialidades:" FontWeight="Medium" VerticalAlignment="Center" Margin="0,0,15,0"/>
-                        <Button Content="Cardiología" Style="{StaticResource FilterButtonStyle}" Click="FiltrarCardiologia_Click"/>
-                        <Button Content="Ginecología" Style="{StaticResource FilterButtonStyle}" Click="FiltrarGinecologia_Click"/>
-                        <Button Content="Pediatría" Style="{StaticResource FilterButtonStyle}" Click="FiltrarPediatria_Click"/>
-                        <Button Content="Clínica General" Style="{StaticResource FilterButtonStyle}" Click="FiltrarClinicaGeneral_Click"/>
-                        <Button Content="Todos" Style="{StaticResource FilterButtonStyle}" Click="FiltrarTodos_Click"/>
+                        <Button x:Name="CardiologiaButton" Content="Cardiología" Style="{StaticResource FilterButtonStyle}" Click="FiltrarCardiologia_Click"/>
+                        <Button x:Name="GinecologiaButton" Content="Ginecología" Style="{StaticResource FilterButtonStyle}" Click="FiltrarGinecologia_Click"/>
+                        <Button x:Name="PediatriaButton" Content="Pediatría" Style="{StaticResource FilterButtonStyle}" Click="FiltrarPediatria_Click"/>
+                        <Button x:Name="ClinicaGeneralButton" Content="Clínica General" Style="{StaticResource FilterButtonStyle}" Click="FiltrarClinicaGeneral_Click"/>
+                        <Button x:Name="TodosButton" Content="Todos" Style="{StaticResource ActiveFilterButtonStyle}" Click="FiltrarTodos_Click"/>
                     </StackPanel>
                 </Grid>
             </Border>
@@ -282,19 +288,31 @@
                                                 <Style TargetType="Border">
                                                     <Style.Triggers>
                                                         <DataTrigger Binding="{Binding Especialidad}" Value="Cardiología">
-                                                            <Setter Property="Background" Value="#E74C3C"/>
+                                                            <Setter Property="Background" Value="#FF6B35"/>
                                                         </DataTrigger>
                                                         <DataTrigger Binding="{Binding Especialidad}" Value="Ginecología">
-                                                            <Setter Property="Background" Value="#9B59B6"/>
+                                                            <Setter Property="Background" Value="#D946EF"/>
                                                         </DataTrigger>
                                                         <DataTrigger Binding="{Binding Especialidad}" Value="Pediatría">
-                                                            <Setter Property="Background" Value="#3498DB"/>
+                                                            <Setter Property="Background" Value="#0EA5E9"/>
                                                         </DataTrigger>
                                                         <DataTrigger Binding="{Binding Especialidad}" Value="Clínica General">
-                                                            <Setter Property="Background" Value="#2ECC71"/>
+                                                            <Setter Property="Background" Value="#10B981"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding Especialidad}" Value="Dermatología">
+                                                            <Setter Property="Background" Value="#F59E0B"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding Especialidad}" Value="Neurología">
+                                                            <Setter Property="Background" Value="#8B5CF6"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding Especialidad}" Value="Psicología">
+                                                            <Setter Property="Background" Value="#EC4899"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding Especialidad}" Value="Traumatología">
+                                                            <Setter Property="Background" Value="#6B7280"/>
                                                         </DataTrigger>
                                                     </Style.Triggers>
-                                                    <Setter Property="Background" Value="#95A5A6"/>
+                                                    <Setter Property="Background" Value="#94A3B8"/>
                                                 </Style>
                                             </Border.Style>
                                             <TextBlock Text="{Binding Especialidad}" 

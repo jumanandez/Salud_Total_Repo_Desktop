@@ -586,9 +586,9 @@ namespace SaludTotal.Desktop.Services
         }
 
         /// <summary>
-        /// Obtiene todos los doctores desde la API.
+        /// Obtiene todos los doctores desde la API con sus especialidades.
         /// </summary>
-        /// <returns>Lista de todos los doctores.</returns>
+        /// <returns>Lista de todos los doctores con especialidades.</returns>
         public async Task<List<DoctorDto>> GetTodosDoctoresAsync()
         {
             try
@@ -605,6 +605,21 @@ namespace SaludTotal.Desktop.Services
                 {
                     var doctores = obj["doctores"]?.ToObject<List<DoctorDto>>() ?? new List<DoctorDto>();
                     Console.WriteLine($"Doctores obtenidos: {doctores.Count}");
+                    
+                    // Debug: Mostrar estructura de los primeros doctores
+                    for (int i = 0; i < Math.Min(3, doctores.Count); i++)
+                    {
+                        var doctor = doctores[i];
+                        Console.WriteLine($"Doctor {i + 1}: ID={doctor.Id}, Nombre='{doctor.NombreCompletoCalculado}', Especialidad='{doctor.Especialidad}', Email='{doctor.Email}'");
+                    }
+                    
+                    // Si los doctores no tienen especialidad, intentar obtenerla
+                    if (doctores.Any() && string.IsNullOrEmpty(doctores.First().Especialidad))
+                    {
+                        Console.WriteLine("Los doctores no tienen especialidad asignada, intentando obtenerla...");
+                        await AsignarEspecialidadesADoctoresAsync(doctores);
+                    }
+                    
                     return doctores;
                 }
                 else if (obj["mensaje"] != null)
@@ -625,6 +640,60 @@ namespace SaludTotal.Desktop.Services
             {
                 Console.WriteLine($"Error de deserialización JSON al obtener todos los doctores: {e.Message}");
                 throw new Exception($"Error en el formato de respuesta: {e.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Asigna especialidades a doctores que no las tienen.
+        /// </summary>
+        private async Task AsignarEspecialidadesADoctoresAsync(List<DoctorDto> doctores)
+        {
+            try
+            {
+                // Obtener especialidades y doctores por especialidad
+                var (especialidades, doctoresPorEspecialidad) = await GetEspecialidadesYDoctoresAsync();
+                
+                // Crear un diccionario para mapear doctor ID a especialidad
+                var doctorEspecialidadMap = new Dictionary<int, string>();
+                
+                foreach (var grupo in doctoresPorEspecialidad)
+                {
+                    foreach (var doctorEsp in grupo.Doctores)
+                    {
+                        if (!doctorEspecialidadMap.ContainsKey(doctorEsp.Id))
+                        {
+                            doctorEspecialidadMap[doctorEsp.Id] = grupo.EspecialidadNombre;
+                        }
+                    }
+                }
+                
+                // Asignar especialidades a los doctores
+                foreach (var doctor in doctores)
+                {
+                    if (doctorEspecialidadMap.ContainsKey(doctor.Id))
+                    {
+                        doctor.Especialidad = doctorEspecialidadMap[doctor.Id];
+                        Console.WriteLine($"Asignada especialidad '{doctor.Especialidad}' al doctor {doctor.NombreCompletoCalculado}");
+                    }
+                    else
+                    {
+                        doctor.Especialidad = "Sin especialidad";
+                    }
+                }
+                
+                Console.WriteLine($"Especialidades asignadas a {doctores.Count} doctores");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error al asignar especialidades: {ex.Message}");
+                // Asignar una especialidad por defecto
+                foreach (var doctor in doctores)
+                {
+                    if (string.IsNullOrEmpty(doctor.Especialidad))
+                    {
+                        doctor.Especialidad = "General";
+                    }
+                }
             }
         }
 
