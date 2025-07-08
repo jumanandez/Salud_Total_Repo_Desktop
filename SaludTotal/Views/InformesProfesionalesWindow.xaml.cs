@@ -343,5 +343,94 @@ namespace SaludTotal.Desktop.Views
                     break;
             }
         }
+
+        // Métodos de búsqueda
+        private void SearchTextBox_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            if (e.Key == System.Windows.Input.Key.Enter)
+            {
+                BuscarProfesionales();
+            }
+        }
+
+        private void SearchButton_Click(object sender, RoutedEventArgs e)
+        {
+            BuscarProfesionales();
+        }
+
+        private void ClearSearchButton_Click(object sender, RoutedEventArgs e)
+        {
+            LimpiarBusqueda();
+        }
+
+        private void BuscarProfesionales()
+        {
+            var searchTextBox = FindName("SearchTextBox") as TextBox;
+            string busqueda = searchTextBox?.Text?.Trim() ?? "";
+            
+            if (string.IsNullOrEmpty(busqueda))
+            {
+                // Si no hay texto de búsqueda, mostrar todos los profesionales
+                _profesionalesFiltrados.Clear();
+                foreach (var profesional in _todosLosProfesionales)
+                {
+                    _profesionalesFiltrados.Add(profesional);
+                }
+                return;
+            }
+
+            try
+            {
+                // Filtrar por nombre completo
+                var profesionalesFiltrados = _todosLosProfesionales.Where(p =>
+                    NormalizarTexto(p.NombreCompleto).Contains(NormalizarTexto(busqueda), StringComparison.OrdinalIgnoreCase) ||
+                    NormalizarTexto(p.Especialidad).Contains(NormalizarTexto(busqueda), StringComparison.OrdinalIgnoreCase) ||
+                    NormalizarTexto(p.Email).Contains(NormalizarTexto(busqueda), StringComparison.OrdinalIgnoreCase)
+                ).ToList();
+
+                _profesionalesFiltrados.Clear();
+                foreach (var profesional in profesionalesFiltrados)
+                {
+                    _profesionalesFiltrados.Add(profesional);
+                }
+
+                // Mostrar mensaje si no se encontraron resultados
+                if (profesionalesFiltrados.Count == 0)
+                {
+                    MessageBox.Show($"No se encontraron profesionales que coincidan con '{busqueda}'", 
+                                  "Búsqueda", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error al buscar profesionales: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void LimpiarBusqueda()
+        {
+            try
+            {
+                var searchTextBox = FindName("SearchTextBox") as TextBox;
+                if (searchTextBox != null)
+                {
+                    searchTextBox.Text = "";
+                }
+                
+                // Restaurar la vista completa de profesionales
+                _profesionalesFiltrados.Clear();
+                foreach (var profesional in _todosLosProfesionales)
+                {
+                    _profesionalesFiltrados.Add(profesional);
+                }
+                
+                // Actualizar visualmente los filtros (simular "Todos")
+                ActualizarEstadoFiltros("Todos");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error al limpiar búsqueda: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
     }
 }
