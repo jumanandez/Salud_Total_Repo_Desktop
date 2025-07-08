@@ -268,22 +268,36 @@
 
                     <!-- Filtros por especialidad -->
                     <StackPanel Grid.Row="1" Orientation="Horizontal" VerticalAlignment="Center">
-                        <TextBlock Text="Especialidades:" FontWeight="Medium" VerticalAlignment="Center" Margin="0,0,15,0"/>
-                        <Button Content="Cardiología" Style="{StaticResource FilterButtonStyle}" Click="FiltrarCardiologia_Click"
-                                Background="{Binding EspecialidadSeleccionada, Converter={StaticResource EspecialidadToBrushConverter}, ConverterParameter=Cardiología}"
-                                Foreground="{Binding EspecialidadSeleccionada, Converter={StaticResource EspecialidadToForegroundConverter}, ConverterParameter=Cardiología}"/>
-                        <Button Content="Ginecología" Style="{StaticResource FilterButtonStyle}" Click="FiltrarGinecologia_Click"
-                                Background="{Binding EspecialidadSeleccionada, Converter={StaticResource EspecialidadToBrushConverter}, ConverterParameter=Ginecología}"
-                                Foreground="{Binding EspecialidadSeleccionada, Converter={StaticResource EspecialidadToForegroundConverter}, ConverterParameter=Ginecología}"/>
-                        <Button Content="Pediatría" Style="{StaticResource FilterButtonStyle}" Click="FiltrarPediatria_Click"
-                                Background="{Binding EspecialidadSeleccionada, Converter={StaticResource EspecialidadToBrushConverter}, ConverterParameter=Pediatría}"
-                                Foreground="{Binding EspecialidadSeleccionada, Converter={StaticResource EspecialidadToForegroundConverter}, ConverterParameter=Pediatría}"/>
-                        <Button Content="Clínica General" Style="{StaticResource FilterButtonStyle}" Click="FiltrarClinicaGeneral_Click"
-                                Background="{Binding EspecialidadSeleccionada, Converter={StaticResource EspecialidadToBrushConverter}, ConverterParameter=Clínica General}"
-                                Foreground="{Binding EspecialidadSeleccionada, Converter={StaticResource EspecialidadToForegroundConverter}, ConverterParameter=Clínica General}"/>
-                        <Button Content="Todos" Style="{StaticResource FilterButtonStyle}" Click="FiltrarTodos_Click"
-                                Background="{Binding EspecialidadSeleccionada, Converter={StaticResource EspecialidadToBrushConverter}, ConverterParameter=Todos}"
-                                Foreground="{Binding EspecialidadSeleccionada, Converter={StaticResource EspecialidadToForegroundConverter}, ConverterParameter=Todos}"/>
+                        <TextBlock Text="Especialidad:" FontWeight="Medium" VerticalAlignment="Center" Margin="0,0,15,0"/>
+                        <ComboBox x:Name="EspecialidadComboBox"
+                                  Width="200"
+                                  Height="35"
+                                  SelectedValuePath="Content"
+                                  SelectedValue="{Binding EspecialidadSeleccionada, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                  SelectionChanged="EspecialidadComboBox_SelectionChanged"
+                                  Margin="0,0,10,0">
+                            <ComboBoxItem Content="Todos"/>
+                            <ComboBoxItem Content="Cardiología"/>
+                            <ComboBoxItem Content="Ginecología"/>
+                            <ComboBoxItem Content="Pediatría"/>
+                            <ComboBoxItem Content="Clínica General"/>
+                        </ComboBox>
+                        <TextBlock Text="Estado:" FontWeight="Medium" VerticalAlignment="Center" Margin="10,0,15,0"/>
+                        <ComboBox x:Name="EstadoComboBox"
+                                  Width="150"
+                                  Height="35"
+                                  SelectedValuePath="Content"
+                                  SelectedValue="{Binding EstadoSeleccionado, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                  SelectionChanged="EstadoComboBox_SelectionChanged">
+                            <ComboBoxItem Content="Todos"/>
+                            <ComboBoxItem Content="activo"/>
+                            <ComboBoxItem Content="aceptado"/>
+                            <ComboBoxItem Content="pendiente"/>
+                            <ComboBoxItem Content="cancelado"/>
+                            <ComboBoxItem Content="rechazado"/>
+                            <ComboBoxItem Content="atendido"/>
+                            <ComboBoxItem Content="desaprovechado"/>
+                        </ComboBox>
                     </StackPanel>
                 </Grid>
             </Border>

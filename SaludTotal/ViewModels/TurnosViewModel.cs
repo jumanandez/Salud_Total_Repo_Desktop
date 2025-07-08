@@ -63,6 +63,17 @@ namespace SaludTotal.Desktop.ViewModels
             }
         }
 
+        private string _estadoSeleccionado = "Todos";
+        public string EstadoSeleccionado
+        {
+            get { return _estadoSeleccionado; }
+            set
+            {
+                _estadoSeleccionado = value;
+                OnPropertyChanged();
+            }
+        }
+
         // Propiedades para el buscador
         private string _terminoBusqueda = string.Empty;
         public string TerminoBusqueda
@@ -101,12 +112,12 @@ namespace SaludTotal.Desktop.ViewModels
         /// <summary>
         /// Filtra turnos usando todos los filtros posibles (especialidad, fecha, doctor, paciente)
         /// </summary>
-        public async Task FiltrarTurnosAsync(string? especialidad = null, string? fecha = null, string? doctor = null, string? paciente = null)
+        public async Task FiltrarTurnosAsync(string? especialidad = null, string? fecha = null, string? doctor = null, string? paciente = null, string? estado = null)
         {
             IsLoading = true;
             try
             {
-                var listaTurnos = await _apiService.GetTurnosAsync(especialidad, fecha, doctor, paciente);
+                var listaTurnos = await _apiService.GetTurnosAsync(especialidad, fecha, doctor, paciente, estado);
                 Turnos = new ObservableCollection<Turno>(listaTurnos);
                 EspecialidadSeleccionada = especialidad ?? "Todos";
                 Application.Current.Dispatcher.BeginInvoke(() =>
@@ -143,6 +154,24 @@ namespace SaludTotal.Desktop.ViewModels
         public async Task FiltrarTurnosPorEspecialidadAsync(string especialidad)
         {
             await FiltrarTurnosAsync(especialidad: especialidad == "Todos" ? null : especialidad);
+        }
+
+        /// <summary>
+        /// Filtra turnos por estado (para el ComboBox de estado)
+        /// </summary>
+        public async Task FiltrarTurnosPorEstadoAsync(string estado)
+        {
+            // Si el estado es "Todos", no filtra por estado
+            string? estadoFiltro = estado == "Todos" ? null : estado;
+            // Mantener el filtro de especialidad actual
+            string? especialidad = EspecialidadSeleccionada == "Todos" ? null : EspecialidadSeleccionada;
+            var listaTurnos = await _apiService.GetTurnosAsync(especialidad, null, null, null); // Trae todos los turnos filtrados por especialidad
+            if (estadoFiltro != null)
+            {
+                listaTurnos = listaTurnos.Where(t => t.Estado == estadoFiltro).ToList();
+            }
+            Turnos = new ObservableCollection<Turno>(listaTurnos);
+            EstadoSeleccionado = estado;
         }
 
         /// <summary>

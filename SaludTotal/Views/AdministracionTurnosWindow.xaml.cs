@@ -40,38 +40,6 @@ namespace SaludTotal.Desktop.Views
             nuevoTurnoWindow.Show();
             this.Close();
         }
-
-        #region Eventos de Filtros por Especialidad
-        private async void FiltrarCardiologia_Click(object sender, RoutedEventArgs e)
-        {
-            Console.WriteLine("=== CLICK EN CARDIOLOGÍA ===");
-            await _viewModel.FiltrarTurnosPorEspecialidadAsync("Cardiología");
-        }
-
-        private async void FiltrarGinecologia_Click(object sender, RoutedEventArgs e)
-        {
-            Console.WriteLine("=== CLICK EN GINECOLOGÍA ===");
-            await _viewModel.FiltrarTurnosPorEspecialidadAsync("Ginecología");
-        }
-
-        private async void FiltrarPediatria_Click(object sender, RoutedEventArgs e)
-        {
-            Console.WriteLine("=== CLICK EN PEDIATRÍA ===");
-            await _viewModel.FiltrarTurnosPorEspecialidadAsync("Pediatría");
-        }
-
-        private async void FiltrarClinicaGeneral_Click(object sender, RoutedEventArgs e)
-        {
-            Console.WriteLine("=== CLICK EN CLÍNICA GENERAL ===");
-            await _viewModel.FiltrarTurnosPorEspecialidadAsync("Clínica General");
-        }
-
-        private async void FiltrarTodos_Click(object sender, RoutedEventArgs e)
-        {
-            Console.WriteLine("=== CLICK EN TODOS ===");
-            await _viewModel.FiltrarTurnosPorEspecialidadAsync("Todos");
-        }
-        #endregion
         #endregion
 
         #region Eventos del Buscador
@@ -123,18 +91,43 @@ namespace SaludTotal.Desktop.Views
             {
                 _viewModel.TerminoBusqueda = SearchTextBox.Text?.Trim() ?? string.Empty;
                 // Usar el método de filtrado centralizado
-                string? especialidad = null, fecha = null, doctor = null, paciente = null;
+                string? especialidad = null, fecha = null, doctor = null, paciente = null, estado = null;
                 switch (_viewModel.TipoBusqueda.ToLower())
                 {
                     case "doctor": doctor = _viewModel.TerminoBusqueda; break;
                     case "paciente": paciente = _viewModel.TerminoBusqueda; break;
                     case "fecha": fecha = _viewModel.TerminoBusqueda; break;
                     case "especialidad": especialidad = _viewModel.TerminoBusqueda; break;
+                    case "estado": estado = _viewModel.TerminoBusqueda; break;
                 }
-                await _viewModel.FiltrarTurnosAsync(especialidad, fecha, doctor, paciente);
+                await _viewModel.FiltrarTurnosAsync(especialidad, fecha, doctor, paciente, estado);
             }
         }
         #endregion
+
+        // Evento para el ComboBox de especialidad
+        private async void EspecialidadComboBox_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        {
+            if (_viewModel != null && EspecialidadComboBox.SelectedValue != null)
+            {
+                string especialidad = EspecialidadComboBox.SelectedValue.ToString() ?? "Todos";
+                await _viewModel.FiltrarTurnosPorEspecialidadAsync(especialidad);
+            }
+        }
+
+        // Evento para el ComboBox de estado
+        private async void EstadoComboBox_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        {
+            if (_viewModel != null && EstadoComboBox.SelectedValue != null)
+            {
+                string estado = EstadoComboBox.SelectedValue.ToString() ?? "Todos";
+                string? especialidad = _viewModel.EspecialidadSeleccionada == "Todos" ? null : _viewModel.EspecialidadSeleccionada;
+                string? estadoFiltro = estado == "Todos" ? null : estado;
+                // Llama a FiltrarTurnosAsync usando el estado como filtro
+                await _viewModel.FiltrarTurnosAsync(especialidad, null, null, null, estadoFiltro);
+                _viewModel.EstadoSeleccionado = estado;
+            }
+        }
 
         private void VolverInicio_Click(object sender, RoutedEventArgs e)
         {

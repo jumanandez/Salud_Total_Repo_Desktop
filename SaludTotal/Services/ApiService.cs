@@ -35,7 +35,7 @@ namespace SaludTotal.Desktop.Services
         /// <param name="doctor">Nombre del doctor</param>
         /// <param name="paciente">Nombre del paciente</param>
         /// <returns>Una lista de objetos Turno.</returns>
-        public async Task<List<Turno>> GetTurnosAsync(string? especialidad = null, string? fecha = null, string? doctor = null, string? paciente = null)
+        public async Task<List<Turno>> GetTurnosAsync(string? especialidad = null, string? fecha = null, string? doctor = null, string? paciente = null, string? estado = null)
         {
             try
             {
@@ -48,7 +48,8 @@ namespace SaludTotal.Desktop.Services
                     queryParams.Add($"doctor={Uri.EscapeDataString(doctor)}");
                 if (!string.IsNullOrEmpty(paciente))
                     queryParams.Add($"paciente={Uri.EscapeDataString(paciente)}");
-
+                if (!string.IsNullOrEmpty(estado))
+                    queryParams.Add($"estado={Uri.EscapeDataString(estado)}");
                 string url = $"{ApiBaseUrl}/turnos";
                 if (queryParams.Any())
                     url += "?" + string.Join("&", queryParams);
@@ -164,11 +165,13 @@ namespace SaludTotal.Desktop.Services
         {
             try
             {
-                string url = $"{ApiBaseUrl}/api/turnos/store";
+                // Construir la URL con los parámetros como query string
+                string url = $"{ApiBaseUrl}/api/turnos/store?paciente_id={nuevoTurno.PacienteId}&doctor_id={nuevoTurno.DoctorId}&fecha={Uri.EscapeDataString(nuevoTurno.Fecha)}&hora={Uri.EscapeDataString(nuevoTurno.Hora)}";
                 Console.WriteLine($"Creando turno en: {url}");
-                Console.WriteLine($"Datos del turno: {JsonConvert.SerializeObject(nuevoTurno, Formatting.Indented)}");
+                Console.WriteLine($"Datos del turno (en query string): paciente_id={nuevoTurno.PacienteId}, doctor_id={nuevoTurno.DoctorId}, fecha={nuevoTurno.Fecha}, hora={nuevoTurno.Hora}");
 
-                HttpResponseMessage response = await client.PostAsJsonAsync(url, nuevoTurno);
+                // Enviar POST con body vacío
+                HttpResponseMessage response = await client.PostAsync(url, null);
                 string responseContent = await response.Content.ReadAsStringAsync();
                 Console.WriteLine($"Respuesta del servidor: {responseContent}");
 
