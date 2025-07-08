@@ -59,6 +59,7 @@ namespace SaludTotal.Desktop.Views
                         foreach (var doctor in doctoresEspecialidad)
                         {
                             doctor.Especialidad = especialidad.Nombre;
+                            Console.WriteLine($"Asignando especialidad: '{doctor.Especialidad}' al doctor {doctor.NombreCompletoCalculado}");
                             todosLosDoctores.Add(doctor);
                         }
                         
@@ -81,9 +82,9 @@ namespace SaludTotal.Desktop.Views
                 ProfesionalesDataGrid.ItemsSource = _profesionalesFiltrados;
                 
                 Console.WriteLine($"Total de doctores cargados: {todosLosDoctores.Count}");
-                foreach (var doctor in todosLosDoctores.Take(3))
+                foreach (var doctor in todosLosDoctores.Take(5))
                 {
-                    Console.WriteLine($"Doctor: {doctor.NombreCompletoCalculado}, Especialidad: '{doctor.Especialidad}'");
+                    Console.WriteLine($"Doctor: {doctor.NombreCompletoCalculado}, Especialidad: '{doctor.Especialidad}' (Length: {doctor.Especialidad?.Length})");
                 }
             }
             catch (Exception ex)

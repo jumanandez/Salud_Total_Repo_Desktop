@@ -248,7 +248,7 @@
                         </DataGrid.CellStyle>
 
                         <DataGrid.Columns>
-                            <DataGridTextColumn Header="Doctor ID" Binding="{Binding DoctorId}" Width="120" MinWidth="100"/>
+                            <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="80" MinWidth="60"/>
                             
                             <DataGridTemplateColumn Header="Nombre y Apellido" Width="*" MinWidth="200">
                                 <DataGridTemplateColumn.CellTemplate>
@@ -280,28 +280,69 @@
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
 
-                            <DataGridTemplateColumn Header="Especialidad" Width="200" MinWidth="150">
+                            <DataGridTemplateColumn Header="Especialidad" Width="180" MinWidth="130">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
-                                        <Border CornerRadius="6" Padding="12,6" HorizontalAlignment="Center">
+                                        <Border CornerRadius="4" Padding="8,4" HorizontalAlignment="Center" Margin="5,2">
                                             <Border.Style>
                                                 <Style TargetType="Border">
                                                     <Style.Triggers>
+                                                        <!-- Cardiología -->
                                                         <DataTrigger Binding="{Binding Especialidad}" Value="Cardiología">
                                                             <Setter Property="Background" Value="#FF6B35"/>
                                                         </DataTrigger>
+                                                        <DataTrigger Binding="{Binding Especialidad}" Value="Cardiologia">
+                                                            <Setter Property="Background" Value="#FF6B35"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding Especialidad}" Value="CARDIOLOGÍA">
+                                                            <Setter Property="Background" Value="#FF6B35"/>
+                                                        </DataTrigger>
+                                                        
+                                                        <!-- Ginecología -->
                                                         <DataTrigger Binding="{Binding Especialidad}" Value="Ginecología">
                                                             <Setter Property="Background" Value="#D946EF"/>
                                                         </DataTrigger>
+                                                        <DataTrigger Binding="{Binding Especialidad}" Value="Ginecologia">
+                                                            <Setter Property="Background" Value="#D946EF"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding Especialidad}" Value="GINECOLOGÍA">
+                                                            <Setter Property="Background" Value="#D946EF"/>
+                                                        </DataTrigger>
+                                                        
+                                                        <!-- Pediatría -->
                                                         <DataTrigger Binding="{Binding Especialidad}" Value="Pediatría">
                                                             <Setter Property="Background" Value="#0EA5E9"/>
                                                         </DataTrigger>
+                                                        <DataTrigger Binding="{Binding Especialidad}" Value="Pediatria">
+                                                            <Setter Property="Background" Value="#0EA5E9"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding Especialidad}" Value="PEDIATRÍA">
+                                                            <Setter Property="Background" Value="#0EA5E9"/>
+                                                        </DataTrigger>
+                                                        
+                                                        <!-- Clínica General -->
                                                         <DataTrigger Binding="{Binding Especialidad}" Value="Clínica General">
                                                             <Setter Property="Background" Value="#10B981"/>
                                                         </DataTrigger>
+                                                        <DataTrigger Binding="{Binding Especialidad}" Value="Clinica General">
+                                                            <Setter Property="Background" Value="#10B981"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding Especialidad}" Value="CLÍNICA GENERAL">
+                                                            <Setter Property="Background" Value="#10B981"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding Especialidad}" Value="Medicina General">
+                                                            <Setter Property="Background" Value="#10B981"/>
+                                                        </DataTrigger>
+                                                        
+                                                        <!-- Dermatología -->
                                                         <DataTrigger Binding="{Binding Especialidad}" Value="Dermatología">
                                                             <Setter Property="Background" Value="#F59E0B"/>
                                                         </DataTrigger>
+                                                        <DataTrigger Binding="{Binding Especialidad}" Value="Dermatologia">
+                                                            <Setter Property="Background" Value="#F59E0B"/>
+                                                        </DataTrigger>
+                                                        
+                                                        <!-- Otras especialidades -->
                                                         <DataTrigger Binding="{Binding Especialidad}" Value="Neurología">
                                                             <Setter Property="Background" Value="#8B5CF6"/>
                                                         </DataTrigger>
@@ -311,15 +352,18 @@
                                                         <DataTrigger Binding="{Binding Especialidad}" Value="Traumatología">
                                                             <Setter Property="Background" Value="#6B7280"/>
                                                         </DataTrigger>
+                                                        
+                                                        <!-- Fallback para especialidades no definidas -->
                                                     </Style.Triggers>
                                                     <Setter Property="Background" Value="#94A3B8"/>
                                                 </Style>
                                             </Border.Style>
-                                            <TextBlock Text="{Binding Especialidad}" 
+                                            <TextBlock Text="{Binding Especialidad, FallbackValue='N/A'}" 
                                                        Foreground="White" 
                                                        FontWeight="Medium" 
-                                                       FontSize="12" 
-                                                       HorizontalAlignment="Center"/>
+                                                       FontSize="11" 
+                                                       HorizontalAlignment="Center"
+                                                       TextTrimming="CharacterEllipsis"/>
                                         </Border>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
