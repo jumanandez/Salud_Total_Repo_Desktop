@@ -12,6 +12,7 @@
         <!-- Converters -->
         <converters:EspecialidadToBrushConverter x:Key="EspecialidadToBrushConverter"/>
         <converters:EspecialidadToForegroundConverter x:Key="EspecialidadToForegroundConverter"/>
+        <converters:DateTimeFormatConverter x:Key="DateTimeFormatConverter"/>
         
         <!-- Convertidor Boolean a Visibility ya incluido en WPF -->
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
@@ -330,11 +331,15 @@
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="80" MinWidth="80"/>
                             
-                            <DataGridTextColumn Header="Fecha y Hora" Width="200" MinWidth="180">
-                                <DataGridTextColumn.Binding>
-                                    <Binding Path="FechaHora"/>
-                                </DataGridTextColumn.Binding>
-                            </DataGridTextColumn>
+                            <DataGridTemplateColumn Header="Fecha y Hora" Width="200" MinWidth="180">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding FechaHora, Converter={StaticResource DateTimeFormatConverter}}" 
+                                                   VerticalAlignment="Center" 
+                                                   Padding="5,0"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
                             
                             <DataGridTemplateColumn Header="Paciente" Width="*" MinWidth="200">
                                 <DataGridTemplateColumn.CellTemplate>
