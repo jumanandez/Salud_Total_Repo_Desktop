@@ -351,9 +351,12 @@
                             <DataGridTemplateColumn Header="Fecha y Hora" Width="200" MinWidth="180">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
-                                        <TextBlock Text="{Binding FechaHora, Converter={StaticResource DateTimeFormatConverter}}" 
-                                                   VerticalAlignment="Center" 
-                                                   Padding="5,0"/>
+                                        <StackPanel Orientation="Vertical" VerticalAlignment="Center" Margin="5,0">
+                                            <TextBlock Text="{Binding Fecha, Converter={StaticResource DateTimeFormatConverter}}" 
+                                                       FontWeight="Medium" FontSize="13"/>
+                                            <TextBlock Text="{Binding Hora}" 
+                                                       FontSize="12" Foreground="#7F8C8D"/>
+                                        </StackPanel>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>

@@ -1,6 +1,9 @@
 using System;
 using System.Windows;
+using System.Windows.Controls;
 using SaludTotal.Models;
+using SaludTotal.Desktop.Converters;
+using System.Globalization;
 
 namespace SaludTotal.Desktop.Views
 {
@@ -47,6 +50,12 @@ namespace SaludTotal.Desktop.Views
         {
             if (_turno != null)
             {
+                // Debug: Imprimir información del turno
+                System.Diagnostics.Debug.WriteLine($"DEBUG: Cargando turno ID: {_turno.Id}");
+                System.Diagnostics.Debug.WriteLine($"DEBUG: Profesional: {_turno.Profesional?.NombreCompleto ?? "NULL"}");
+                System.Diagnostics.Debug.WriteLine($"DEBUG: Especialidad: {_turno.Profesional?.Especialidad?.Nombre ?? "NULL"}");
+                System.Diagnostics.Debug.WriteLine($"DEBUG: EspecialidadId: {_turno.Profesional?.EspecialidadId}");
+
                 // Información del Paciente
                 PacienteNombre.Text = _turno.Paciente?.NombreCompleto ?? "No disponible";
                 PacienteTelefono.Text = _turno.Paciente?.Telefono ?? "No disponible";
@@ -54,10 +63,33 @@ namespace SaludTotal.Desktop.Views
 
                 // Información del Doctor
                 DoctorNombre.Text = _turno.Profesional?.NombreCompleto ?? "No disponible";
-                DoctorEspecialidad.Text = _turno.Profesional?.Especialidad?.ToString() ?? "No disponible";
+                
+                // Intentar obtener la especialidad de diferentes maneras
+                string especialidad = "No disponible";
+                if (_turno.Profesional?.Especialidad?.Nombre != null)
+                {
+                    especialidad = _turno.Profesional.Especialidad.Nombre;
+                }
+                else if (_turno.Profesional?.EspecialidadId > 0)
+                {
+                    // Si tenemos ID pero no nombre, mapear según los IDs conocidos
+                    especialidad = _turno.Profesional.EspecialidadId switch
+                    {
+                        1 => "Cardiología",
+                        2 => "Ginecología", 
+                        3 => "Pediatría",
+                        4 => "Clínica General",
+                        _ => $"Especialidad ID: {_turno.Profesional.EspecialidadId}"
+                    };
+                }
+                
+                DoctorEspecialidad.Text = especialidad;
+                System.Diagnostics.Debug.WriteLine($"DEBUG: Especialidad final mostrada: {especialidad}");
 
-                // Fecha original
-                FechaOriginal.Text = $"{_turno.Fecha} {_turno.Hora}";
+                // Fecha original - usar el convertidor para formatear
+                var converter = new DateTimeFormatConverter();
+                string fechaFormateada = (converter.Convert(_turno.Fecha, typeof(string), null!, CultureInfo.CurrentCulture) as string) ?? _turno.Fecha;
+                FechaOriginal.Text = $"{fechaFormateada} {_turno.Hora}";
             }
         }
 
@@ -101,6 +133,55 @@ namespace SaludTotal.Desktop.Views
             Confirmado = false;
             this.DialogResult = false;
             this.Close();
+        }
+
+        // Evento cuando se selecciona una fecha en el calendar
+        private void CalendarFecha_SelectedDatesChanged(object sender, SelectionChangedEventArgs e)
+        {
+            ActualizarFechaNueva();
+        }
+
+        // Evento cuando se selecciona una hora en el combobox
+        private void ComboHora_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            ActualizarFechaNueva();
+        }
+
+        // Método para actualizar la fecha nueva combinando fecha y hora
+        private void ActualizarFechaNueva()
+        {
+            string fechaParte = "--";
+            string horaParte = "--";
+
+            // Obtener fecha seleccionada
+            if (CalendarFecha.SelectedDate.HasValue)
+            {
+                var converter = new DateTimeFormatConverter();
+                fechaParte = (converter.Convert(CalendarFecha.SelectedDate.Value.ToString("yyyy-MM-dd"), typeof(string), null!, CultureInfo.CurrentCulture) as string) ?? CalendarFecha.SelectedDate.Value.ToString("yyyy-MM-dd");
+            }
+
+            // Obtener hora seleccionada
+            if (ComboHora.SelectedItem is ComboBoxItem item && item.Content != null)
+            {
+                horaParte = item.Content.ToString() ?? "--";
+            }
+
+            // Actualizar los TextBlocks
+            if (fechaParte != "--" && horaParte != "--")
+            {
+                FechaNueva.Text = fechaParte;
+                HoraNueva.Text = horaParte;
+            }
+            else if (fechaParte != "--")
+            {
+                FechaNueva.Text = fechaParte;
+                HoraNueva.Text = "--";
+            }
+            else
+            {
+                FechaNueva.Text = "--";
+                HoraNueva.Text = "--";
+            }
         }
     }
 }
