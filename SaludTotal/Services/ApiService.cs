@@ -585,6 +585,49 @@ namespace SaludTotal.Desktop.Services
             }
         }
 
+        /// <summary>
+        /// Obtiene todos los doctores desde la API.
+        /// </summary>
+        /// <returns>Lista de todos los doctores.</returns>
+        public async Task<List<DoctorDto>> GetTodosDoctoresAsync()
+        {
+            try
+            {
+                string url = $"{ApiBaseUrl}/api/profesionales/";
+                Console.WriteLine($"Obteniendo todos los doctores desde: {url}");
+                HttpResponseMessage response = await client.GetAsync(url);
+                string responseContent = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"Respuesta del servidor: {responseContent}");
+                response.EnsureSuccessStatusCode();
+
+                var obj = Newtonsoft.Json.Linq.JObject.Parse(responseContent);
+                if (obj["doctores"] != null)
+                {
+                    var doctores = obj["doctores"]?.ToObject<List<DoctorDto>>() ?? new List<DoctorDto>();
+                    Console.WriteLine($"Doctores obtenidos: {doctores.Count}");
+                    return doctores;
+                }
+                else if (obj["mensaje"] != null)
+                {
+                    throw new Exception($"Mensaje del backend: {obj["mensaje"]}");
+                }
+                else
+                {
+                    throw new Exception("Respuesta inesperada del backend al obtener todos los doctores");
+                }
+            }
+            catch (HttpRequestException e)
+            {
+                Console.WriteLine($"Error de solicitud HTTP al obtener todos los doctores: {e.Message}");
+                throw new Exception($"Error de conexión: {e.Message}");
+            }
+            catch (JsonException e)
+            {
+                Console.WriteLine($"Error de deserialización JSON al obtener todos los doctores: {e.Message}");
+                throw new Exception($"Error en el formato de respuesta: {e.Message}");
+            }
+        }
+
     }
 
     /// <summary>
@@ -648,6 +691,40 @@ namespace SaludTotal.Desktop.Services
 
         [JsonProperty("nombre_apellido")]
         public string NombreCompleto { get; set; } = string.Empty;
+
+        [JsonProperty("email")]
+        public string Email { get; set; } = string.Empty;
+
+        [JsonProperty("telefono")]
+        public string Telefono { get; set; } = string.Empty;
+
+        [JsonProperty("especialidad")]
+        public string Especialidad { get; set; } = string.Empty;
+
+        // Para compatibilidad con el formato de API de todos los doctores
+        [JsonProperty("nombre")]
+        public string? Nombre { get; set; }
+
+        [JsonProperty("apellido")]
+        public string? Apellido { get; set; }
+
+        // Propiedad calculada para mostrar el ID como string
+        public string DoctorId => $"DOC{Id:D3}";
+
+        // Propiedad calculada para el nombre completo si viene separado
+        public string NombreCompletoCalculado 
+        { 
+            get 
+            {
+                if (!string.IsNullOrEmpty(NombreCompleto))
+                    return NombreCompleto;
+                
+                if (!string.IsNullOrEmpty(Nombre) && !string.IsNullOrEmpty(Apellido))
+                    return $"Dr(a). {Nombre} {Apellido}";
+                
+                return "N/A";
+            }
+        }
     }
 
     public class HorarioDisponibleDto

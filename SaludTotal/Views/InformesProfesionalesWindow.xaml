@@ -139,11 +139,11 @@
                 Padding="20,10"
                 FontSize="14"
                 FontWeight="SemiBold"
-                Background="#4A90E2"
+                Background="#28A745"
                 Foreground="White"
                 BorderThickness="0"
                 Click="VolverMenu_Click"
-                Content="🏠 Volver al Menú"
+                Content="Volver al Menú"
                 ToolTip="Regresar al Menú de Informes">
             <Button.Template>
                 <ControlTemplate TargetType="Button">
@@ -152,10 +152,10 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter Property="Background" Value="#5BA0F2"/>
+                            <Setter Property="Background" Value="#34CE57"/>
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
-                            <Setter Property="Background" Value="#357ABD"/>
+                            <Setter Property="Background" Value="#1E7E34"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -247,7 +247,7 @@
                             <DataGridTemplateColumn Header="Nombre y Apellido" Width="*" MinWidth="200">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
-                                        <TextBlock Text="{Binding NombreCompleto, FallbackValue='N/A'}" 
+                                        <TextBlock Text="{Binding NombreCompletoCalculado, FallbackValue='N/A'}" 
                                                    VerticalAlignment="Center" 
                                                    Padding="5,0"/>
                                     </DataTemplate>
