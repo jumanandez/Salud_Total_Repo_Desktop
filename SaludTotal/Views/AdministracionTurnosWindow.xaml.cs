@@ -45,7 +45,7 @@ namespace SaludTotal.Desktop.Views
             this.Close();
         }
 
-        private void GestionarTurno_Click(object sender, RoutedEventArgs e)
+        private async void GestionarTurno_Click(object sender, RoutedEventArgs e)
         {
             // Obtener el turno del botón clickeado
             var button = sender as Button;
@@ -55,7 +55,13 @@ namespace SaludTotal.Desktop.Views
             {
                 // Abrir la ventana de gestión de turnos con los detalles del turno
                 var detalleTurnoWindow = new DetalleTurnoWindow(turno);
-                detalleTurnoWindow.ShowDialog();
+                var resultado = detalleTurnoWindow.ShowDialog();
+                
+                // Si se confirmaron cambios en el turno, actualizar la lista automáticamente
+                if (resultado == true && detalleTurnoWindow.Confirmado)
+                {
+                    await _viewModel.RecargarTurnosAsync();
+                }
             }
         }
         #endregion
