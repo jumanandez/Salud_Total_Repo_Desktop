@@ -3,6 +3,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using SaludTotal.Desktop.Services;
+using SaludTotal.Models;
 using System;
 using System.Threading.Tasks;
 
@@ -430,6 +431,40 @@ namespace SaludTotal.Desktop.Views
             catch (Exception ex)
             {
                 MessageBox.Show($"Error al limpiar búsqueda: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void EstadisticasDoctor_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                // Verificar que hay un profesional seleccionado
+                if (ProfesionalesDataGrid.SelectedItem is DoctorDto profesionalSeleccionado)
+                {
+                    // Convertir DoctorDto a Profesional para la ventana de estadísticas
+                    var profesional = new SaludTotal.Models.Profesional
+                    {
+                        DoctorId = profesionalSeleccionado.Id,
+                        NombreApellido = profesionalSeleccionado.NombreCompletoCalculado,
+                        Especialidad = new SaludTotal.Models.Especialidad 
+                        { 
+                            Nombre = profesionalSeleccionado.Especialidad ?? "No especificada" 
+                        }
+                    };
+
+                    var estadisticasWindow = new EstadisticasDoctorWindow(profesional);
+                    estadisticasWindow.ShowDialog();
+                }
+                else
+                {
+                    MessageBox.Show("Por favor, seleccione un profesional para ver sus estadísticas.", 
+                        "Seleccionar Profesional", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error al abrir estadísticas: {ex.Message}", "Error", 
+                    MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
     }

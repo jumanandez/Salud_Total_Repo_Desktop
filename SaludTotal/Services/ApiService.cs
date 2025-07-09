@@ -874,6 +874,32 @@ namespace SaludTotal.Desktop.Services
                 };
             }
         }
+
+        /// <summary>
+        /// Obtiene todos los turnos de un doctor específico para calcular estadísticas.
+        /// </summary>
+        /// <param name="doctorId">ID del doctor</param>
+        /// <returns>Lista de turnos del doctor</returns>
+        public async Task<List<Turno>> ObtenerTurnosPorDoctor(int doctorId)
+        {
+            try
+            {
+                // Usar el método existente pero filtrar por doctor
+                var turnos = await GetTurnosAsync(doctor: doctorId.ToString());
+                return turnos;
+            }
+            catch (HttpRequestException e)
+            {
+                Console.WriteLine($"Error de solicitud HTTP al obtener turnos del doctor {doctorId}: {e.Message}");
+                throw new Exception($"Error de conexión: {e.Message}");
+            }
+            catch (JsonException e)
+            {
+                Console.WriteLine($"Error de deserialización JSON al obtener turnos del doctor {doctorId}: {e.Message}");
+                throw new Exception($"Error en el formato de respuesta: {e.Message}");
+            }
+        }
+
     }
 
     /// <summary>

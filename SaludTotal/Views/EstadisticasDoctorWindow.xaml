@@ -1,0 +1,227 @@
+<Window x:Class="SaludTotal.Desktop.Views.EstadisticasDoctorWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="Salud Total - Estadísticas del Doctor" Height="700" Width="900" 
+        WindowStartupLocation="CenterScreen" WindowStyle="None" AllowsTransparency="True" ResizeMode="NoResize">
+
+    <Window.Resources>
+        <!-- Estilo para labels de información -->
+        <Style x:Key="InfoLabelStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="#2C3E50"/>
+            <Setter Property="Margin" Value="0,8,0,4"/>
+        </Style>
+
+        <!-- Estilo para valores de información -->
+        <Style x:Key="InfoValueStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Foreground" Value="#34495E"/>
+            <Setter Property="Margin" Value="0,0,0,15"/>
+        </Style>
+
+        <!-- Estilo para estadísticas -->
+        <Style x:Key="StatLabelStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="18"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Foreground" Value="#2C3E50"/>
+            <Setter Property="Margin" Value="0,10,0,5"/>
+        </Style>
+
+        <Style x:Key="StatValueStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="24"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Foreground" Value="#4A90E2"/>
+            <Setter Property="Margin" Value="0,0,0,20"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+        </Style>
+
+        <!-- Estilo para botón principal -->
+        <Style x:Key="ActionButtonStyle" TargetType="Button">
+            <Setter Property="Height" Value="60"/>
+            <Setter Property="Width" Value="300"/>
+            <Setter Property="FontSize" Value="18"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Margin" Value="20"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="10" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Opacity" Value="0.9"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Opacity" Value="0.8"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <Grid>
+        <!-- Fondo de la ventana -->
+        <Border>
+            <Border.Background>
+                <ImageBrush ImageSource="pack://application:,,,/Resources/Img/Fondo_desktop_1.jpg" Stretch="UniformToFill"/>
+            </Border.Background>
+        </Border>
+
+        <!-- Contenido principal -->
+        <Grid Margin="30">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Header con título y botón volver -->
+            <Grid Grid.Row="0" Margin="0,0,0,20">
+                <Button x:Name="VolverButton" 
+                        HorizontalAlignment="Left" 
+                        VerticalAlignment="Top" 
+                        Height="45"
+                        Padding="20,10"
+                        FontSize="14"
+                        FontWeight="SemiBold"
+                        Background="#28A745"
+                        Foreground="White"
+                        BorderThickness="0"
+                        Click="VolverButton_Click"
+                        Content="Volver"
+                        ToolTip="Volver a Administración de Turnos">
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <Border Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Background" Value="#34CE57"/>
+                                </Trigger>
+                                <Trigger Property="IsPressed" Value="True">
+                                    <Setter Property="Background" Value="#1E7E34"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Button.Template>
+                </Button>
+
+                <!-- Título centrado -->
+                <Border Background="#122F6D" CornerRadius="10" Padding="25,15" HorizontalAlignment="Center">
+                    <TextBlock Text="Estadísticas del Doctor" 
+                               FontSize="28" 
+                               FontWeight="Bold" 
+                               Foreground="White" 
+                               HorizontalAlignment="Center"/>
+                </Border>
+            </Grid>
+
+            <!-- Contenido principal -->
+            <Border Grid.Row="1" Background="#F0FFFFFF" CornerRadius="10" Padding="40,30" Margin="0,10">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel>
+                        <!-- Información del Doctor -->
+                        <TextBlock Text="Información del Doctor" FontSize="20" FontWeight="Bold" Foreground="#2C3E50" Margin="0,0,0,15"/>
+                        
+                        <TextBlock Text="Nombre y Apellido:" Style="{StaticResource InfoLabelStyle}"/>
+                        <TextBlock x:Name="DoctorNombre" Text="[Nombre del Doctor]" Style="{StaticResource InfoValueStyle}"/>
+                        
+                        <TextBlock Text="Teléfono:" Style="{StaticResource InfoLabelStyle}"/>
+                        <TextBlock x:Name="DoctorTelefono" Text="[Teléfono del Doctor]" Style="{StaticResource InfoValueStyle}"/>
+                        
+                        <TextBlock Text="Email:" Style="{StaticResource InfoLabelStyle}"/>
+                        <TextBlock x:Name="DoctorEmail" Text="[Email del Doctor]" Style="{StaticResource InfoValueStyle}"/>
+                        
+                        <TextBlock Text="Especialidad:" Style="{StaticResource InfoLabelStyle}"/>
+                        <TextBlock x:Name="DoctorEspecialidad" Text="[Especialidad del Doctor]" Style="{StaticResource InfoValueStyle}"/>
+
+                        <!-- Separador -->
+                        <Border Height="2" Background="#E0E0E0" Margin="0,30,0,40"/>
+
+                        <!-- Estadísticas -->
+                        <TextBlock Text="Estadísticas" FontSize="24" FontWeight="Bold" Foreground="#2C3E50" Margin="0,0,0,30" HorizontalAlignment="Center"/>
+                        
+                        <!-- Grid para las estadísticas en 2 columnas -->
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            
+                            <!-- Turnos Atendidos -->
+                            <Border Grid.Row="0" Grid.Column="0" Background="#E8F5E8" CornerRadius="10" Padding="20" Margin="10">
+                                <StackPanel>
+                                    <TextBlock Text="Turnos Atendidos" Style="{StaticResource StatLabelStyle}" HorizontalAlignment="Center"/>
+                                    <TextBlock x:Name="TurnosAtendidos" Text="0" Style="{StaticResource StatValueStyle}"/>
+                                </StackPanel>
+                            </Border>
+                            
+                            <!-- Turnos Cancelados -->
+                            <Border Grid.Row="0" Grid.Column="1" Background="#FFE8E8" CornerRadius="10" Padding="20" Margin="10">
+                                <StackPanel>
+                                    <TextBlock Text="Turnos Cancelados" Style="{StaticResource StatLabelStyle}" HorizontalAlignment="Center"/>
+                                    <TextBlock x:Name="TurnosCancelados" Text="0" Style="{StaticResource StatValueStyle}"/>
+                                </StackPanel>
+                            </Border>
+                            
+                            <!-- Turnos Rechazados -->
+                            <Border Grid.Row="1" Grid.Column="0" Background="#F0F0F0" CornerRadius="10" Padding="20" Margin="10">
+                                <StackPanel>
+                                    <TextBlock Text="Turnos Rechazados" Style="{StaticResource StatLabelStyle}" HorizontalAlignment="Center"/>
+                                    <TextBlock x:Name="TurnosRechazados" Text="0" Style="{StaticResource StatValueStyle}"/>
+                                </StackPanel>
+                            </Border>
+                            
+                            <!-- Turnos Reprogramados -->
+                            <Border Grid.Row="1" Grid.Column="1" Background="#FFF8E1" CornerRadius="10" Padding="20" Margin="10">
+                                <StackPanel>
+                                    <TextBlock Text="Turnos Reprogramados" Style="{StaticResource StatLabelStyle}" HorizontalAlignment="Center"/>
+                                    <TextBlock x:Name="TurnosReprogramados" Text="0" Style="{StaticResource StatValueStyle}"/>
+                                </StackPanel>
+                            </Border>
+                            
+                            <!-- Turnos Aceptados -->
+                            <Border Grid.Row="2" Grid.Column="0" Background="#E3F2FD" CornerRadius="10" Padding="20" Margin="10">
+                                <StackPanel>
+                                    <TextBlock Text="Turnos Aceptados" Style="{StaticResource StatLabelStyle}" HorizontalAlignment="Center"/>
+                                    <TextBlock x:Name="TurnosAceptados" Text="0" Style="{StaticResource StatValueStyle}"/>
+                                </StackPanel>
+                            </Border>
+                            
+                            <!-- Turnos Desaprovechados -->
+                            <Border Grid.Row="2" Grid.Column="1" Background="#FFF3E0" CornerRadius="10" Padding="20" Margin="10">
+                                <StackPanel>
+                                    <TextBlock Text="Turnos Desaprovechados" Style="{StaticResource StatLabelStyle}" HorizontalAlignment="Center"/>
+                                    <TextBlock x:Name="TurnosDesaprovechados" Text="0" Style="{StaticResource StatValueStyle}"/>
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+
+            <!-- Botón de exportar a PDF -->
+            <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,20,0,0">
+                <Button Content="Exportar a PDF" 
+                        Style="{StaticResource ActionButtonStyle}"
+                        Background="#6C757D" 
+                        Foreground="White"
+                        Click="ExportarPDF_Click"/>
+            </StackPanel>
+        </Grid>
+    </Grid>
+</Window>

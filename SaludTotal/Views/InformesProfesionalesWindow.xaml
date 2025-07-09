@@ -428,7 +428,12 @@
             <!-- Panel de botones de acción -->
             <Border Grid.Row="3" Background="#F0FFFFFF" BorderBrush="#E0E0E0" BorderThickness="1,0,1,1" CornerRadius="0,0,10,10" Padding="20,15">
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                    <Button Content="📊 Generar Informe" 
+                    <Button Content="📊 Estadísticas" 
+                            Style="{StaticResource ActionButtonStyle}"
+                            Margin="0,0,15,0"
+                            Click="EstadisticasDoctor_Click"
+                            ToolTip="Ver estadísticas del doctor seleccionado"/>
+                    <Button Content="📈 Generar Informe" 
                             Style="{StaticResource ActionButtonStyle}"
                             Margin="0,0,15,0"
                             Click="GenerarInforme_Click"
