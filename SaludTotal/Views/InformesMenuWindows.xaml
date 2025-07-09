@@ -120,7 +120,8 @@
                 VerticalAlignment="Top" 
                 Margin="20"
                 Click="VolverInicio_Click"
-                ToolTip="Regresar al menú principal"/>
+                ToolTip="Regresar al menú principal"
+                />
 
         <!-- Botones de ventana (minimizar y cerrar) -->
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,15,15,0" Panel.ZIndex="999">

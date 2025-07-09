@@ -104,7 +104,7 @@
                 </Button>
 
                 <!-- Título centrado -->
-                <Border Background="#CC2C3E50" CornerRadius="10" Padding="25,15" HorizontalAlignment="Center">
+                <Border Background="#122F6D" CornerRadius="10" Padding="25,15" HorizontalAlignment="Center">
                     <TextBlock Text="Gestión de Turno" 
                                FontSize="28" 
                                FontWeight="Bold" 
@@ -237,7 +237,7 @@
                 
                 <Button Content="Aceptar" 
                         Style="{StaticResource ActionButtonStyle}"
-                        Background="#2C3E50" 
+                        Background="#126D1D" 
                         Foreground="White"
                         Click="AceptarTurno_Click"/>
             </StackPanel>
