@@ -391,11 +391,44 @@
                                                         <DataTrigger Binding="{Binding Estado}" Value="Activo">
                                                             <Setter Property="Background" Value="#28A745"/>
                                                         </DataTrigger>
+                                                        <DataTrigger Binding="{Binding Estado}" Value="activo">
+                                                            <Setter Property="Background" Value="#28A745"/>
+                                                        </DataTrigger>
                                                         <DataTrigger Binding="{Binding Estado}" Value="Pendiente">
+                                                            <Setter Property="Background" Value="#FFC107"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding Estado}" Value="pendiente">
                                                             <Setter Property="Background" Value="#FFC107"/>
                                                         </DataTrigger>
                                                         <DataTrigger Binding="{Binding Estado}" Value="Cancelado">
                                                             <Setter Property="Background" Value="#DC3545"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding Estado}" Value="cancelado">
+                                                            <Setter Property="Background" Value="#DC3545"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding Estado}" Value="Aceptado">
+                                                            <Setter Property="Background" Value="#007BFF"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding Estado}" Value="aceptado">
+                                                            <Setter Property="Background" Value="#007BFF"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding Estado}" Value="Rechazado">
+                                                            <Setter Property="Background" Value="#6F42C1"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding Estado}" Value="rechazado">
+                                                            <Setter Property="Background" Value="#6F42C1"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding Estado}" Value="Atendido">
+                                                            <Setter Property="Background" Value="#20C997"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding Estado}" Value="atendido">
+                                                            <Setter Property="Background" Value="#20C997"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding Estado}" Value="Desaprovechado">
+                                                            <Setter Property="Background" Value="#6C757D"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding Estado}" Value="desaprovechado">
+                                                            <Setter Property="Background" Value="#6C757D"/>
                                                         </DataTrigger>
                                                     </Style.Triggers>
                                                 </Style>
