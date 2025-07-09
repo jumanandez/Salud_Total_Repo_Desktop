@@ -28,6 +28,17 @@ namespace SaludTotal.Desktop.ViewModels
             }
         }
 
+        private ObservableCollection<SolicitudReprogramacion> _solicitudesReprogramacion = new ObservableCollection<SolicitudReprogramacion>();
+        public ObservableCollection<SolicitudReprogramacion> SolicitudesReprogramacion
+        {
+            get { return _solicitudesReprogramacion; }
+            set
+            {
+                _solicitudesReprogramacion = value;
+                OnPropertyChanged();
+            }
+        }
+
         private Turno? _turnoSeleccionado;
         public Turno? TurnoSeleccionado
         {
@@ -105,6 +116,7 @@ namespace SaludTotal.Desktop.ViewModels
 
             // Cargamos los datos al iniciar el ViewModel
             CargarTurnos();
+            CargarSolicitudesReprogramacion();
         }
 
         // --- Lógica de Comandos ---
@@ -146,6 +158,58 @@ namespace SaludTotal.Desktop.ViewModels
         private async void CargarTurnos()
         {
             await RecargarTurnosAsync();
+        }
+
+        private void CargarSolicitudesReprogramacion()
+        {
+            // Datos de ejemplo para solicitudes de reprogramación
+            var solicitudesEjemplo = new List<SolicitudReprogramacion>
+            {
+                new SolicitudReprogramacion
+                {
+                    Id = 1,
+                    TurnoId = 101,
+                    FechaOriginal = "2025-01-15",
+                    HoraOriginal = "10:00",
+                    FechaNueva = "2025-01-20",
+                    HoraNueva = "14:30",
+                    Paciente = new Paciente { Id = 1, NombreApellido = "María González", Email = "maria@email.com" },
+                    Profesional = new Profesional { DoctorId = 1, NombreApellido = "Dr. Juan Pérez", EspecialidadId = 1 },
+                    Estado = "Pendiente",
+                    FechaSolicitud = DateTime.Now.AddDays(-2),
+                    Motivo = "Conflicto de horarios"
+                },
+                new SolicitudReprogramacion
+                {
+                    Id = 2,
+                    TurnoId = 102,
+                    FechaOriginal = "2025-01-18",
+                    HoraOriginal = "09:15",
+                    FechaNueva = "2025-01-25",
+                    HoraNueva = "11:00",
+                    Paciente = new Paciente { Id = 2, NombreApellido = "Carlos Rodríguez", Email = "carlos@email.com" },
+                    Profesional = new Profesional { DoctorId = 2, NombreApellido = "Dra. Ana Martínez", EspecialidadId = 2 },
+                    Estado = "Pendiente",
+                    FechaSolicitud = DateTime.Now.AddDays(-1),
+                    Motivo = "Viaje imprevisto"
+                },
+                new SolicitudReprogramacion
+                {
+                    Id = 3,
+                    TurnoId = 103,
+                    FechaOriginal = "2025-01-22",
+                    HoraOriginal = "16:45",
+                    FechaNueva = "2025-01-28",
+                    HoraNueva = "08:30",
+                    Paciente = new Paciente { Id = 3, NombreApellido = "Laura López", Email = "laura@email.com" },
+                    Profesional = new Profesional { DoctorId = 3, NombreApellido = "Dr. Roberto Silva", EspecialidadId = 3 },
+                    Estado = "Pendiente",
+                    FechaSolicitud = DateTime.Now.AddHours(-6),
+                    Motivo = "Emergencia familiar"
+                }
+            };
+
+            SolicitudesReprogramacion = new ObservableCollection<SolicitudReprogramacion>(solicitudesEjemplo);
         }
 
         /// <summary>

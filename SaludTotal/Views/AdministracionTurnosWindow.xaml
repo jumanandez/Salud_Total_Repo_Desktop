@@ -183,17 +183,24 @@
         </Button>
 
         <!-- Contenido principal -->
-        <Grid Margin="30,20,30,30">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <!-- Header -->
-                <RowDefinition Height="Auto"/>
-                <!-- Filtros y búsqueda -->
-                <RowDefinition Height="*"/>
-                <!-- Tabla principal -->
-                <RowDefinition Height="Auto"/>
-                <!-- Botones de acción -->
-            </Grid.RowDefinitions>
+        <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Margin="30,20,30,30">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <!-- Header -->
+                    <RowDefinition Height="Auto"/>
+                    <!-- Filtros y búsqueda -->
+                    <RowDefinition Height="Auto"/>
+                    <!-- Tabla principal de turnos -->
+                    <RowDefinition Height="Auto"/>
+                    <!-- Botones de acción turnos -->
+                    <RowDefinition Height="Auto"/>
+                    <!-- Título solicitudes reprogramación -->
+                    <RowDefinition Height="Auto"/>
+                    <!-- Tabla solicitudes reprogramación -->
+                    <RowDefinition Height="Auto"/>
+                    <!-- Espaciado final -->
+                </Grid.RowDefinitions>
 
             <!-- Header con título -->
             <Border Grid.Row="0" Background="#CC2C3E50" CornerRadius="10,10,0,0" Padding="25,15">
@@ -306,7 +313,7 @@
             </Border>
 
             <!-- Tabla de turnos -->
-            <Border Grid.Row="2" Background="#F0FFFFFF" BorderBrush="#E0E0E0" BorderThickness="1,0,1,0" Padding="0">
+            <Border Grid.Row="2" Background="#F0FFFFFF" BorderBrush="#E0E0E0" BorderThickness="1,0,1,0" Padding="0" Height="400">
                 <Grid>
                     <DataGrid x:Name="TurnosDataGrid"
                               ItemsSource="{Binding Turnos}" 
@@ -554,6 +561,175 @@
                     </Button>
                 </StackPanel>
             </Border>
+
+            <!-- Título para solicitudes de reprogramación -->
+            <Border Grid.Row="4" Background="#CC6F42C1" CornerRadius="10,10,0,0" Padding="25,15" Margin="0,30,0,0">
+                <TextBlock Text="Solicitudes de Reprogramación de Turno" 
+                           FontSize="24" 
+                           FontWeight="Bold" 
+                           Foreground="White" 
+                           HorizontalAlignment="Center"/>
+            </Border>
+
+            <!-- Tabla de solicitudes de reprogramación -->
+            <Border Grid.Row="5" Background="#F0FFFFFF" BorderBrush="#E0E0E0" BorderThickness="1,0,1,1" CornerRadius="0,0,10,10" Padding="0" Height="350">
+                <Grid>
+                    <DataGrid x:Name="SolicitudesDataGrid"
+                              ItemsSource="{Binding SolicitudesReprogramacion}" 
+                              AutoGenerateColumns="False" 
+                              IsReadOnly="True" 
+                              CanUserAddRows="False"
+                              CanUserDeleteRows="False"
+                              CanUserReorderColumns="False"
+                              CanUserResizeRows="False"
+                              GridLinesVisibility="Horizontal"
+                              HeadersVisibility="Column"
+                              SelectionMode="Single"
+                              FontSize="14"
+                              RowHeight="45"
+                              AlternatingRowBackground="#F0F8FBFF"
+                              Background="Transparent">
+
+                        <DataGrid.ColumnHeaderStyle>
+                            <Style TargetType="DataGridColumnHeader">
+                                <Setter Property="Background" Value="#E66F42C1"/>
+                                <Setter Property="Foreground" Value="White"/>
+                                <Setter Property="FontWeight" Value="Bold"/>
+                                <Setter Property="FontSize" Value="14"/>
+                                <Setter Property="Padding" Value="15,10"/>
+                                <Setter Property="BorderThickness" Value="0,0,1,0"/>
+                                <Setter Property="BorderBrush" Value="#8E44AD"/>
+                            </Style>
+                        </DataGrid.ColumnHeaderStyle>
+
+                        <DataGrid.CellStyle>
+                            <Style TargetType="DataGridCell">
+                                <Setter Property="Padding" Value="15,5"/>
+                                <Setter Property="BorderThickness" Value="0"/>
+                                <Setter Property="VerticalContentAlignment" Value="Center"/>
+                            </Style>
+                        </DataGrid.CellStyle>
+
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="60" MinWidth="60"/>
+                            
+                            <DataGridTemplateColumn Header="Fecha y Hora Original" Width="200" MinWidth="180">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Vertical" VerticalAlignment="Center" Margin="5,0">
+                                            <TextBlock Text="{Binding FechaOriginal, Converter={StaticResource DateTimeFormatConverter}}" 
+                                                       FontWeight="Medium" FontSize="13"/>
+                                            <TextBlock Text="{Binding HoraOriginal}" 
+                                                       FontSize="12" Foreground="#252421"/>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            
+                            <DataGridTemplateColumn Header="Fecha y Hora Nueva" Width="200" MinWidth="180">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Vertical" VerticalAlignment="Center" Margin="5,0">
+                                            <TextBlock Text="{Binding FechaNueva, Converter={StaticResource DateTimeFormatConverter}}" 
+                                                       FontWeight="Medium" FontSize="13" Foreground="#28A745"/>
+                                            <TextBlock Text="{Binding HoraNueva}" 
+                                                       FontSize="12" Foreground="#28A745"/>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            
+                            <DataGridTemplateColumn Header="Paciente" Width="*" MinWidth="150">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Paciente.NombreApellido, FallbackValue='N/A'}" 
+                                                   VerticalAlignment="Center" 
+                                                   Padding="5,0"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            
+                            <DataGridTemplateColumn Header="Doctor" Width="*" MinWidth="150">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Profesional.NombreApellido, FallbackValue='N/A'}" 
+                                                   VerticalAlignment="Center" 
+                                                   Padding="5,0"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            
+                            <DataGridTemplateColumn Header="Acciones" Width="180" MinWidth="180">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                            <Button Content="✓ Aceptar" 
+                                                    Height="28"
+                                                    Padding="8,4"
+                                                    FontSize="11"
+                                                    FontWeight="Medium"
+                                                    Background="#28A745" 
+                                                    Foreground="White"
+                                                    BorderThickness="0"
+                                                    Margin="0,0,5,0"
+                                                    Click="AceptarSolicitud_Click"
+                                                    Tag="{Binding}"
+                                                    ToolTip="Aceptar solicitud de reprogramación">
+                                                <Button.Template>
+                                                    <ControlTemplate TargetType="Button">
+                                                        <Border Background="{TemplateBinding Background}" CornerRadius="4" Padding="{TemplateBinding Padding}">
+                                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                        </Border>
+                                                        <ControlTemplate.Triggers>
+                                                            <Trigger Property="IsMouseOver" Value="True">
+                                                                <Setter Property="Background" Value="#34CE57"/>
+                                                            </Trigger>
+                                                            <Trigger Property="IsPressed" Value="True">
+                                                                <Setter Property="Background" Value="#1E7E34"/>
+                                                            </Trigger>
+                                                        </ControlTemplate.Triggers>
+                                                    </ControlTemplate>
+                                                </Button.Template>
+                                            </Button>
+                                            <Button Content="✗ Rechazar" 
+                                                    Height="28"
+                                                    Padding="8,4"
+                                                    FontSize="11"
+                                                    FontWeight="Medium"
+                                                    Background="#DC3545" 
+                                                    Foreground="White"
+                                                    BorderThickness="0"
+                                                    Click="RechazarSolicitud_Click"
+                                                    Tag="{Binding}"
+                                                    ToolTip="Rechazar solicitud de reprogramación">
+                                                <Button.Template>
+                                                    <ControlTemplate TargetType="Button">
+                                                        <Border Background="{TemplateBinding Background}" CornerRadius="4" Padding="{TemplateBinding Padding}">
+                                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                        </Border>
+                                                        <ControlTemplate.Triggers>
+                                                            <Trigger Property="IsMouseOver" Value="True">
+                                                                <Setter Property="Background" Value="#E55A5A"/>
+                                                            </Trigger>
+                                                            <Trigger Property="IsPressed" Value="True">
+                                                                <Setter Property="Background" Value="#C82333"/>
+                                                            </Trigger>
+                                                        </ControlTemplate.Triggers>
+                                                    </ControlTemplate>
+                                                </Button.Template>
+                                            </Button>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Grid>
+            </Border>
+
+            <!-- Espaciado final -->
+            <Border Grid.Row="6" Height="30"/>
         </Grid>
+    </ScrollViewer>
     </Grid>
 </Window>

@@ -162,5 +162,53 @@ namespace SaludTotal.Desktop.Views
             // Cerrar la ventana actual
             this.Close();
         }
+
+        #region Eventos para Solicitudes de Reprogramación
+        private void AceptarSolicitud_Click(object sender, RoutedEventArgs e)
+        {
+            var button = sender as Button;
+            var solicitud = button?.Tag as SolicitudReprogramacion;
+            
+            if (solicitud != null)
+            {
+                var resultado = MessageBox.Show($"¿Está seguro de aceptar la solicitud de reprogramación?\n\nPaciente: {solicitud.Paciente?.NombreApellido}\nDoctor: {solicitud.Profesional?.NombreApellido}\nNueva fecha: {solicitud.FechaNueva} {solicitud.HoraNueva}", 
+                                              "Confirmar Aceptación", 
+                                              MessageBoxButton.YesNo, 
+                                              MessageBoxImage.Question);
+                
+                if (resultado == MessageBoxResult.Yes)
+                {
+                    // TODO: Implementar lógica para aceptar la solicitud
+                    MessageBox.Show("Solicitud aceptada exitosamente.\n\nFuncionalidad por implementar.", 
+                                  "Solicitud Aceptada", 
+                                  MessageBoxButton.OK, 
+                                  MessageBoxImage.Information);
+                }
+            }
+        }
+
+        private void RechazarSolicitud_Click(object sender, RoutedEventArgs e)
+        {
+            var button = sender as Button;
+            var solicitud = button?.Tag as SolicitudReprogramacion;
+            
+            if (solicitud != null)
+            {
+                var resultado = MessageBox.Show($"¿Está seguro de rechazar la solicitud de reprogramación?\n\nPaciente: {solicitud.Paciente?.NombreApellido}\nDoctor: {solicitud.Profesional?.NombreApellido}\nNueva fecha: {solicitud.FechaNueva} {solicitud.HoraNueva}", 
+                                              "Confirmar Rechazo", 
+                                              MessageBoxButton.YesNo, 
+                                              MessageBoxImage.Question);
+                
+                if (resultado == MessageBoxResult.Yes)
+                {
+                    // TODO: Implementar lógica para rechazar la solicitud
+                    MessageBox.Show("Solicitud rechazada exitosamente.\n\nFuncionalidad por implementar.", 
+                                  "Solicitud Rechazada", 
+                                  MessageBoxButton.OK, 
+                                  MessageBoxImage.Information);
+                }
+            }
+        }
+        #endregion
     }
 }
