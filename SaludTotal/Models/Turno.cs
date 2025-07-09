@@ -27,7 +27,7 @@ namespace SaludTotal.Models
         public string Hora { get; set; } = string.Empty;
 
         [JsonProperty("estado")]
-        public string Estado { get; set; } = string.Empty;
+        public EstadoTurno Estado { get; set; }
 
         [JsonProperty("paciente")]
         public Paciente? Paciente { get; set; }

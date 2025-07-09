@@ -62,7 +62,6 @@ namespace SaludTotal.Desktop.ViewModels
                 Console.WriteLine($"DESPUÉS OnPropertyChanged: EspecialidadSeleccionada='{_especialidadSeleccionada}'");
             }
         }
-
         private string _estadoSeleccionado = "Todos";
         public string EstadoSeleccionado
         {
@@ -168,7 +167,10 @@ namespace SaludTotal.Desktop.ViewModels
             var listaTurnos = await _apiService.GetTurnosAsync(especialidad, null, null, null); // Trae todos los turnos filtrados por especialidad
             if (estadoFiltro != null)
             {
-                listaTurnos = listaTurnos.Where(t => t.Estado == estadoFiltro).ToList();
+                if (Enum.TryParse<EstadoTurno>(estadoFiltro, true, out var estadoEnum))
+                {
+                    listaTurnos = listaTurnos.Where(t => t.Estado == estadoEnum).ToList();
+                }
             }
             Turnos = new ObservableCollection<Turno>(listaTurnos);
             EstadoSeleccionado = estado;
