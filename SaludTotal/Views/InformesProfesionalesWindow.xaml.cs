@@ -6,6 +6,8 @@ using SaludTotal.Desktop.Services;
 using SaludTotal.Models;
 using System;
 using System.Threading.Tasks;
+using System.Collections.Generic;
+using System.IO;
 
 namespace SaludTotal.Desktop.Views
 {
@@ -272,8 +274,147 @@ namespace SaludTotal.Desktop.Views
 
         private void ExportarDatos_Click(object sender, RoutedEventArgs e)
         {
-            // TODO: Implementar exportación de datos
-            MessageBox.Show("Exportando datos - Funcionalidad en desarrollo", "Información", MessageBoxButton.OK, MessageBoxImage.Information);
+            try
+            {
+                // Determinar el filtro activo
+                string filtroActivo = DeterminarFiltroActivo();
+                string nombreArchivo = $"Profesionales_{filtroActivo}_{DateTime.Now:yyyyMMdd_HHmmss}.pdf";
+                
+                // Configurar el diálogo de guardar archivo
+                Microsoft.Win32.SaveFileDialog saveFileDialog = new Microsoft.Win32.SaveFileDialog
+                {
+                    Filter = "PDF files (*.pdf)|*.pdf",
+                    FileName = nombreArchivo,
+                    DefaultExt = "pdf"
+                };
+
+                if (saveFileDialog.ShowDialog() == true)
+                {
+                    // Obtener los datos filtrados actuales
+                    var profesionalesParaExportar = _profesionalesFiltrados.ToList();
+                    
+                    // Generar el PDF
+                    GenerarPDFProfesionales(saveFileDialog.FileName, profesionalesParaExportar, filtroActivo);
+                    
+                    MessageBox.Show($"PDF exportado exitosamente a: {saveFileDialog.FileName}", 
+                        "Exportación Exitosa", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error al exportar PDF: {ex.Message}", "Error", 
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private string DeterminarFiltroActivo()
+        {
+            // Verificar qué filtro está activo basándose en los estilos de los botones
+            var todosButton = this.FindName("TodosButton") as Button;
+            var cardiologiaButton = this.FindName("CardiologiaButton") as Button;
+            var ginecologiaButton = this.FindName("GinecologiaButton") as Button;
+            var pediatriaButton = this.FindName("PediatriaButton") as Button;
+            var clinicaGeneralButton = this.FindName("ClinicaGeneralButton") as Button;
+
+            if (cardiologiaButton?.Style == (Style)FindResource("ActiveFilterButtonStyle"))
+                return "Cardiologia";
+            if (ginecologiaButton?.Style == (Style)FindResource("ActiveFilterButtonStyle"))
+                return "Ginecologia";
+            if (pediatriaButton?.Style == (Style)FindResource("ActiveFilterButtonStyle"))
+                return "Pediatria";
+            if (clinicaGeneralButton?.Style == (Style)FindResource("ActiveFilterButtonStyle"))
+                return "Clinica_General";
+            
+            return "Todos";
+        }
+
+        private void GenerarPDFProfesionales(string rutaArchivo, List<DoctorDto> profesionales, string filtro)
+        {
+            try
+            {
+                // Crear el documento PDF
+                iTextSharp.text.Document document = new iTextSharp.text.Document(iTextSharp.text.PageSize.A4, 50, 50, 50, 50);
+                iTextSharp.text.pdf.PdfWriter writer = iTextSharp.text.pdf.PdfWriter.GetInstance(document, new FileStream(rutaArchivo, FileMode.Create));
+                
+                document.Open();
+
+                // Fuentes
+                iTextSharp.text.Font titleFont = iTextSharp.text.FontFactory.GetFont(iTextSharp.text.FontFactory.HELVETICA_BOLD, 18, iTextSharp.text.BaseColor.DARK_GRAY);
+                iTextSharp.text.Font headerFont = iTextSharp.text.FontFactory.GetFont(iTextSharp.text.FontFactory.HELVETICA_BOLD, 14, iTextSharp.text.BaseColor.BLACK);
+                iTextSharp.text.Font normalFont = iTextSharp.text.FontFactory.GetFont(iTextSharp.text.FontFactory.HELVETICA, 10, iTextSharp.text.BaseColor.BLACK);
+
+                // Título del documento
+                string tituloFiltro = filtro switch
+                {
+                    "Cardiologia" => "Doctores de Cardiología",
+                    "Ginecologia" => "Doctores de Ginecología", 
+                    "Pediatria" => "Doctores de Pediatría",
+                    "Clinica_General" => "Doctores de Clínica General",
+                    _ => "Todos los Doctores"
+                };
+
+                iTextSharp.text.Paragraph title = new iTextSharp.text.Paragraph(tituloFiltro, titleFont);
+                title.Alignment = iTextSharp.text.Element.ALIGN_CENTER;
+                title.SpacingAfter = 20f;
+                document.Add(title);
+
+                // Información adicional
+                document.Add(new iTextSharp.text.Paragraph($"Total de profesionales: {profesionales.Count}", headerFont) { SpacingAfter = 20f });
+
+                // Crear tabla para los profesionales
+                iTextSharp.text.pdf.PdfPTable table = new iTextSharp.text.pdf.PdfPTable(4);
+                table.WidthPercentage = 100;
+                table.SpacingAfter = 20f;
+                float[] columnWidths = { 3f, 2f, 3f, 2f };
+                table.SetWidths(columnWidths);
+
+                // Headers de la tabla
+                AgregarHeaderTabla(table, "Nombre Completo", headerFont);
+                AgregarHeaderTabla(table, "Especialidad", headerFont);
+                AgregarHeaderTabla(table, "Email", headerFont);
+                AgregarHeaderTabla(table, "Teléfono", headerFont);
+
+                // Agregar datos de profesionales
+                foreach (var profesional in profesionales)
+                {
+                    AgregarCeldaTabla(table, profesional.NombreCompletoCalculado ?? "", normalFont);
+                    AgregarCeldaTabla(table, profesional.Especialidad ?? "", normalFont);
+                    AgregarCeldaTabla(table, profesional.Email ?? "", normalFont);
+                    AgregarCeldaTabla(table, profesional.Telefono ?? "", normalFont);
+                }
+
+                document.Add(table);
+
+                // Fecha de generación
+                document.Add(new iTextSharp.text.Paragraph($"Reporte generado el: {DateTime.Now:dd/MM/yyyy HH:mm}", normalFont)
+                {
+                    Alignment = iTextSharp.text.Element.ALIGN_RIGHT,
+                    SpacingBefore = 30f
+                });
+
+                document.Close();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error al generar PDF: {ex.Message}");
+            }
+        }
+
+        private void AgregarHeaderTabla(iTextSharp.text.pdf.PdfPTable table, string texto, iTextSharp.text.Font font)
+        {
+            iTextSharp.text.pdf.PdfPCell headerCell = new iTextSharp.text.pdf.PdfPCell(new iTextSharp.text.Phrase(texto, font));
+            headerCell.BackgroundColor = iTextSharp.text.BaseColor.LIGHT_GRAY;
+            headerCell.HorizontalAlignment = iTextSharp.text.Element.ALIGN_CENTER;
+            headerCell.Padding = 10f;
+            table.AddCell(headerCell);
+        }
+
+        private void AgregarCeldaTabla(iTextSharp.text.pdf.PdfPTable table, string texto, iTextSharp.text.Font font)
+        {
+            iTextSharp.text.pdf.PdfPCell cell = new iTextSharp.text.pdf.PdfPCell(new iTextSharp.text.Phrase(texto, font));
+            cell.HorizontalAlignment = iTextSharp.text.Element.ALIGN_LEFT;
+            cell.Padding = 8f;
+            table.AddCell(cell);
         }
 
         // Mantener compatibilidad con métodos anteriores
@@ -452,7 +593,8 @@ namespace SaludTotal.Desktop.Views
                         }
                     };
 
-                    var estadisticasWindow = new EstadisticasDoctorWindow(profesional);
+                    // Pasar también el DoctorDto para tener acceso a email y teléfono
+                    var estadisticasWindow = new EstadisticasDoctorWindow(profesional, profesionalSeleccionado);
                     estadisticasWindow.ShowDialog();
                 }
                 else

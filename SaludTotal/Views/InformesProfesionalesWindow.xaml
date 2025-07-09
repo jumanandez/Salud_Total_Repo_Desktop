@@ -438,7 +438,7 @@
                             Margin="0,0,15,0"
                             Click="GenerarInforme_Click"
                             ToolTip="Generar informe de profesionales"/>
-                    <Button Content="📄 Exportar" 
+                    <Button Content="📄 Exportar a PDF" 
                             Height="40"
                             Padding="20,8"
                             FontSize="14"
@@ -447,7 +447,7 @@
                             Foreground="White"
                             BorderThickness="0"
                             Click="ExportarDatos_Click"
-                            ToolTip="Exportar datos a archivo">
+                            ToolTip="Exportar lista de profesionales a PDF">
                         <Button.Template>
                             <ControlTemplate TargetType="Button">
                                 <Border Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}">

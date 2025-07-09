@@ -147,8 +147,46 @@
                         <!-- Separador -->
                         <Border Height="2" Background="#E0E0E0" Margin="0,30,0,40"/>
 
+                        <!-- Filtro de Fechas -->
+                        <Grid Margin="0,0,0,30">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            
+                            <TextBlock Grid.Column="0" Text="Desde:" FontSize="16" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                            <DatePicker x:Name="FechaDesde" Grid.Column="1" Margin="0,0,20,0" VerticalAlignment="Center" SelectedDateChanged="FiltroFecha_Changed"/>
+                            
+                            <TextBlock Grid.Column="2" Text="Hasta:" FontSize="16" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                            <DatePicker x:Name="FechaHasta" Grid.Column="3" Margin="0,0,20,0" VerticalAlignment="Center" SelectedDateChanged="FiltroFecha_Changed"/>
+                            
+                            <Button x:Name="ActualizarEstadisticas" Grid.Column="4" Content="Actualizar" 
+                                    Height="35" Width="100" FontSize="14" FontWeight="SemiBold"
+                                    Background="#007BFF" Foreground="White" BorderThickness="0"
+                                    Click="ActualizarEstadisticas_Click">
+                                <Button.Template>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}">
+                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter Property="Background" Value="#0056B3"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Button.Template>
+                            </Button>
+                        </Grid>
+
+                        <!-- Separador -->
+                        <Border Height="1" Background="#E0E0E0" Margin="0,0,0,30"/>
+
                         <!-- Estadísticas -->
-                        <TextBlock Text="Estadísticas" FontSize="24" FontWeight="Bold" Foreground="#2C3E50" Margin="0,0,0,30" HorizontalAlignment="Center"/>
+                        <TextBlock Text="Estadísticas de Turnos" FontSize="24" FontWeight="Bold" Foreground="#2C3E50" Margin="0,0,0,30" HorizontalAlignment="Center"/>
                         
                         <!-- Grid para las estadísticas en 2 columnas -->
                         <Grid>
@@ -207,6 +245,56 @@
                                 <StackPanel>
                                     <TextBlock Text="Turnos Desaprovechados" Style="{StaticResource StatLabelStyle}" HorizontalAlignment="Center"/>
                                     <TextBlock x:Name="TurnosDesaprovechados" Text="0" Style="{StaticResource StatValueStyle}"/>
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+
+                        <!-- Separador -->
+                        <Border Height="2" Background="#E0E0E0" Margin="0,40,0,40"/>
+
+                        <!-- Ausencias del Profesional -->
+                        <TextBlock Text="Ausencias del Profesional" FontSize="24" FontWeight="Bold" Foreground="#2C3E50" Margin="0,0,0,30" HorizontalAlignment="Center"/>
+                        
+                        <!-- Grid para las ausencias en 2 columnas -->
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            
+                            <!-- Días de Ausencia -->
+                            <Border Grid.Row="0" Grid.Column="0" Background="#FFEBEE" CornerRadius="10" Padding="20" Margin="10">
+                                <StackPanel>
+                                    <TextBlock Text="Días de Ausencia" Style="{StaticResource StatLabelStyle}" HorizontalAlignment="Center"/>
+                                    <TextBlock x:Name="DiasAusencia" Text="0" Style="{StaticResource StatValueStyle}"/>
+                                </StackPanel>
+                            </Border>
+                            
+                            <!-- Turnos Perdidos por Ausencia -->
+                            <Border Grid.Row="0" Grid.Column="1" Background="#FCE4EC" CornerRadius="10" Padding="20" Margin="10">
+                                <StackPanel>
+                                    <TextBlock Text="Turnos Perdidos" Style="{StaticResource StatLabelStyle}" HorizontalAlignment="Center"/>
+                                    <TextBlock x:Name="TurnosPerdidosAusencia" Text="0" Style="{StaticResource StatValueStyle}"/>
+                                </StackPanel>
+                            </Border>
+                            
+                            <!-- Porcentaje de Asistencia -->
+                            <Border Grid.Row="1" Grid.Column="0" Background="#E8F5E8" CornerRadius="10" Padding="20" Margin="10">
+                                <StackPanel>
+                                    <TextBlock Text="% Asistencia" Style="{StaticResource StatLabelStyle}" HorizontalAlignment="Center"/>
+                                    <TextBlock x:Name="PorcentajeAsistencia" Text="0%" Style="{StaticResource StatValueStyle}"/>
+                                </StackPanel>
+                            </Border>
+                            
+                            <!-- Último Día de Ausencia -->
+                            <Border Grid.Row="1" Grid.Column="1" Background="#F3E5F5" CornerRadius="10" Padding="20" Margin="10">
+                                <StackPanel>
+                                    <TextBlock Text="Última Ausencia" Style="{StaticResource StatLabelStyle}" HorizontalAlignment="Center"/>
+                                    <TextBlock x:Name="UltimaAusencia" Text="N/A" Style="{StaticResource StatValueStyle}" FontSize="16"/>
                                 </StackPanel>
                             </Border>
                         </Grid>

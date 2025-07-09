@@ -900,6 +900,125 @@ namespace SaludTotal.Desktop.Services
             }
         }
 
+        // --- MÉTODOS PARA ESTADÍSTICAS ---
+
+        /// <summary>
+        /// Obtiene las estadísticas de un doctor específico
+        /// </summary>
+        /// <param name="doctorId">ID del doctor</param>
+        /// <param name="fechaDesde">Fecha desde (opcional)</param>
+        /// <param name="fechaHasta">Fecha hasta (opcional)</param>
+        /// <returns>Estadísticas del doctor</returns>
+        public async Task<EstadisticasDoctorDto> GetEstadisticasDoctorAsync(int doctorId, DateTime? fechaDesde = null, DateTime? fechaHasta = null)
+        {
+            try
+            {
+                var queryParams = new List<string>();
+                if (fechaDesde.HasValue)
+                    queryParams.Add($"fecha_desde={fechaDesde.Value:yyyy-MM-dd}");
+                if (fechaHasta.HasValue)
+                    queryParams.Add($"fecha_hasta={fechaHasta.Value:yyyy-MM-dd}");
+
+                string queryString = queryParams.Count > 0 ? "?" + string.Join("&", queryParams) : "";
+                string url = $"{ApiBaseUrl}/estadisticas/doctor/{doctorId}{queryString}";
+
+                HttpResponseMessage response = await client.GetAsync(url);
+                if (response.IsSuccessStatusCode)
+                {
+                    string jsonResponse = await response.Content.ReadAsStringAsync();
+                    var estadisticas = JsonConvert.DeserializeObject<EstadisticasDoctorDto>(jsonResponse);
+                    return estadisticas ?? new EstadisticasDoctorDto();
+                }
+                else
+                {
+                    Console.WriteLine($"Error al obtener estadísticas del doctor: {response.StatusCode}");
+                    return new EstadisticasDoctorDto();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Excepción en GetEstadisticasDoctorAsync: {ex.Message}");
+                return new EstadisticasDoctorDto();
+            }
+        }
+
+        /// <summary>
+        /// Obtiene las estadísticas globales del sistema
+        /// </summary>
+        /// <param name="fechaDesde">Fecha desde (opcional)</param>
+        /// <param name="fechaHasta">Fecha hasta (opcional)</param>
+        /// <returns>Estadísticas globales</returns>
+        public async Task<EstadisticasGlobalesDto> GetEstadisticasGlobalesAsync(DateTime? fechaDesde = null, DateTime? fechaHasta = null)
+        {
+            try
+            {
+                var queryParams = new List<string>();
+                if (fechaDesde.HasValue)
+                    queryParams.Add($"fecha_desde={fechaDesde.Value:yyyy-MM-dd}");
+                if (fechaHasta.HasValue)
+                    queryParams.Add($"fecha_hasta={fechaHasta.Value:yyyy-MM-dd}");
+
+                string queryString = queryParams.Count > 0 ? "?" + string.Join("&", queryParams) : "";
+                string url = $"{ApiBaseUrl}/estadisticas/globales{queryString}";
+
+                HttpResponseMessage response = await client.GetAsync(url);
+                if (response.IsSuccessStatusCode)
+                {
+                    string jsonResponse = await response.Content.ReadAsStringAsync();
+                    var estadisticas = JsonConvert.DeserializeObject<EstadisticasGlobalesDto>(jsonResponse);
+                    return estadisticas ?? new EstadisticasGlobalesDto();
+                }
+                else
+                {
+                    Console.WriteLine($"Error al obtener estadísticas globales: {response.StatusCode}");
+                    return new EstadisticasGlobalesDto();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Excepción en GetEstadisticasGlobalesAsync: {ex.Message}");
+                return new EstadisticasGlobalesDto();
+            }
+        }
+
+        /// <summary>
+        /// Obtiene las estadísticas de todos los doctores
+        /// </summary>
+        /// <param name="fechaDesde">Fecha desde (opcional)</param>
+        /// <param name="fechaHasta">Fecha hasta (opcional)</param>
+        /// <returns>Lista de estadísticas por doctor</returns>
+        public async Task<List<EstadisticasDoctorDto>> GetEstadisticasTodosDoctoresAsync(DateTime? fechaDesde = null, DateTime? fechaHasta = null)
+        {
+            try
+            {
+                var queryParams = new List<string>();
+                if (fechaDesde.HasValue)
+                    queryParams.Add($"fecha_desde={fechaDesde.Value:yyyy-MM-dd}");
+                if (fechaHasta.HasValue)
+                    queryParams.Add($"fecha_hasta={fechaHasta.Value:yyyy-MM-dd}");
+
+                string queryString = queryParams.Count > 0 ? "?" + string.Join("&", queryParams) : "";
+                string url = $"{ApiBaseUrl}/estadisticas/doctores{queryString}";
+
+                HttpResponseMessage response = await client.GetAsync(url);
+                if (response.IsSuccessStatusCode)
+                {
+                    string jsonResponse = await response.Content.ReadAsStringAsync();
+                    var estadisticas = JsonConvert.DeserializeObject<List<EstadisticasDoctorDto>>(jsonResponse);
+                    return estadisticas ?? new List<EstadisticasDoctorDto>();
+                }
+                else
+                {
+                    Console.WriteLine($"Error al obtener estadísticas de todos los doctores: {response.StatusCode}");
+                    return new List<EstadisticasDoctorDto>();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Excepción en GetEstadisticasTodosDoctoresAsync: {ex.Message}");
+                return new List<EstadisticasDoctorDto>();
+            }
+        }
     }
 
     /// <summary>
@@ -1042,5 +1161,50 @@ namespace SaludTotal.Desktop.Services
     {
         [JsonProperty("hora")]
         public string Hora { get; set; } = string.Empty;
+    }
+
+    public class EstadisticasDoctorDto
+    {
+        [JsonProperty("doctor_id")]
+        public int DoctorId { get; set; }
+
+        [JsonProperty("nombre_doctor")]
+        public string NombreDoctor { get; set; } = string.Empty;
+
+        [JsonProperty("total_turnos")]
+        public int TotalTurnos { get; set; }
+
+        [JsonProperty("turnos_aceptados")]
+        public int TurnosAceptados { get; set; }
+
+        [JsonProperty("turnos_rechazados")]
+        public int TurnosRechazados { get; set; }
+
+        [JsonProperty("turnos_cancelados")]
+        public int TurnosCancelados { get; set; }
+
+        [JsonProperty("especialidad")]
+        public string Especialidad { get; set; } = string.Empty;
+    }
+
+    public class EstadisticasGlobalesDto
+    {
+        [JsonProperty("total_doctores")]
+        public int TotalDoctores { get; set; }
+
+        [JsonProperty("total_pacientes")]
+        public int TotalPacientes { get; set; }
+
+        [JsonProperty("total_turnos")]
+        public int TotalTurnos { get; set; }
+
+        [JsonProperty("turnos_aceptados")]
+        public int TurnosAceptados { get; set; }
+
+        [JsonProperty("turnos_rechazados")]
+        public int TurnosRechazados { get; set; }
+
+        [JsonProperty("turnos_cancelados")]
+        public int TurnosCancelados { get; set; }
     }
 }

@@ -152,35 +152,135 @@
         <!-- Panel central con estadísticas -->
         <Border HorizontalAlignment="Center" 
                 VerticalAlignment="Center" 
-                Width="700"
+                Width="800"
                 Background="#D0FFFFFF" 
                 CornerRadius="10"
                 Padding="15">
             <Border Background="#FFFFF0" CornerRadius="5" Padding="40">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel>
+                        <!-- Título de estadísticas -->
+                        <TextBlock Text="Estadísticas Globales de la Empresa" 
+                                   FontSize="24" 
+                                   FontWeight="Bold" 
+                                   Foreground="#2C3E50" 
+                                   HorizontalAlignment="Center"
+                                   Margin="0,0,0,30"/>
 
-                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Tunos totales atendidos:" FontSize="18" Margin="0,10" VerticalAlignment="Center"/>
-                    <TextBlock Grid.Row="0" Grid.Column="1" Text="120" FontSize="18" FontWeight="Bold" Margin="20,10,0,10" VerticalAlignment="Center"/>
+                        <!-- Filtro de Fechas -->
+                        <Grid Margin="0,0,0,30">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            
+                            <TextBlock Grid.Column="0" Text="Desde:" FontSize="16" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                            <DatePicker x:Name="FechaDesde" Grid.Column="1" Margin="0,0,20,0" VerticalAlignment="Center"/>
+                            
+                            <TextBlock Grid.Column="2" Text="Hasta:" FontSize="16" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                            <DatePicker x:Name="FechaHasta" Grid.Column="3" Margin="0,0,20,0" VerticalAlignment="Center"/>
+                            
+                            <Button x:Name="ActualizarEstadisticas" Grid.Column="4" Content="Actualizar" 
+                                    Height="35" Width="100" FontSize="14" FontWeight="SemiBold"
+                                    Background="#007BFF" Foreground="White" BorderThickness="0"
+                                    Click="ActualizarEstadisticas_Click">
+                                <Button.Template>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}">
+                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter Property="Background" Value="#0056B3"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Button.Template>
+                            </Button>
+                        </Grid>
 
-                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Ausencias totales de los profesionales:" FontSize="18" Margin="0,10" VerticalAlignment="Center"/>
-                    <TextBlock Grid.Row="1" Grid.Column="1" Text="44" FontSize="18" FontWeight="Bold" Margin="20,10,0,10" VerticalAlignment="Center"/>
+                        <!-- Separador -->
+                        <Border Height="1" Background="#E0E0E0" Margin="0,0,0,30"/>
 
-                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Cantidad total de turnos reprogramados:" FontSize="18" Margin="0,10" VerticalAlignment="Center"/>
-                    <TextBlock Grid.Row="2" Grid.Column="1" Text="13" FontSize="18" FontWeight="Bold" Margin="20,10,0,10" VerticalAlignment="Center"/>
+                        <!-- Estadísticas -->
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
 
-                    <TextBlock Grid.Row="3" Grid.Column="0" Text="Cantidad total de turnos cancelados:" FontSize="18" Margin="0,10" VerticalAlignment="Center"/>
-                    <TextBlock Grid.Row="3" Grid.Column="1" Text="20" FontSize="18" FontWeight="Bold" Margin="20,10,0,10" VerticalAlignment="Center"/>
-                </Grid>
+                            <!-- Estadísticas generales -->
+                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Total de Doctores:" FontSize="18" Margin="0,10" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Row="0" Grid.Column="1" x:Name="TotalDoctores" Text="0" FontSize="18" FontWeight="Bold" Margin="20,10,0,10" VerticalAlignment="Center"/>
+
+                            <TextBlock Grid.Row="1" Grid.Column="0" Text="Total de Pacientes:" FontSize="18" Margin="0,10" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Row="1" Grid.Column="1" x:Name="TotalPacientes" Text="0" FontSize="18" FontWeight="Bold" Margin="20,10,0,10" VerticalAlignment="Center"/>
+
+                            <TextBlock Grid.Row="2" Grid.Column="0" Text="Total de Turnos:" FontSize="18" Margin="0,10" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Row="2" Grid.Column="1" x:Name="TotalTurnos" Text="0" FontSize="18" FontWeight="Bold" Margin="20,10,0,10" VerticalAlignment="Center"/>
+
+                            <!-- Estadísticas de turnos por estado -->
+                            <TextBlock Grid.Row="3" Grid.Column="0" Text="Turnos Atendidos:" FontSize="18" Margin="0,10" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Row="3" Grid.Column="1" x:Name="TurnosAtendidos" Text="0" FontSize="18" FontWeight="Bold" Margin="20,10,0,10" VerticalAlignment="Center"/>
+
+                            <TextBlock Grid.Row="4" Grid.Column="0" Text="Turnos Cancelados:" FontSize="18" Margin="0,10" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Row="4" Grid.Column="1" x:Name="TurnosCancelados" Text="0" FontSize="18" FontWeight="Bold" Margin="20,10,0,10" VerticalAlignment="Center"/>
+
+                            <TextBlock Grid.Row="5" Grid.Column="0" Text="Turnos Rechazados:" FontSize="18" Margin="0,10" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Row="5" Grid.Column="1" x:Name="TurnosRechazados" Text="0" FontSize="18" FontWeight="Bold" Margin="20,10,0,10" VerticalAlignment="Center"/>
+
+                            <TextBlock Grid.Row="6" Grid.Column="0" Text="Turnos Reprogramados:" FontSize="18" Margin="0,10" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Row="6" Grid.Column="1" x:Name="TurnosReprogramados" Text="0" FontSize="18" FontWeight="Bold" Margin="20,10,0,10" VerticalAlignment="Center"/>
+
+                            <TextBlock Grid.Row="7" Grid.Column="0" Text="Turnos Aceptados:" FontSize="18" Margin="0,10" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Row="7" Grid.Column="1" x:Name="TurnosAceptados" Text="0" FontSize="18" FontWeight="Bold" Margin="20,10,0,10" VerticalAlignment="Center"/>
+
+                            <TextBlock Grid.Row="8" Grid.Column="0" Text="Turnos Desaprovechados:" FontSize="18" Margin="0,10" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Row="8" Grid.Column="1" x:Name="TurnosDesaprovechados" Text="0" FontSize="18" FontWeight="Bold" Margin="20,10,0,10" VerticalAlignment="Center"/>
+
+                            <!-- Estadísticas calculadas -->
+                            <TextBlock Grid.Row="9" Grid.Column="0" Text="Promedio Turnos por Doctor:" FontSize="18" Margin="0,10" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Row="9" Grid.Column="1" x:Name="PromedioTurnosPorDoctor" Text="0.0" FontSize="18" FontWeight="Bold" Margin="20,10,0,10" VerticalAlignment="Center"/>
+
+                            <TextBlock Grid.Row="10" Grid.Column="0" Text="Porcentaje de Eficiencia:" FontSize="18" Margin="0,10" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Row="10" Grid.Column="1" x:Name="PorcentajeEficiencia" Text="0.0%" FontSize="18" FontWeight="Bold" Margin="20,10,0,10" VerticalAlignment="Center"/>
+                        </Grid>
+
+                        <!-- Botón para exportar estadísticas -->
+                        <Button Content="Exportar Estadísticas a PDF" 
+                                Height="50" Width="280" FontSize="16" FontWeight="SemiBold"
+                                Background="#6C757D" Foreground="White" BorderThickness="0"
+                                Margin="0,30,0,0" Click="ExportarEstadisticas_Click">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border Background="{TemplateBinding Background}" CornerRadius="8" Padding="{TemplateBinding Padding}">
+                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Background" Value="#5A6268"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Button.Template>
+                        </Button>
+                    </StackPanel>
+                </ScrollViewer>
             </Border>
         </Border>
     </Grid>
