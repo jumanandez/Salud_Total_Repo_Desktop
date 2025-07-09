@@ -2,6 +2,7 @@ using System;
 using System.Windows;
 using System.Windows.Controls;
 using SaludTotal.Models;
+using SaludTotal.Services;
 using SaludTotal.Desktop.Converters;
 using System.Globalization;
 
@@ -114,10 +115,33 @@ namespace SaludTotal.Desktop.Views
                            "Reprogramar Turno", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
-        private void AceptarTurno_Click(object sender, RoutedEventArgs e)
+        private async void AceptarTurno_Click(object sender, RoutedEventArgs e)
         {
-            // TODO: Implementar lógica para aceptar/confirmar turno
-            MessageBox.Show("Funcionalidad de aceptar turno - Por implementar", "Aceptar Turno", MessageBoxButton.OK, MessageBoxImage.Information);
+            if (_turno == null || _turno.Id <= 0)
+            {
+                MessageBox.Show("No se puede aceptar un turno no válido.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+            var apiService = new SaludTotal.Desktop.Services.ApiService();
+            try
+            {
+                ResultadoApi result = await apiService.AceptarTurnoAsync(_turno.Id);
+                if (result.Success)
+                {
+                    MessageBox.Show(result.Mensaje, "Aceptar Turno", MessageBoxButton.OK, MessageBoxImage.Information);
+                    Confirmado = true;
+                    this.DialogResult = true;
+                    this.Close();
+                }
+                else
+                {
+                    MessageBox.Show(("Mensaje: " + result.Mensaje + "\n" + "Detalle: " + result.Detalle), "Aceptar Turno", MessageBoxButton.OK, MessageBoxImage.Warning);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error al aceptar turno: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         // Métodos para compatibilidad con NuevoTurnoWindow

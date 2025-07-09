@@ -184,27 +184,6 @@ namespace SaludTotal.Desktop.ViewModels
             TerminoBusqueda = string.Empty;
             await RecargarTurnosAsync();
         }
-
-        public async Task ConfirmarTurno()
-        {
-            if (TurnoSeleccionado == null)
-            {
-                MessageBox.Show("Por favor, seleccione un turno para confirmar.", "Acción requerida", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
-
-            bool success = await _apiService.ConfirmarTurnoAsync(TurnoSeleccionado.Id);
-            if (success)
-            {
-                MessageBox.Show("Turno confirmado exitosamente.", "Éxito", MessageBoxButton.OK, MessageBoxImage.Information);
-                await RecargarTurnosAsync();
-            }
-            else
-            {
-                MessageBox.Show("Ocurrió un error al confirmar el turno.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
-
         public async Task CancelarTurno()
         {
             if (TurnoSeleccionado == null)

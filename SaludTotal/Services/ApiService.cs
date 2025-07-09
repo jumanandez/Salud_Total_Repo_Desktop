@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using SaludTotal.Models;
+using SaludTotal.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,10 +15,10 @@ namespace SaludTotal.Desktop.Services
         // HttpClient se debe instanciar UNA SOLA VEZ por aplicación, no en cada llamada.
         // Usar 'static' es una forma simple de lograrlo en este contexto.
         private static readonly HttpClient client = new HttpClient();
-
-        // Reemplaza esta URL con la de tu entorno de Laravel Herd.
-        private const string ApiBaseUrl = "http://saludtotal.test";
-
+        private const string ApiBaseUrl = "http://saludtotal.test/api";
+        private const string ApiTurnosUrl = ApiBaseUrl + "/turnos";
+        private const string ApiPacientesUrl = ApiBaseUrl + "/pacientes";
+        private const string ApiProfesionalesUrl = ApiBaseUrl + "/profesionales";
         public ApiService()
         {
             // Configuración inicial del HttpClient, si es necesaria.
@@ -50,13 +51,13 @@ namespace SaludTotal.Desktop.Services
                     queryParams.Add($"paciente={Uri.EscapeDataString(paciente)}");
                 if (!string.IsNullOrEmpty(estado))
                     queryParams.Add($"estado={Uri.EscapeDataString(estado)}");
-                string url = $"{ApiBaseUrl}/turnos";
+                string url = $"{ApiTurnosUrl}/";
                 if (queryParams.Any())
                     url += "?" + string.Join("&", queryParams);
 
                 HttpResponseMessage response = await client.GetAsync(url);
                 response.EnsureSuccessStatusCode();
-    
+
                 string jsonResponse = await response.Content.ReadAsStringAsync();
                 var turnos = JsonConvert.DeserializeObject<List<Turno>>(jsonResponse) ?? new List<Turno>();
                 return turnos;
@@ -68,54 +69,61 @@ namespace SaludTotal.Desktop.Services
             }
         }
 
-        /// <summary>
-        /// Método de prueba para verificar la conectividad con el backend
-        /// </summary>
-        /// <returns>String con información de diagnóstico</returns>
-        public async Task<string> TestConexionAsync()
+        public async Task<ResultadoApi> AceptarTurnoAsync(int turnoId)
         {
             try
             {
-                string url = $"{ApiBaseUrl}/turnos/test";
-                HttpResponseMessage response = await client.GetAsync(url);
-
-                response.EnsureSuccessStatusCode();
-
-                string jsonResponse = await response.Content.ReadAsStringAsync();
-                return $"✅ Conexión exitosa: {jsonResponse}";
+                string url = $"{ApiTurnosUrl}/{turnoId}/aceptar";
+                var request = new HttpRequestMessage(HttpMethod.Patch, url);
+                HttpResponseMessage response = await client.SendAsync(request);
+                string responseContent = await response.Content.ReadAsStringAsync();
+                var resultado = JsonConvert.DeserializeObject<ResultadoApi>(responseContent);
+                if (!response.IsSuccessStatusCode)
+                {
+                    Console.WriteLine($"Error al aceptar turno: {resultado}");
+                    if (response.StatusCode == System.Net.HttpStatusCode.NotFound) //404
+                    {
+                        return new ResultadoApi
+                        {
+                            Success = response.IsSuccessStatusCode,
+                            Mensaje = resultado?.Mensaje ?? "Turno no encontrado",
+                            Detalle = resultado?.Detalle ?? "No se encontró el turno con el ID especificado"
+                        };
+                    }
+                    else if (response.StatusCode == System.Net.HttpStatusCode.BadRequest) //400
+                    {
+                        return new ResultadoApi
+                        {
+                            Success = response.IsSuccessStatusCode,
+                            Mensaje = resultado?.Mensaje ?? "Error al aceptar turno",
+                            Detalle = resultado?.Detalle ?? "Los datos enviados no son válidos"
+                        };
+                    }
+                }
+                return new ResultadoApi
+                {
+                    Success = response.IsSuccessStatusCode,
+                    Mensaje = resultado?.Mensaje ?? "Turno aceptado exitosamente",
+                    Turno = resultado?.Turno ?? "Turno aceptado sin detalles adicionales"
+                };
             }
             catch (HttpRequestException e)
             {
-                return $"❌ Error de conexión HTTP: {e.Message}";
-            }
-            catch (Exception e)
-            {
-                return $"❌ Error general: {e.Message}";
-            }
-        }
-
-        public async Task<bool> ConfirmarTurnoAsync(int turnoId)
-        {
-            try
-            {
-                string url = $"{ApiBaseUrl}/turnos/{turnoId}/confirmar";
-
-                HttpResponseMessage response = await client.PutAsync(url, null);
-                response.EnsureSuccessStatusCode();
-
-                return response.IsSuccessStatusCode;
-            }
-            catch (HttpRequestException e)
-            {
-                Console.WriteLine($"Error al confirmar turno: {e.Message}");
-                return false;
+                Console.WriteLine($"Error al aceptar turno: {e.Message}");
+                return new ResultadoApi
+                {
+                    Success = false,
+                    Mensaje = "Error de conexión al aceptar turno",
+                    Detalle = e.Message
+                };
             }
         }
+
         public async Task<bool> CancelarTurnoAsync(int turnoId)
         {
             try
             {
-                string url = $"{ApiBaseUrl}/turnos/{turnoId}/cancelar";
+                string url = $"{ApiTurnosUrl}/{turnoId}/cancelar";
                 HttpResponseMessage response = await client.PutAsync(url, null);
                 response.EnsureSuccessStatusCode();
 
@@ -125,34 +133,6 @@ namespace SaludTotal.Desktop.Services
             {
                 Console.WriteLine($"Error al cancelar turno: {e.Message}");
                 return false;
-            }
-        }
-        public async Task<string> TestDeserializacionAsync()
-        {
-            try
-            {
-                string url = $"{ApiBaseUrl}/turnos";
-                HttpResponseMessage response = await client.GetAsync(url);
-                response.EnsureSuccessStatusCode();
-                
-                string jsonResponse = await response.Content.ReadAsStringAsync();
-                var turnos = JsonConvert.DeserializeObject<List<Turno>>(jsonResponse) ?? new List<Turno>();
-                
-                string resultado = $"✅ Se deserializaron {turnos.Count} turnos correctamente:\n";
-                
-                // Mostrar solo los primeros 3 turnos para debug
-                int maxTurnos = Math.Min(3, turnos.Count);
-                for (int i = 0; i < maxTurnos; i++)
-                {
-                    var turno = turnos[i];
-                    resultado += $"- Turno {turno.Id}: Paciente='{turno.Paciente?.NombreCompleto ?? "NULL"}', Profesional='{turno.Profesional?.NombreCompleto ?? "NULL"}'\n";
-                }
-                
-                return resultado;
-            }
-            catch (Exception e)
-            {
-                return $"❌ Error en deserialización: {e.Message}";
             }
         }
 
@@ -166,7 +146,7 @@ namespace SaludTotal.Desktop.Services
             try
             {
                 // Construir la URL con los parámetros como query string
-                string url = $"{ApiBaseUrl}/api/turnos/store?paciente_id={nuevoTurno.PacienteId}&doctor_id={nuevoTurno.DoctorId}&fecha={Uri.EscapeDataString(nuevoTurno.Fecha)}&hora={Uri.EscapeDataString(nuevoTurno.Hora)}";
+                string url = $"{ApiTurnosUrl}/store?paciente_id={nuevoTurno.PacienteId}&doctor_id={nuevoTurno.DoctorId}&fecha={Uri.EscapeDataString(nuevoTurno.Fecha)}&hora={Uri.EscapeDataString(nuevoTurno.Hora)}";
                 Console.WriteLine($"Creando turno en: {url}");
                 Console.WriteLine($"Datos del turno (en query string): paciente_id={nuevoTurno.PacienteId}, doctor_id={nuevoTurno.DoctorId}, fecha={nuevoTurno.Fecha}, hora={nuevoTurno.Hora}");
 
@@ -225,7 +205,7 @@ namespace SaludTotal.Desktop.Services
         {
             try
             {
-                string url = $"{ApiBaseUrl}/api/turnos/disponibles";
+                string url = $"{ApiTurnosUrl}/disponibles";
                 var queryParams = new List<string>();
                 if (doctorId.HasValue)
                     queryParams.Add($"doctor_id={doctorId.Value}");
@@ -263,7 +243,8 @@ namespace SaludTotal.Desktop.Services
                 {
                     // Si el backend responde con un array directo (legacy)
                     var horarios = arr.ToObject<List<HorarioDisponibleDto>>() ?? new List<HorarioDisponibleDto>();
-                    var datos = new DatosFormularioResponse {
+                    var datos = new DatosFormularioResponse
+                    {
                         HorariosDisponibles = horarios
                     };
                     return datos;
@@ -293,12 +274,12 @@ namespace SaludTotal.Desktop.Services
         {
             try
             {
-                string url = $"{ApiBaseUrl}/api/pacientes";
+                string url = $"{ApiPacientesUrl}";
                 Console.WriteLine($"Obteniendo pacientes desde: {url}");
-                
+
                 HttpResponseMessage response = await client.GetAsync(url);
                 string responseContent = await response.Content.ReadAsStringAsync();
-                
+
                 Console.WriteLine($"Respuesta del servidor: {responseContent}");
                 response.EnsureSuccessStatusCode();
 
@@ -308,10 +289,10 @@ namespace SaludTotal.Desktop.Services
                 {
                     throw new Exception($"Error en la respuesta del servidor: {responseObj?.error ?? "Respuesta inválida"}");
                 }
-                
+
                 var pacientesJson = JsonConvert.SerializeObject(responseObj.data);
                 var pacientes = JsonConvert.DeserializeObject<List<SaludTotal.Models.Paciente>>(pacientesJson) ?? new List<SaludTotal.Models.Paciente>();
-                
+
                 Console.WriteLine($"Pacientes obtenidos: {pacientes.Count}");
                 return pacientes;
             }
@@ -341,9 +322,9 @@ namespace SaludTotal.Desktop.Services
                     return new List<SaludTotal.Models.Paciente>();
                 }
 
-                string url = $"{ApiBaseUrl}/api/pacientes/buscar?busqueda={Uri.EscapeDataString(query)}";
+                string url = $"{ApiPacientesUrl}/buscar?busqueda={Uri.EscapeDataString(query)}";
                 Console.WriteLine($"Buscando pacientes en: {url}");
-                
+
                 HttpResponseMessage response = await client.GetAsync(url);
                 string responseContent = await response.Content.ReadAsStringAsync();
 
@@ -389,7 +370,7 @@ namespace SaludTotal.Desktop.Services
         {
             try
             {
-                string url = $"{ApiBaseUrl}/api/turnos/disponibles?doctor_id={doctorId}&fecha={Uri.EscapeDataString(fecha)}";
+                string url = $"{ApiTurnosUrl}/disponibles?doctor_id={doctorId}&fecha={Uri.EscapeDataString(fecha)}";
                 Console.WriteLine($"Obteniendo horarios desde: {url}");
                 HttpResponseMessage response = await client.GetAsync(url);
                 string responseContent = await response.Content.ReadAsStringAsync();
@@ -430,7 +411,7 @@ namespace SaludTotal.Desktop.Services
         /// <returns>Datos con especialidades y doctores por especialidad.</returns>
         public async Task<(List<EspecialidadDto> Especialidades, List<DoctoresPorEspecialidadDto> DoctoresPorEspecialidad)> GetEspecialidadesYDoctoresAsync()
         {
-            string url = $"{ApiBaseUrl}/api/turnos/especialidades";
+            string url = $"{ApiTurnosUrl}/especialidades";
             Console.WriteLine($"Obteniendo especialidades y doctores desde: {url}");
             HttpResponseMessage response = await client.GetAsync(url);
             string responseContent = await response.Content.ReadAsStringAsync();
@@ -468,7 +449,7 @@ namespace SaludTotal.Desktop.Services
         /// <returns>Lista de especialidades.</returns>
         public async Task<List<EspecialidadDto>> GetEspecialidadesAsync()
         {
-            string url = $"{ApiBaseUrl}/api/profesionales/especialidades";
+            string url = $"{ApiProfesionalesUrl}/especialidades";
             Console.WriteLine($"Obteniendo especialidades desde: {url}");
             HttpResponseMessage response = await client.GetAsync(url);
             string responseContent = await response.Content.ReadAsStringAsync();
@@ -497,7 +478,7 @@ namespace SaludTotal.Desktop.Services
         /// <returns>Lista de doctores para la especialidad.</returns>
         public async Task<List<DoctorDto>> GetDoctoresByEspecialidadAsync(int especialidadId)
         {
-            string url = $"{ApiBaseUrl}/api/profesionales/especialidades/{especialidadId}/doctores";
+            string url = $"{ApiProfesionalesUrl}/especialidades/{especialidadId}/doctores";
             Console.WriteLine($"Obteniendo doctores para especialidad {especialidadId} desde: {url}");
             HttpResponseMessage response = await client.GetAsync(url);
             string responseContent = await response.Content.ReadAsStringAsync();
@@ -526,7 +507,7 @@ namespace SaludTotal.Desktop.Services
         /// <returns>Lista de horarios laborales.</returns>
         public async Task<List<HorarioLaboralDto>> GetHorariosLaboralesAsync(int doctorId)
         {
-            string url = $"{ApiBaseUrl}/api/profesionales/{doctorId}/horarios";
+            string url = $"{ApiProfesionalesUrl}/{doctorId}/horarios";
             Console.WriteLine($"Obteniendo horarios laborales para doctor {doctorId} desde: {url}");
             HttpResponseMessage response = await client.GetAsync(url);
             string responseContent = await response.Content.ReadAsStringAsync();
@@ -556,7 +537,7 @@ namespace SaludTotal.Desktop.Services
         /// <returns>Lista de slots disponibles.</returns>
         public async Task<List<SlotTurnoDto>> GetSlotsTurnosDisponiblesAsync(int doctorId, string fecha)
         {
-            string url = $"{ApiBaseUrl}/api/turnos/disponibles?doctor_id={doctorId}&fecha={Uri.EscapeDataString(fecha)}";
+            string url = $"{ApiTurnosUrl}/disponibles?doctor_id={doctorId}&fecha={Uri.EscapeDataString(fecha)}";
             Console.WriteLine($"Obteniendo slots de turnos disponibles para doctor {doctorId} y fecha {fecha} desde: {url}");
             HttpResponseMessage response = await client.GetAsync(url);
             string responseContent = await response.Content.ReadAsStringAsync();
@@ -596,7 +577,7 @@ namespace SaludTotal.Desktop.Services
         {
             try
             {
-                string url = $"{ApiBaseUrl}/api/profesionales/";
+                string url = $"{ApiProfesionalesUrl}/";
                 Console.WriteLine($"Obteniendo todos los doctores desde: {url}");
                 HttpResponseMessage response = await client.GetAsync(url);
                 string responseContent = await response.Content.ReadAsStringAsync();
@@ -608,21 +589,21 @@ namespace SaludTotal.Desktop.Services
                 {
                     var doctores = obj["doctores"]?.ToObject<List<DoctorDto>>() ?? new List<DoctorDto>();
                     Console.WriteLine($"Doctores obtenidos: {doctores.Count}");
-                    
+
                     // Debug: Mostrar estructura de los primeros doctores
                     for (int i = 0; i < Math.Min(3, doctores.Count); i++)
                     {
                         var doctor = doctores[i];
                         Console.WriteLine($"Doctor {i + 1}: ID={doctor.Id}, Nombre='{doctor.NombreCompletoCalculado}', Especialidad='{doctor.Especialidad}', Email='{doctor.Email}'");
                     }
-                    
+
                     // Si los doctores no tienen especialidad, intentar obtenerla
                     if (doctores.Any() && string.IsNullOrEmpty(doctores.First().Especialidad))
                     {
                         Console.WriteLine("Los doctores no tienen especialidad asignada, intentando obtenerla...");
                         await AsignarEspecialidadesADoctoresAsync(doctores);
                     }
-                    
+
                     return doctores;
                 }
                 else if (obj["mensaje"] != null)
@@ -655,10 +636,10 @@ namespace SaludTotal.Desktop.Services
             {
                 // Obtener especialidades y doctores por especialidad
                 var (especialidades, doctoresPorEspecialidad) = await GetEspecialidadesYDoctoresAsync();
-                
+
                 // Crear un diccionario para mapear doctor ID a especialidad
                 var doctorEspecialidadMap = new Dictionary<int, string>();
-                
+
                 foreach (var grupo in doctoresPorEspecialidad)
                 {
                     foreach (var doctorEsp in grupo.Doctores)
@@ -669,7 +650,7 @@ namespace SaludTotal.Desktop.Services
                         }
                     }
                 }
-                
+
                 // Asignar especialidades a los doctores
                 foreach (var doctor in doctores)
                 {
@@ -683,7 +664,7 @@ namespace SaludTotal.Desktop.Services
                         doctor.Especialidad = "Sin especialidad";
                     }
                 }
-                
+
                 Console.WriteLine($"Especialidades asignadas a {doctores.Count} doctores");
             }
             catch (Exception ex)
@@ -697,6 +678,57 @@ namespace SaludTotal.Desktop.Services
                         doctor.Especialidad = "General";
                     }
                 }
+            }
+        }
+
+        public async Task<string> TestConexionAsync()
+        {
+            try
+            {
+                string url = $"{ApiTurnosUrl}/test";
+                HttpResponseMessage response = await client.GetAsync(url);
+
+                response.EnsureSuccessStatusCode();
+
+                string jsonResponse = await response.Content.ReadAsStringAsync();
+                return $"✅ Conexión exitosa: {jsonResponse}";
+            }
+            catch (HttpRequestException e)
+            {
+                return $"❌ Error de conexión HTTP: {e.Message}";
+            }
+            catch (Exception e)
+            {
+                return $"❌ Error general: {e.Message}";
+            }
+        }
+
+        public async Task<string> TestDeserializacionAsync()
+        {
+            try
+            {
+                string url = $"{ApiTurnosUrl}/";
+                HttpResponseMessage response = await client.GetAsync(url);
+                response.EnsureSuccessStatusCode();
+
+                string jsonResponse = await response.Content.ReadAsStringAsync();
+                var turnos = JsonConvert.DeserializeObject<List<Turno>>(jsonResponse) ?? new List<Turno>();
+
+                string resultado = $"✅ Se deserializaron {turnos.Count} turnos correctamente:\n";
+
+                // Mostrar solo los primeros 3 turnos para debug
+                int maxTurnos = Math.Min(3, turnos.Count);
+                for (int i = 0; i < maxTurnos; i++)
+                {
+                    var turno = turnos[i];
+                    resultado += $"- Turno {turno.Id}: Paciente='{turno.Paciente?.NombreCompleto ?? "NULL"}', Profesional='{turno.Profesional?.NombreCompleto ?? "NULL"}'\n";
+                }
+
+                return resultado;
+            }
+            catch (Exception e)
+            {
+                return $"❌ Error en deserialización: {e.Message}";
             }
         }
 
