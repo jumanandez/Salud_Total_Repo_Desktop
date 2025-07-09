@@ -21,7 +21,7 @@ namespace SaludTotal.Desktop
         // Añadir estos métodos dentro de la clase MainWindow
         private async void ConfirmarTurno_Click(object sender, RoutedEventArgs e)
         {
-            await _viewModel.ConfirmarTurno();
+            //await _viewModel.ConfirmarTurno();
         }
 
         private async void CancelarTurno_Click(object sender, RoutedEventArgs e)

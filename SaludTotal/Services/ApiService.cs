@@ -76,8 +76,10 @@ namespace SaludTotal.Desktop.Services
                 string url = $"{ApiTurnosUrl}/{turnoId}/aceptar";
                 var request = new HttpRequestMessage(HttpMethod.Patch, url);
                 HttpResponseMessage response = await client.SendAsync(request);
+
                 string responseContent = await response.Content.ReadAsStringAsync();
                 var resultado = JsonConvert.DeserializeObject<ResultadoApi>(responseContent);
+
                 if (!response.IsSuccessStatusCode)
                 {
                     Console.WriteLine($"Error al aceptar turno: {resultado}");
@@ -119,20 +121,52 @@ namespace SaludTotal.Desktop.Services
             }
         }
 
-        public async Task<bool> CancelarTurnoAsync(int turnoId)
+        public async Task<ResultadoApi> CancelarTurnoAsync(int turnoId)
         {
             try
             {
                 string url = $"{ApiTurnosUrl}/{turnoId}/cancelar";
-                HttpResponseMessage response = await client.PutAsync(url, null);
-                response.EnsureSuccessStatusCode();
+                HttpResponseMessage response = await client.PatchAsync(url, null);
+                string responseContent = await response.Content.ReadAsStringAsync();
+                var resultado = JsonConvert.DeserializeObject<ResultadoApi>(responseContent);
+                if (!response.IsSuccessStatusCode)
+                {
+                    Console.WriteLine($"Error al cancelar turno: {responseContent}");
+                    if (response.StatusCode == System.Net.HttpStatusCode.NotFound) // 404
+                    {
+                        return new ResultadoApi
+                        {
+                            Success = response.IsSuccessStatusCode,
+                            Mensaje = resultado?.Mensaje ?? "Turno No encontrado",
+                            Detalle = resultado?.Detalle ?? "Turno No encontrado"
+                        };
+                    }
+                    else if (response.StatusCode == System.Net.HttpStatusCode.BadRequest) // 400
+                    {
+                        return new ResultadoApi
+                        {
+                            Success = response.IsSuccessStatusCode,
+                            Mensaje = resultado?.Mensaje ?? "Error al cancelar turno",
+                            Detalle = resultado?.Detalle ?? "Los datos enviados no son válidos"
+                        };
+                    }
+                }
 
-                return response.IsSuccessStatusCode;
+                return new ResultadoApi
+                {
+                    Success = response.IsSuccessStatusCode,
+                    Mensaje = resultado?.Mensaje ?? "Turno cancelado exitosamente"
+                };
             }
             catch (HttpRequestException e)
             {
                 Console.WriteLine($"Error al cancelar turno: {e.Message}");
-                return false;
+                return new ResultadoApi
+                {
+                    Success = false,
+                    Mensaje = "Error de conexión al cancelar turno",
+                    Detalle = e.Message
+                };
             }
         }
 
@@ -147,13 +181,10 @@ namespace SaludTotal.Desktop.Services
             {
                 // Construir la URL con los parámetros como query string
                 string url = $"{ApiTurnosUrl}/store?paciente_id={nuevoTurno.PacienteId}&doctor_id={nuevoTurno.DoctorId}&fecha={Uri.EscapeDataString(nuevoTurno.Fecha)}&hora={Uri.EscapeDataString(nuevoTurno.Hora)}";
-                Console.WriteLine($"Creando turno en: {url}");
-                Console.WriteLine($"Datos del turno (en query string): paciente_id={nuevoTurno.PacienteId}, doctor_id={nuevoTurno.DoctorId}, fecha={nuevoTurno.Fecha}, hora={nuevoTurno.Hora}");
-
+              
                 // Enviar POST con body vacío
                 HttpResponseMessage response = await client.PostAsync(url, null);
                 string responseContent = await response.Content.ReadAsStringAsync();
-                Console.WriteLine($"Respuesta del servidor: {responseContent}");
 
                 if (response.StatusCode == System.Net.HttpStatusCode.UnprocessableEntity) // 422
                 {
@@ -732,6 +763,53 @@ namespace SaludTotal.Desktop.Services
             }
         }
 
+        public async Task<ResultadoApi> RechazarTurnoAsync(int turnoId)
+        {
+            try
+            {
+                string url = $"{ApiTurnosUrl}/{turnoId}/rechazar";
+                HttpResponseMessage response = await client.PatchAsync(url, null);
+                string responseContent = await response.Content.ReadAsStringAsync();
+                var resultado = JsonConvert.DeserializeObject<ResultadoApi>(responseContent);
+                if (!response.IsSuccessStatusCode)
+                {
+                    Console.WriteLine($"Error al rechazar turno: {responseContent}");
+                    if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                    {
+                        return new ResultadoApi
+                        {
+                            Success = response.IsSuccessStatusCode,
+                            Mensaje = resultado?.Mensaje ?? "Turno no encontrado",
+                            Detalle = resultado?.Detalle ?? "No se encontró el turno con el ID especificado"
+                        };
+                    }
+                    else if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
+                    {
+                        return new ResultadoApi
+                        {
+                            Success = response.IsSuccessStatusCode,
+                            Mensaje = resultado?.Mensaje ?? "Error al rechazar turno",
+                            Detalle = resultado?.Detalle ?? "Los datos enviados no son válidos"
+                        };
+                    }
+                }
+                return new ResultadoApi
+                {
+                    Success = response.IsSuccessStatusCode,
+                    Mensaje = resultado?.Mensaje ?? "Turno rechazado exitosamente"
+                };
+            }
+            catch (HttpRequestException e)
+            {
+                Console.WriteLine($"Error al rechazar turno: {e.Message}");
+                return new ResultadoApi
+                {
+                    Success = false,
+                    Mensaje = "Error de conexión al rechazar turno",
+                    Detalle = e.Message
+                };
+            }
+        }
     }
 
     /// <summary>

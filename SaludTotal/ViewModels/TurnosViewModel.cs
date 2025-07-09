@@ -8,6 +8,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Windows;
+using SaludTotal.Services;
 
 namespace SaludTotal.Desktop.ViewModels
 {
@@ -192,8 +193,8 @@ namespace SaludTotal.Desktop.ViewModels
                 return;
             }
 
-            bool success = await _apiService.CancelarTurnoAsync(TurnoSeleccionado.Id);
-            if (success)
+            ResultadoApi result = await _apiService.CancelarTurnoAsync(TurnoSeleccionado.Id);
+            if (result.Success)
             {
                 MessageBox.Show("Turno cancelado exitosamente.", "Éxito", MessageBoxButton.OK, MessageBoxImage.Information);
                 await RecargarTurnosAsync();

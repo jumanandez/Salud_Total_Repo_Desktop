@@ -229,6 +229,12 @@
                         Foreground="White"
                         Click="CancelarTurno_Click"/>
                 
+                <Button Content="Rechazar Turno"
+                        Style="{StaticResource ActionButtonStyle}"
+                        Background="#6C757D"
+                        Foreground="White"
+                        Click="RechazarTurno_Click"/>
+                
                 <Button Content="Reprogramar" 
                         Style="{StaticResource ActionButtonStyle}"
                         Background="#FFC107" 

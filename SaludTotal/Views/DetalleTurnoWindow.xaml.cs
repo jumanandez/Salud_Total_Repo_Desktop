@@ -99,10 +99,33 @@ namespace SaludTotal.Desktop.Views
             this.Close();
         }
 
-        private void CancelarTurno_Click(object sender, RoutedEventArgs e)
+        private async void CancelarTurno_Click(object sender, RoutedEventArgs e)
         {
-            // TODO: Implementar lógica para cancelar turno
-            MessageBox.Show("Funcionalidad de cancelar turno - Por implementar", "Cancelar Turno", MessageBoxButton.OK, MessageBoxImage.Information);
+            if (_turno == null || _turno.Id <= 0)
+            {
+                MessageBox.Show("No se puede aceptar un turno no válido.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+            var apiService = new Services.ApiService();
+            try
+            {
+                ResultadoApi result = await apiService.CancelarTurnoAsync(_turno.Id);
+                if (result.Success)
+                {
+                    MessageBox.Show(result.Mensaje, "Cancelar Turno", MessageBoxButton.OK, MessageBoxImage.Information);
+                    Confirmado = true;
+                    this.DialogResult = true;
+                    this.Close();
+                }
+                else
+                {
+                    MessageBox.Show(("Mensaje: " + result.Mensaje + "\n" + "Detalle: " + result.Detalle), "Aceptar Turno", MessageBoxButton.OK, MessageBoxImage.Warning);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error al aceptar turno: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         private void ReprogramarTurno_Click(object sender, RoutedEventArgs e)
@@ -141,6 +164,35 @@ namespace SaludTotal.Desktop.Views
             catch (Exception ex)
             {
                 MessageBox.Show($"Error al aceptar turno: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private async void RechazarTurno_Click(object sender, RoutedEventArgs e)
+        {
+            if (_turno == null || _turno.Id <= 0)
+            {
+                MessageBox.Show("No se puede rechazar un turno no válido.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+            var apiService = new SaludTotal.Desktop.Services.ApiService();
+            try
+            {
+                ResultadoApi result = await apiService.RechazarTurnoAsync(_turno.Id);
+                if (result.Success)
+                {
+                    MessageBox.Show(result.Mensaje, "Rechazar Turno", MessageBoxButton.OK, MessageBoxImage.Information);
+                    Confirmado = true;
+                    this.DialogResult = true;
+                    this.Close();
+                }
+                else
+                {
+                    MessageBox.Show(("Mensaje: " + result.Mensaje + "\n" + "Detalle: " + result.Detalle), "Rechazar Turno", MessageBoxButton.OK, MessageBoxImage.Warning);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error al rechazar turno: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
