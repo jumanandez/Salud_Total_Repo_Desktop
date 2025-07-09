@@ -12,6 +12,8 @@ public class ResultadoApi
     public string? Detalle { get; set; }
     [JsonProperty("turno")]
     public object? Turno { get; set; }
+    [JsonProperty("errores")]
+    public string[]? Errores { get; set; }
 }
 
 

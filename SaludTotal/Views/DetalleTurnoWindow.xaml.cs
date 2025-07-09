@@ -19,6 +19,7 @@ namespace SaludTotal.Desktop.Views
             InitializeComponent();
             _turno = turno;
             CargarDatosTurno();
+            _ = CargarHorariosLaboralesReprogramacionAsync();
         }
 
         // Constructor compatible con NuevoTurnoWindow (mantiene compatibilidad)
@@ -128,14 +129,52 @@ namespace SaludTotal.Desktop.Views
             }
         }
 
-        private void ReprogramarTurno_Click(object sender, RoutedEventArgs e)
+        private async void ReprogramarTurno_Click(object sender, RoutedEventArgs e)
         {
-            // TODO: Implementar lógica para reprogramar turno
-            string nuevaFecha = CalendarFecha.SelectedDate?.ToShortDateString() ?? "No seleccionada";
-            string nuevaHora = (ComboHora.SelectedItem as System.Windows.Controls.ComboBoxItem)?.Content?.ToString() ?? "No seleccionada";
-            
-            MessageBox.Show($"Reprogramar turno:\nFecha: {nuevaFecha}\nHora: {nuevaHora}\n\nFuncionalidad por implementar", 
-                           "Reprogramar Turno", MessageBoxButton.OK, MessageBoxImage.Information);
+            if (_turno == null || _turno.Id <= 0)
+            {
+                MessageBox.Show("No se puede reprogramar un turno no válido.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+            // Obtener doctorId, fecha y hora
+            int doctorId = _turno.Profesional?.DoctorId ?? _turno.DoctorId;
+            string nuevaFecha = CalendarFecha.SelectedDate?.ToString("yyyy-MM-dd") ?? string.Empty;
+            string nuevaHora = (ComboHora.SelectedItem as System.Windows.Controls.ComboBoxItem)?.Content?.ToString() ?? string.Empty;
+
+            if (doctorId <= 0 || string.IsNullOrWhiteSpace(nuevaFecha) || string.IsNullOrWhiteSpace(nuevaHora))
+            {
+                MessageBox.Show("Debe seleccionar un doctor, fecha y hora válidos para reprogramar el turno.", "Datos incompletos", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }else if(nuevaFecha == _turno.Fecha && nuevaHora == _turno.Hora)
+            {
+                MessageBox.Show("La fecha y hora seleccionadas son las mismas que las originales. Por favor, elija una fecha y hora diferentes.", "Datos incompletos", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            var apiService = new SaludTotal.Desktop.Services.ApiService();
+            try
+            {
+                ResultadoApi result = await apiService.ReprogramarTurnoAsync(_turno.Id, doctorId, nuevaFecha, nuevaHora);
+                if (result.Success)
+                {
+                    string text = result.Mensaje + "\n" +
+                                  $"Nuevo turno: {nuevaFecha} {nuevaHora}\n" +
+                                  $"Doctor: {_turno.Profesional?.NombreCompleto ?? "No disponible"}";
+
+                    MessageBox.Show(text, "Reprogramar Turno", MessageBoxButton.OK, MessageBoxImage.Information);
+                    Confirmado = true;
+                    this.DialogResult = true;
+                    this.Close();
+                }
+                else
+                {
+                    MessageBox.Show(("Mensaje: " + result.Mensaje + "\n" + "Detalle: " + result.Detalle), "Reprogramar Turno", MessageBoxButton.OK, MessageBoxImage.Warning);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error al reprogramar turno: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         private async void AceptarTurno_Click(object sender, RoutedEventArgs e)
@@ -212,15 +251,76 @@ namespace SaludTotal.Desktop.Views
         }
 
         // Evento cuando se selecciona una fecha en el calendar
-        private void CalendarFecha_SelectedDatesChanged(object sender, SelectionChangedEventArgs e)
+        private async void CalendarFecha_SelectedDatesChanged(object sender, SelectionChangedEventArgs e)
         {
             ActualizarFechaNueva();
+            // --- NUEVO: Cargar horarios disponibles para la reprogramación ---
+            if (_turno?.Profesional != null && _turno.Profesional.DoctorId > 0 && CalendarFecha.SelectedDate.HasValue)
+            {
+                try
+                {
+                    var apiService = new Services.ApiService();
+                    var fecha = CalendarFecha.SelectedDate.Value.ToString("yyyy-MM-dd");
+                    var slots = await apiService.GetSlotsTurnosDisponiblesAsync(_turno.Profesional.DoctorId, fecha);
+                    ComboHora.Items.Clear();
+                    if (slots != null && slots.Any())
+                    {
+                        foreach (var slot in slots)
+                        {
+                            ComboBoxItem item = new ComboBoxItem { Content = slot.Hora, Tag = slot.Hora };
+                            ComboHora.Items.Add(item);
+                        }
+                        ComboHora.SelectedIndex = 0;
+                    }
+                    else
+                    {
+                        ComboHora.Items.Add(new ComboBoxItem { Content = "No hay horarios disponibles", IsEnabled = false });
+                        ComboHora.SelectedIndex = 0;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    ComboHora.Items.Clear();
+                    ComboHora.Items.Add(new ComboBoxItem { Content = "Error al cargar horarios", IsEnabled = false });
+                    ComboHora.SelectedIndex = 0;
+                }
+            }
         }
 
         // Evento cuando se selecciona una hora en el combobox
         private void ComboHora_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             ActualizarFechaNueva();
+        }
+
+        // --- NUEVO: Mostrar horarios laborales del doctor en la sección de reprogramación ---
+        private async Task CargarHorariosLaboralesReprogramacionAsync()
+        {
+            if (_turno?.Profesional != null && _turno.Profesional.DoctorId > 0)
+            {
+                try
+                {
+                    var apiService = new Services.ApiService();
+                    var horarios = await apiService.GetHorariosLaboralesAsync(_turno.Profesional.DoctorId);
+                    if (DiasLaboralesTextBlock != null)
+                    {
+                        if (horarios.Any())
+                        {
+                            var dias = horarios.Select(h => $"{((DiasSemana)h.DiaSemana).ToString()}: {h.HoraInicio} - {h.HoraFin}");
+                            DiasLaboralesTextBlock.Text = "Días laborales: " + string.Join(", ", dias);
+                        }
+                        else
+                        {
+                            DiasLaboralesTextBlock.Text = "El doctor no tiene días laborales configurados.";
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    if (DiasLaboralesTextBlock != null)
+                        DiasLaboralesTextBlock.Text = "Error al cargar días laborales.";
+                }
+            }
         }
 
         // Método para actualizar la fecha nueva combinando fecha y hora

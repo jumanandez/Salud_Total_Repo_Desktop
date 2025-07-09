@@ -147,6 +147,9 @@
                         <!-- Reprogramar turno -->
                         <TextBlock Text="Reprogramar turno" FontSize="20" FontWeight="Bold" Foreground="#2C3E50" Margin="0,0,0,15"/>
                         
+                        <!-- NUEVO: Mostrar días laborales del doctor -->
+                        <TextBlock x:Name="DiasLaboralesTextBlock" Text="" FontSize="14" Foreground="#34495E" Margin="0,0,0,10"/>
+                        
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>

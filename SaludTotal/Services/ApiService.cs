@@ -810,6 +810,70 @@ namespace SaludTotal.Desktop.Services
                 };
             }
         }
+
+        public async Task<ResultadoApi> ReprogramarTurnoAsync(int turnoId, int doctorId, string fecha, string hora)
+        {
+            try
+            {
+                string url = $"{ApiTurnosUrl}/{turnoId}/reprogramar";
+                var payload = new
+                {
+                    doctor_id = doctorId,
+                    fecha = fecha,
+                    hora = hora
+                };
+                var content = new StringContent(JsonConvert.SerializeObject(payload), System.Text.Encoding.UTF8, "application/json");
+                HttpResponseMessage response = await client.PatchAsync(url, content);
+                string responseContent = await response.Content.ReadAsStringAsync();
+                var resultado = JsonConvert.DeserializeObject<ResultadoApi>(responseContent);
+                if (!response.IsSuccessStatusCode)
+                {
+                    Console.WriteLine($"Error al reprogramar turno: {responseContent}");
+                    if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                    {
+                        return new ResultadoApi
+                        {
+                            Success = response.IsSuccessStatusCode,
+                            Mensaje = resultado?.Mensaje ?? "Turno no encontrado",
+                            Detalle = resultado?.Detalle ?? "No se encontró el turno con el ID especificado"
+                        };
+                    }
+                    else if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
+                    {
+                        return new ResultadoApi
+                        {
+                            Success = response.IsSuccessStatusCode,
+                            Mensaje = resultado?.Mensaje ?? "Error al reprogramar turno",
+                            Detalle = resultado?.Detalle ?? "Los datos enviados no son válidos"
+                        };
+                    }
+                    else if ((int)response.StatusCode == 422)
+                    {
+                        return new ResultadoApi
+                        {
+                            Success = false,
+                            Mensaje = resultado?.Mensaje ?? "Error de validación",
+                            Detalle = responseContent
+                        };
+                    }
+                }
+                return new ResultadoApi
+                {
+                    Success = response.IsSuccessStatusCode,
+                    Mensaje = resultado?.Mensaje ?? "Turno reprogramado exitosamente"
+                };
+            }
+            catch (HttpRequestException e)
+            {
+                Console.WriteLine($"Error al reprogramar turno: {e.Message}");
+                return new ResultadoApi
+                {
+                    Success = false,
+                    Mensaje = "Error de conexión al reprogramar turno",
+                    Detalle = e.Message
+                };
+            }
+        }
     }
 
     /// <summary>
