@@ -1,19 +1,27 @@
 using System;
+using Newtonsoft.Json;
 
 namespace SaludTotal.Models
 {
     public class SolicitudReprogramacion
     {
+        [JsonProperty("id")]
         public int Id { get; set; }
+        [JsonProperty("turno_id")]
         public int TurnoId { get; set; }
-        public string FechaOriginal { get; set; } = string.Empty;
-        public string HoraOriginal { get; set; } = string.Empty;
-        public string FechaNueva { get; set; } = string.Empty;
-        public string HoraNueva { get; set; } = string.Empty;
-        public Paciente? Paciente { get; set; }
-        public Profesional? Profesional { get; set; }
-        public string Estado { get; set; } = "Pendiente"; // Pendiente, Aceptada, Rechazada
-        public DateTime FechaSolicitud { get; set; }
-        public string? Motivo { get; set; }
+
+        [JsonProperty("fecha")]
+        public string Fecha { get; set; } = string.Empty;
+        [JsonProperty("hora")]
+        public string Hora { get; set; } = string.Empty;
+
+        [JsonProperty("estado")]
+        public EstadoSolicitud Estado { get; set; }
+        [JsonProperty("turno")]
+        public Turno? Turno { get; set; }
+        [JsonProperty("created_at")]
+        public DateTime CreatedAt { get; set; }
+        [JsonProperty("updated_at")]
+        public DateTime UpdatedAt { get; set; }
     }
 }

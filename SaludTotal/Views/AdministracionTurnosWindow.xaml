@@ -617,9 +617,9 @@
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <StackPanel Orientation="Vertical" VerticalAlignment="Center" Margin="5,0">
-                                            <TextBlock Text="{Binding FechaOriginal, Converter={StaticResource DateTimeFormatConverter}}" 
+                                            <TextBlock Text="{Binding Turno.Fecha, Converter={StaticResource DateTimeFormatConverter}}" 
                                                        FontWeight="Medium" FontSize="13"/>
-                                            <TextBlock Text="{Binding HoraOriginal}" 
+                                            <TextBlock Text="{Binding Turno.Hora}" 
                                                        FontSize="12" Foreground="#252421"/>
                                         </StackPanel>
                                     </DataTemplate>
@@ -630,9 +630,9 @@
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <StackPanel Orientation="Vertical" VerticalAlignment="Center" Margin="5,0">
-                                            <TextBlock Text="{Binding FechaNueva, Converter={StaticResource DateTimeFormatConverter}}" 
+                                            <TextBlock Text="{Binding Fecha, Converter={StaticResource DateTimeFormatConverter}}" 
                                                        FontWeight="Medium" FontSize="13" Foreground="#28A745"/>
-                                            <TextBlock Text="{Binding HoraNueva}" 
+                                            <TextBlock Text="{Binding Hora}" 
                                                        FontSize="12" Foreground="#28A745"/>
                                         </StackPanel>
                                     </DataTemplate>
@@ -642,7 +642,7 @@
                             <DataGridTemplateColumn Header="Paciente" Width="*" MinWidth="150">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
-                                        <TextBlock Text="{Binding Paciente.NombreApellido, FallbackValue='N/A'}" 
+                                        <TextBlock Text="{Binding Turno.Paciente.NombreApellido, FallbackValue='N/A'}" 
                                                    VerticalAlignment="Center" 
                                                    Padding="5,0"/>
                                     </DataTemplate>
@@ -652,7 +652,7 @@
                             <DataGridTemplateColumn Header="Doctor" Width="*" MinWidth="150">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
-                                        <TextBlock Text="{Binding Profesional.NombreApellido, FallbackValue='N/A'}" 
+                                        <TextBlock Text="{Binding Turno.Profesional.NombreApellido, FallbackValue='N/A'}" 
                                                    VerticalAlignment="Center" 
                                                    Padding="5,0"/>
                                     </DataTemplate>
