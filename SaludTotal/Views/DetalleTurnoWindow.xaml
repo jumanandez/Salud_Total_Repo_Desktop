@@ -250,7 +250,8 @@
                         Foreground="Black"
                         Click="ReprogramarTurno_Click"/>
                 
-                <Button Content="Aceptar" 
+                <Button x:Name="AceptarTurnoButton"
+                        Content="Aceptar" 
                         Style="{StaticResource ActionButtonStyle}"
                         Background="#126D1D" 
                         Foreground="White"

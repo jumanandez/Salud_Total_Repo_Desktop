@@ -179,11 +179,14 @@ namespace SaludTotal.Desktop.Views
 
         private async void AceptarTurno_Click(object sender, RoutedEventArgs e)
         {
+               
             if (_turno == null || _turno.Id <= 0)
             {
                 MessageBox.Show("No se puede aceptar un turno no válido.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
+            AceptarTurnoButton.IsEnabled = false;
+            AceptarTurnoButton.Content = "Procesando...";
             var apiService = new SaludTotal.Desktop.Services.ApiService();
             try
             {
@@ -204,6 +207,12 @@ namespace SaludTotal.Desktop.Views
             {
                 MessageBox.Show($"Error al aceptar turno: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
+            finally
+            {
+
+                AceptarTurnoButton.Content = "Aceptar";
+                AceptarTurnoButton.IsEnabled = true;
+            }
         }
 
         private async void RechazarTurno_Click(object sender, RoutedEventArgs e)
@@ -213,20 +222,28 @@ namespace SaludTotal.Desktop.Views
                 MessageBox.Show("No se puede rechazar un turno no válido.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
+
+            var inputBox = new InputBoxWindow("Mensaje de rechazo", "Ingrese el mensaje que se enviará al paciente (opcional):");
+            inputBox.Owner = this;
+            bool? result = inputBox.ShowDialog();
+            if (result != true) return;
+
+            string? mensaje = inputBox.UserInput;
+
             var apiService = new SaludTotal.Desktop.Services.ApiService();
             try
             {
-                ResultadoApi result = await apiService.RechazarTurnoAsync(_turno.Id);
-                if (result.Success)
+                ResultadoApi apiResult = await apiService.RechazarTurnoAsync(_turno.Id, mensaje);
+                if (apiResult.Success)
                 {
-                    MessageBox.Show(result.Mensaje, "Rechazar Turno", MessageBoxButton.OK, MessageBoxImage.Information);
+                    MessageBox.Show(apiResult.Mensaje, "Rechazar Turno", MessageBoxButton.OK, MessageBoxImage.Information);
                     Confirmado = true;
                     this.DialogResult = true;
                     this.Close();
                 }
                 else
                 {
-                    MessageBox.Show(("Mensaje: " + result.Mensaje + "\n" + "Detalle: " + result.Detalle), "Rechazar Turno", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    MessageBox.Show(("Mensaje: " + apiResult.Mensaje + "\n" + "Detalle: " + apiResult.Detalle), "Rechazar Turno", MessageBoxButton.OK, MessageBoxImage.Warning);
                 }
             }
             catch (Exception ex)

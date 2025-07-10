@@ -763,12 +763,18 @@ namespace SaludTotal.Desktop.Services
             }
         }
 
-        public async Task<ResultadoApi> RechazarTurnoAsync(int turnoId)
+        public async Task<ResultadoApi> RechazarTurnoAsync(int turnoId, string? mensaje = null)
         {
             try
             {
                 string url = $"{ApiTurnosUrl}/{turnoId}/rechazar";
-                HttpResponseMessage response = await client.PatchAsync(url, null);
+                StringContent? content = null;
+                if (!string.IsNullOrWhiteSpace(mensaje))
+                {
+                    var payload = new { mensaje };
+                    content = new StringContent(JsonConvert.SerializeObject(payload), System.Text.Encoding.UTF8, "application/json");
+                }
+                HttpResponseMessage response = await client.PatchAsync(url, content);
                 string responseContent = await response.Content.ReadAsStringAsync();
                 var resultado = JsonConvert.DeserializeObject<ResultadoApi>(responseContent);
                 if (!response.IsSuccessStatusCode)
