@@ -13,7 +13,11 @@ public class ResultadoApi
     [JsonProperty("turno")]
     public object? Turno { get; set; }
     [JsonProperty("errores")]
-    public string[]? Errores { get; set; }
+    public Dictionary<string, string[]>? Errores { get; set; }
 }
 
-
+public class ErroresFechaYHora
+{
+    public string[]? Fecha { get; set; }
+    public string[]? Hora { get; set; }
+}

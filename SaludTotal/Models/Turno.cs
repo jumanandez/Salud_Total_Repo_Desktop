@@ -28,6 +28,8 @@ namespace SaludTotal.Models
 
         [JsonProperty("estado")]
         public EstadoTurno Estado { get; set; }
+        [JsonProperty("solicita_cancelacion")]
+        public bool SolicitaCancelacion { get; set; }
 
         [JsonProperty("paciente")]
         public Paciente? Paciente { get; set; }

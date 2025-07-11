@@ -1,9 +1,12 @@
 using System;
+using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using SaludTotal.Desktop.Services;
 using SaludTotal.Desktop.ViewModels;
 using SaludTotal.Models;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace SaludTotal.Desktop.Views
 {
@@ -164,20 +167,50 @@ namespace SaludTotal.Desktop.Views
         }
 
         #region Eventos para Solicitudes de Reprogramación
-        private void AceptarSolicitud_Click(object sender, RoutedEventArgs e)
+        private async void AceptarSolicitud_Click(object sender, RoutedEventArgs e)
         {
             var button = sender as Button;
             var solicitud = button?.Tag as SolicitudReprogramacion;
-            return;
+            if (solicitud != null)
+            {
+                var api = new ApiService();
+                var resultado = await api.AceptarSolicitudReprogramacionAsync(solicitud.Id);
+                if (resultado.Errores != null)
+                {
+                    // Mostrar errores específicos si existen
+                    var sb = new StringBuilder();
+                    sb.AppendLine(resultado.Mensaje);
+
+                    foreach (var campo in resultado.Errores)
+                    {
+                        foreach (var mensaje in campo.Value)
+                        {
+                            sb.AppendLine($"- {mensaje}");
+                        }
+                    }
+                    MessageBox.Show(sb.ToString(), "Errores", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+                MessageBox.Show(resultado.Mensaje, resultado.Success ? "Éxito" : "Error", MessageBoxButton.OK, resultado.Success ? MessageBoxImage.Information : MessageBoxImage.Error);
+                await _viewModel.CargarSolicitudesReprogramacionAsync();
+                await _viewModel.RecargarTurnosAsync();
+            }
         }
 
-        private void RechazarSolicitud_Click(object sender, RoutedEventArgs e)
+        private async void RechazarSolicitud_Click(object sender, RoutedEventArgs e)
         {
             var button = sender as Button;
             var solicitud = button?.Tag as SolicitudReprogramacion;
-
-            return;
+            if (solicitud != null)
+            {
+                var api = new ApiService();
+                var resultado = await api.RechazarSolicitudReprogramacionAsync(solicitud.Id);
+                MessageBox.Show(resultado.Mensaje, resultado.Success ? "Éxito" : "Error", MessageBoxButton.OK, resultado.Success ? MessageBoxImage.Information : MessageBoxImage.Error);
+                await _viewModel.CargarSolicitudesReprogramacionAsync();
+                await _viewModel.RecargarTurnosAsync();
+            }
         }
         #endregion
+
     }
 }

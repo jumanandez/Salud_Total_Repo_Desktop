@@ -5,7 +5,8 @@ using SaludTotal.Models;
 using SaludTotal.Services;
 using SaludTotal.Desktop.Converters;
 using System.Globalization;
-
+using System.Linq;
+using System.Text;
 namespace SaludTotal.Desktop.Views
 {
     public partial class DetalleTurnoWindow : Window
@@ -20,6 +21,7 @@ namespace SaludTotal.Desktop.Views
             _turno = turno;
             CargarDatosTurno();
             _ = CargarHorariosLaboralesReprogramacionAsync();
+            this.DataContext = _turno;
         }
 
         // Constructor compatible con NuevoTurnoWindow (mantiene compatibilidad)
@@ -166,6 +168,21 @@ namespace SaludTotal.Desktop.Views
                     this.DialogResult = true;
                     this.Close();
                 }
+                else if(result.Errores != null)
+                {
+                    // Mostrar errores específicos si existen
+                    var sb = new StringBuilder();
+                    sb.AppendLine(result.Mensaje);
+
+                    foreach (var campo in result.Errores)
+                    {
+                        foreach (var mensaje in campo.Value)
+                        {
+                            sb.AppendLine($"- {mensaje}");
+                        }
+                    }
+                    MessageBox.Show(sb.ToString(), "Errores", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
                 else
                 {
                     MessageBox.Show(("Mensaje: " + result.Mensaje + "\n" + "Detalle: " + result.Detalle), "Reprogramar Turno", MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -197,6 +214,21 @@ namespace SaludTotal.Desktop.Views
                     Confirmado = true;
                     this.DialogResult = true;
                     this.Close();
+                }
+                else if(result.Errores != null)
+                {
+                    // Mostrar errores específicos si existen
+                    var sb = new StringBuilder();
+                    sb.AppendLine(result.Mensaje);
+
+                    foreach (var campo in result.Errores)
+                    {
+                        foreach (var mensaje in campo.Value)
+                        {
+                            sb.AppendLine($"- {mensaje}");
+                        }
+                    }
+                    MessageBox.Show(sb.ToString(), "Errores", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
                 else
                 {
@@ -267,6 +299,58 @@ namespace SaludTotal.Desktop.Views
             this.Close();
         }
 
+        private async void AceptarCancelacion_Click(object sender, RoutedEventArgs e)
+        {
+            if (_turno == null) return;
+            
+            var _apiService = new SaludTotal.Desktop.Services.ApiService();
+            var resultado = await _apiService.AceptarSolicitudCancelacionAsync(_turno.Id);
+            if (resultado.Errores != null)
+            {
+                var sb = new System.Text.StringBuilder();
+                sb.AppendLine(resultado.Mensaje);
+                foreach (var campo in resultado.Errores)
+                {
+                    foreach (var mensaje in campo.Value)
+                    {
+                        sb.AppendLine($"- {mensaje}");
+                    }
+                }
+                MessageBox.Show(sb.ToString(), "Errores", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            MessageBox.Show(resultado.Mensaje, "Resultado", MessageBoxButton.OK, MessageBoxImage.Information);
+            // Aquí puedes actualizar la UI o cerrar la ventana si lo deseas
+            this.Close();
+        }
+
+        private async void RechazarCancelacion_Click(object sender, RoutedEventArgs e)
+        {
+            if (_turno == null) return;
+
+            
+            var _apiService = new SaludTotal.Desktop.Services.ApiService();
+            var resultado = await _apiService.RechazarSolicitudCancelacionAsync(_turno.Id);
+            if (resultado.Errores != null)
+            {
+                var sb = new System.Text.StringBuilder();
+                sb.AppendLine(resultado.Mensaje);
+                foreach (var campo in resultado.Errores)
+                {
+                    foreach (var mensaje in campo.Value)
+                    {
+                        sb.AppendLine($"- {mensaje}");
+                    }
+                }
+                MessageBox.Show(sb.ToString(), "Errores", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            MessageBox.Show(resultado.Mensaje, "Resultado", MessageBoxButton.OK, MessageBoxImage.Information);
+            // Aquí puedes actualizar la UI o cerrar la ventana si lo deseas
+            this.Close();
+        }
         // Evento cuando se selecciona una fecha en el calendar
         private async void CalendarFecha_SelectedDatesChanged(object sender, SelectionChangedEventArgs e)
         {

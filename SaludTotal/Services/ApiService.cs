@@ -101,6 +101,25 @@ namespace SaludTotal.Desktop.Services
                             Detalle = resultado?.Detalle ?? "Los datos enviados no son válidos"
                         };
                     }
+                    else if(response.StatusCode == System.Net.HttpStatusCode.UnprocessableEntity) //422
+                    {
+                        return new ResultadoApi
+                        {
+                            Success = false,
+                            Mensaje = resultado?.Mensaje ?? "Error de validación",
+                            Detalle = resultado?.Detalle ?? "Los datos enviados no cumplen con los requisitos esperados",
+                            Errores = resultado?.Errores ?? new Dictionary<string, string[]>()
+                        };
+                    }
+                    else if(response.StatusCode == System.Net.HttpStatusCode.InternalServerError) //500
+                    {
+                        return new ResultadoApi
+                        {
+                            Success = false,
+                            Mensaje = resultado?.Mensaje ?? "Error interno del servidor",
+                            Detalle = resultado?.Detalle ?? "Ocurrió un error inesperado en el servidor"
+                        };
+                    }
                 }
                 return new ResultadoApi
                 {
@@ -299,7 +318,7 @@ namespace SaludTotal.Desktop.Services
             {
                 // Construir la URL con los parámetros como query string
                 string url = $"{ApiTurnosUrl}/store?paciente_id={nuevoTurno.PacienteId}&doctor_id={nuevoTurno.DoctorId}&fecha={Uri.EscapeDataString(nuevoTurno.Fecha)}&hora={Uri.EscapeDataString(nuevoTurno.Hora)}";
-              
+
                 // Enviar POST con body vacío
                 HttpResponseMessage response = await client.PostAsync(url, null);
                 string responseContent = await response.Content.ReadAsStringAsync();
@@ -1054,6 +1073,326 @@ namespace SaludTotal.Desktop.Services
                 throw new Exception($"Error en el formato de respuesta: {e.Message}");
             }
         }
+
+        public async Task<ResultadoApi> AceptarSolicitudReprogramacionAsync(int solicitudId)
+        {
+            try
+            {
+                string url = $"{ApiTurnosUrl}/solicitudes-reprogramacion/{solicitudId}/aceptar";
+                Console.WriteLine($"Aceptando solicitud de reprogramación {solicitudId} desde: {url}");
+                HttpResponseMessage response = await client.PatchAsync(url, null);
+                string responseContent = await response.Content.ReadAsStringAsync();
+                var resultado = JsonConvert.DeserializeObject<ResultadoApi>(responseContent);
+                if (!response.IsSuccessStatusCode)
+                {
+                    if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                    {
+                        return new ResultadoApi
+                        {
+                            Success = false,
+                            Mensaje = resultado?.Mensaje ?? "Solicitud de reprogramación no encontrada.",
+                            Detalle = resultado?.Detalle ?? "No se pudo encontrar la solicitud de reprogramación especificada."
+                        };
+                    }
+                    else if (response.StatusCode == System.Net.HttpStatusCode.UnprocessableContent) //422 Validaciones
+                    {
+                        return new ResultadoApi
+                        {
+                            Success = false,
+                            Mensaje = resultado?.Mensaje ?? "Solicitud de reprogramación inválida.",
+                            Detalle = resultado?.Detalle ?? "La solicitud de reprogramación no es válida.",
+                            Errores = resultado?.Errores ?? null
+                        };
+                    }
+                    else if (response.StatusCode == System.Net.HttpStatusCode.InternalServerError) //500 Error interno
+                    {
+                        return new ResultadoApi
+                        {
+                            Success = false,
+                            Mensaje = resultado?.Mensaje ?? "Error interno del servidor.",
+                            Detalle = resultado?.Detalle ?? "Ocurrió un error al procesar la solicitud de reprogramación."
+                        };
+                    }
+                    else
+                    {
+                        return new ResultadoApi
+                        {
+                            Success = false,
+                            Mensaje = resultado?.Mensaje ?? "Error al aceptar solicitud de reprogramación. Sin Mensaje",
+                            Detalle = resultado?.Detalle ?? "Ocurrió un error al procesar la solicitud. Sin Detalles"
+                        };
+                    }
+                }
+                return new ResultadoApi
+                {
+                    Success = true,
+                    Mensaje = resultado?.Mensaje ?? "Solicitud de reprogramación aceptada correctamente.",
+                    Turno = resultado?.Turno ?? "La solicitud de reprogramación se ha procesado exitosamente."
+                };
+            }
+            catch (HttpRequestException e)
+            {
+                Console.WriteLine($"Error de solicitud HTTP al aceptar solicitud de reprogramación: {e.Message}");
+                throw new Exception($"Error de conexión: {e.Message}");
+            }
+            catch (JsonException e)
+            {
+                Console.WriteLine($"Error de deserialización JSON al aceptar solicitud de reprogramación: {e.Message}");
+                throw new Exception($"Error en el formato de respuesta: {e.Message}");
+            }
+        }
+        public async Task<ResultadoApi> RechazarSolicitudReprogramacionAsync(int solicitudId)
+        {
+            try
+            {
+                string url = $"{ApiTurnosUrl}/solicitudes-reprogramacion/{solicitudId}/rechazar";
+                Console.WriteLine($"Aceptando solicitud de reprogramación {solicitudId} desde: {url}");
+                HttpResponseMessage response = await client.PatchAsync(url, null);
+                string responseContent = await response.Content.ReadAsStringAsync();
+                var resultado = JsonConvert.DeserializeObject<ResultadoApi>(responseContent);
+                if (!response.IsSuccessStatusCode)
+                {
+                    if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                    {
+                        return new ResultadoApi
+                        {
+                            Success = false,
+                            Mensaje = resultado?.Mensaje ?? "Solicitud de reprogramación o Turno no encontrada.",
+                            Detalle = resultado?.Detalle ?? "No se pudo encontrar la solicitud de reprogramación o Turno especificado."
+                        };
+                    }
+                    else if (response.StatusCode == System.Net.HttpStatusCode.InternalServerError) //500 Error interno
+                    {
+                        return new ResultadoApi
+                        {
+                            Success = false,
+                            Mensaje = resultado?.Mensaje ?? "Error interno del servidor.",
+                            Detalle = resultado?.Detalle ?? "Ocurrió un error al procesar la solicitud de reprogramación."
+                        };
+                    }
+                    else
+                    {
+                        return new ResultadoApi
+                        {
+                            Success = false,
+                            Mensaje = resultado?.Mensaje ?? "Error al rechazar solicitud de reprogramación. Sin Mensaje",
+                            Detalle = resultado?.Detalle ?? "Ocurrió un error al procesar la solicitud. Sin Detalles"
+                        };
+                    }
+                }
+                return new ResultadoApi
+                {
+                    Success = true,
+                    Mensaje = resultado?.Mensaje ?? "Solicitud de reprogramación Rechazada correctamente.",
+                    Turno = resultado?.Turno ?? "La solicitud de reprogramación se ha procesado exitosamente."
+                };
+            }
+            catch (HttpRequestException e)
+            {
+                Console.WriteLine($"Error de solicitud HTTP al rechazar solicitud de reprogramación: {e.Message}");
+                throw new Exception($"Error de conexión: {e.Message}");
+            }
+            catch (JsonException e)
+            {
+                Console.WriteLine($"Error de deserialización JSON al rechazar solicitud de reprogramación: {e.Message}");
+                throw new Exception($"Error en el formato de respuesta: {e.Message}");
+            }
+        }
+        public async Task<ResultadoApi> AceptarSolicitudCancelacionAsync(int turno_id)
+        {
+            try
+            {
+                string url = $"{ApiTurnosUrl}/solicitudes-cancelacion/{turno_id}/aceptar";
+                Console.WriteLine($"Aceptando solicitud de cancelación {turno_id} desde: {url}");
+                HttpResponseMessage response = await client.PatchAsync(url, null);
+                string responseContent = await response.Content.ReadAsStringAsync();
+                var resultado = JsonConvert.DeserializeObject<ResultadoApi>(responseContent);
+                if (!response.IsSuccessStatusCode)
+                {
+                    if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                    {
+                        return new ResultadoApi
+                        {
+                            Success = false,
+                            Mensaje = resultado?.Mensaje ?? "Solicitud de cancelación no encontrada.",
+                            Detalle = resultado?.Detalle ?? "No se pudo encontrar la solicitud de cancelación especificada."
+                        };
+                    }
+                    else if (response.StatusCode == System.Net.HttpStatusCode.UnprocessableContent) //422 Validaciones
+                    {
+                        return new ResultadoApi
+                        {
+                            Success = false,
+                            Mensaje = resultado?.Mensaje ?? "Solicitud de cancelación inválida.",
+                            Detalle = resultado?.Detalle ?? "La solicitud de cancelación no es válida.",
+                            Errores = resultado?.Errores ?? null
+                        };
+                    }
+                    else if (response.StatusCode == System.Net.HttpStatusCode.InternalServerError) //500 Error interno
+                    {
+                        return new ResultadoApi
+                        {
+                            Success = false,
+                            Mensaje = resultado?.Mensaje ?? "Error interno del servidor.",
+                            Detalle = resultado?.Detalle ?? "Ocurrió un error al procesar la solicitud de cancelación."
+                        };
+                    }
+                    else
+                    {
+                        return new ResultadoApi
+                        {
+                            Success = false,
+                            Mensaje = resultado?.Mensaje ?? "Error al aceptar solicitud de cancelación. Sin Mensaje",
+                            Detalle = resultado?.Detalle ?? "Ocurrió un error al procesar la solicitud. Sin Detalles"
+                        };
+                    }
+                }
+                return new ResultadoApi
+                {
+                    Success = true,
+                    Mensaje = resultado?.Mensaje ?? "Solicitud de cancelación aceptada correctamente.",
+                    Turno = resultado?.Turno ?? "La solicitud de cancelación se ha procesado exitosamente."
+                };
+            }
+            catch (HttpRequestException e)
+            {
+                Console.WriteLine($"Error de solicitud HTTP al aceptar solicitud de cancelación: {e.Message}");
+                throw new Exception($"Error de conexión: {e.Message}");
+            }
+        }
+        
+        public async Task<ResultadoApi> RechazarSolicitudCancelacionAsync(int turno_id)
+        {
+            try
+            {
+                string url = $"{ApiTurnosUrl}/solicitudes-cancelacion/{turno_id}/rechazar";
+                Console.WriteLine($"Rechazando solicitud de cancelación {turno_id} desde: {url}");
+                HttpResponseMessage response = await client.PatchAsync(url, null);
+                string responseContent = await response.Content.ReadAsStringAsync();
+                var resultado = JsonConvert.DeserializeObject<ResultadoApi>(responseContent);
+                if (!response.IsSuccessStatusCode)
+                {
+                    if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                    {
+                        return new ResultadoApi
+                        {
+                            Success = false,
+                            Mensaje = resultado?.Mensaje ?? "Turno no encontrada.",
+                            Detalle = resultado?.Detalle ?? "No se pudo encontrar la Turno especificada."
+                        };
+                    }
+                    else if (response.StatusCode == System.Net.HttpStatusCode.InternalServerError) //500 Error interno
+                    {
+                        return new ResultadoApi
+                        {
+                            Success = false,
+                            Mensaje = resultado?.Mensaje ?? "Error interno del servidor.",
+                            Detalle = resultado?.Detalle ?? "Ocurrió un error al procesar la solicitud de cancelación."
+                        };
+                    }
+                    else
+                    {
+                        return new ResultadoApi
+                        {
+                            Success = false,
+                            Mensaje = resultado?.Mensaje ?? "Error al rechazar solicitud de cancelación. Sin Mensaje",
+                            Detalle = resultado?.Detalle ?? "Ocurrió un error al procesar la solicitud. Sin Detalles"
+                        };
+                    }
+                }
+                return new ResultadoApi
+                {
+                    Success = true,
+                    Mensaje = resultado?.Mensaje ?? "Solicitud de cancelación rechazada correctamente.",
+                    Turno = resultado?.Turno ?? "La solicitud de cancelación se ha procesado exitosamente."
+                };
+            }
+            catch (HttpRequestException e)
+            {
+                Console.WriteLine($"Error de solicitud HTTP al rechazar solicitud de cancelación: {e.Message}");
+                throw new Exception($"Error de conexión: {e.Message}");
+            }
+        }
+        public async Task<SolicitudesCancelacionResponse> GetSolicitudesDeCancelacionAsync()
+        {
+            try
+            {
+                string url = $"{ApiTurnosUrl}/solicitudes-cancelacion";
+                HttpResponseMessage response = await client.GetAsync(url);
+                string responseContent = await response.Content.ReadAsStringAsync();
+                response.EnsureSuccessStatusCode();
+
+                var obj = Newtonsoft.Json.Linq.JObject.Parse(responseContent);
+                var result = new SolicitudesCancelacionResponse();
+                result.Mensaje = obj["mensaje"]?.ToString() ?? string.Empty;
+                var solicitudesToken = obj["solicitudes"];
+                if (solicitudesToken != null)
+                {
+                    if (solicitudesToken.Type == Newtonsoft.Json.Linq.JTokenType.Array)
+                    {
+                        result.Solicitudes = solicitudesToken.ToObject<List<SolicitudCancelacion>>() ?? new List<SolicitudCancelacion>();
+                    }
+                    else if (solicitudesToken.Type == Newtonsoft.Json.Linq.JTokenType.Object)
+                    {
+                        var unica = solicitudesToken.ToObject<SolicitudCancelacion>();
+                        result.Solicitudes = unica != null ? new List<SolicitudCancelacion> { unica } : new List<SolicitudCancelacion>();
+                    }
+                    else
+                    {
+                        result.Solicitudes = new List<SolicitudCancelacion>();
+                    }
+                }
+                else
+                {
+                    result.Solicitudes = new List<SolicitudCancelacion>();
+                }
+                return result;
+            }
+            catch (HttpRequestException e)
+            {
+                Console.WriteLine($"Error de solicitud HTTP al obtener solicitudes de cancelación: {e.Message}");
+                throw new Exception($"Error de conexión: {e.Message}");
+            }
+            catch (JsonException e)
+            {
+                Console.WriteLine($"Error de deserialización JSON al obtener solicitudes de cancelación: {e.Message}");
+                throw new Exception($"Error en el formato de respuesta: {e.Message}");
+            }
+        }
+
+        public class SolicitudesCancelacionResponse
+        {
+            [JsonProperty("mensaje")]
+            public string? Mensaje { get; set; } = string.Empty;
+            [JsonProperty("solicitudes")]
+            public List<SolicitudCancelacion>? Solicitudes { get; set; } = new List<SolicitudCancelacion>();
+
+
+        }
+
+        public class SolicitudCancelacion
+        {
+            [JsonProperty("turno_id")]
+            public int Id { get; set; }
+            [JsonProperty("fecha")] 
+            public string Fecha { get; set; } = string.Empty;
+            [JsonProperty("hora")]
+            public string Hora { get; set; } = string.Empty;
+
+            [JsonProperty("estado")]
+            public string Estado { get; set; } = string.Empty;
+
+
+            [JsonProperty("fecha_solicitud_cancelacion")]
+            public string FechaSolicitud { get; set; } = string.Empty;
+
+            [JsonProperty("paciente")]
+            public Paciente? Paciente { get; set; }
+
+            [JsonProperty("doctor")]
+            public DoctorDto? Doctor { get; set; }
+        }
+
     }
 
     /// <summary>

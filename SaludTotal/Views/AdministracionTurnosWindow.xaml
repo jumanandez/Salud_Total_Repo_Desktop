@@ -13,7 +13,7 @@
         <converters:EspecialidadToBrushConverter x:Key="EspecialidadToBrushConverter"/>
         <converters:EspecialidadToForegroundConverter x:Key="EspecialidadToForegroundConverter"/>
         <converters:DateTimeFormatConverter x:Key="DateTimeFormatConverter"/>
-        
+        <converters:BooleanToSiNoConverter x:Key="BooleanToSiNoConverter"/>
         <!-- Convertidor Boolean a Visibility ya incluido en WPF -->
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
         
@@ -199,6 +199,10 @@
                     <RowDefinition Height="Auto"/>
                     <!-- Tabla solicitudes reprogramación -->
                     <RowDefinition Height="Auto"/>
+                    <!-- Título solicitudes cancelación -->
+                    <RowDefinition Height="Auto"/>
+                    <!-- Tabla solicitudes cancelación -->
+                    <RowDefinition Height="Auto"/>
                     <!-- Espaciado final -->
                 </Grid.RowDefinitions>
 
@@ -368,7 +372,7 @@
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
                             
-                            <DataGridTemplateColumn Header="Paciente" Width="*" MinWidth="200">
+                            <DataGridTemplateColumn Header="Paciente" Width="*" MinWidth="100">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <TextBlock Text="{Binding Paciente.NombreCompleto, FallbackValue='N/A'}" 
@@ -378,12 +382,41 @@
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
                             
-                            <DataGridTemplateColumn Header="Profesional" Width="*" MinWidth="200">
+                            <DataGridTemplateColumn Header="Profesional" Width="*" MinWidth="100">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <TextBlock Text="{Binding Profesional.NombreCompleto, FallbackValue='N/A'}" 
                                                    VerticalAlignment="Center" 
                                                    Padding="5,0"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+
+                            <DataGridTemplateColumn Header="Solicita Cancelacion" Width="" MinWidth="200">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Border CornerRadius="6" Padding="5,2" HorizontalAlignment="Center">
+                                            <Border.Style>
+                                                <Style TargetType="Border">
+                                                    <Setter Property="Background" Value="#6C757D"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding SolicitaCancelacion}" Value="True">
+                                                            <Setter Property="Background" Value="#28A745"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding SolicitaCancelacion}" Value="False">
+                                                            <Setter Property="Background" Value="#DC3545"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Border.Style>
+                                            <TextBlock 
+                                                Text="{Binding SolicitaCancelacion, Converter={StaticResource BooleanToSiNoConverter}, FallbackValue='N/A'}"
+                                                Foreground="White"
+                                                FontWeight="SemiBold"
+                                                FontSize="13"
+                                                HorizontalAlignment="Center"
+                                                VerticalAlignment="Center"/>
+                                        </Border>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
@@ -728,7 +761,7 @@
             </Border>
 
             <!-- Espaciado final -->
-            <Border Grid.Row="6" Height="30"/>
+            <Border Grid.Row="8" Height="30"/>
         </Grid>
     </ScrollViewer>
     </Grid>

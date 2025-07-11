@@ -143,6 +143,33 @@
 
                         <!-- Separador -->
                         <Border Height="1" Background="#E0E0E0" Margin="0,20,0,30"/>
+                        <TextBlock Text="Solicita Cancelacion" FontSize="20" FontWeight="Bold" Foreground="#2C3E50" Margin="0,0,0,15"/>
+                        <!-- Botones para aceptar/rechazar cancelación, solo si SolicitaCancelacion es true -->
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,10,0,0">
+                                <StackPanel.Style>
+                                    <Style TargetType="StackPanel">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding SolicitaCancelacion}" Value="True">
+                                                <Setter Property="Visibility" Value="Visible"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </StackPanel.Style>
+                                <Button Content="Aceptar Cancelación"
+                                        Style="{StaticResource ActionButtonStyle}"
+                                        Background="#126D1D"
+                                        Foreground="White"
+                                        Margin="0,0,10,0"
+                                        Click="AceptarCancelacion_Click"/>
+                                <Button Content="Rechazar Cancelación"
+                                        Style="{StaticResource ActionButtonStyle}"
+                                        Background="#DC3545"
+                                        Foreground="White"
+                                        Click="RechazarCancelacion_Click"/>
+                            </StackPanel>
+                        <!-- Separador -->
+                        <Border Height="1" Background="#E0E0E0" Margin="0,20,0,30"/>
 
                         <!-- Reprogramar turno -->
                         <TextBlock Text="Reprogramar turno" FontSize="20" FontWeight="Bold" Foreground="#2C3E50" Margin="0,0,0,15"/>

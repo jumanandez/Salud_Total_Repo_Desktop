@@ -9,6 +9,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using System.Windows;
 using SaludTotal.Services;
+using Newtonsoft.Json;
 using iTextSharp.text.pdf.codec.wmf;
 
 namespace SaludTotal.Desktop.ViewModels
@@ -37,6 +38,17 @@ namespace SaludTotal.Desktop.ViewModels
             {
                 _solicitudesReprogramacion = value;
                 OnPropertyChanged();
+            }
+        }
+
+        private ObservableCollection<ApiService.SolicitudCancelacion> _solicitudesCancelacion = new ObservableCollection<ApiService.SolicitudCancelacion>();
+        public ObservableCollection<ApiService.SolicitudCancelacion> SolicitudesCancelacion
+        {
+            get => _solicitudesCancelacion;
+            set
+            {
+                _solicitudesCancelacion = value;
+                OnPropertyChanged(nameof(SolicitudesCancelacion));
             }
         }
 
@@ -118,6 +130,7 @@ namespace SaludTotal.Desktop.ViewModels
             // Cargamos los datos al iniciar el ViewModel
             CargarTurnos();
             CargarSolicitudesReprogramacionAsync();
+            CargarSolicitudesCancelacionAsync();
         }
 
         // --- Lógica de Comandos ---
@@ -161,7 +174,7 @@ namespace SaludTotal.Desktop.ViewModels
             await RecargarTurnosAsync();
         }
 
-        private async void CargarSolicitudesReprogramacionAsync()
+        public async Task CargarSolicitudesReprogramacionAsync()
         {
             try
             {
@@ -185,6 +198,33 @@ namespace SaludTotal.Desktop.ViewModels
             {
                 MessageBox.Show($"Error al obtener solicitudes de reprogramación: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 SolicitudesReprogramacion = new ObservableCollection<SolicitudReprogramacion>();
+            }
+        }
+
+        public async Task CargarSolicitudesCancelacionAsync()
+        {
+            try
+            {
+                var response = await _apiService.GetSolicitudesDeCancelacionAsync();
+                if (response != null && response.Solicitudes != null)
+                {
+                    SolicitudesCancelacion = new ObservableCollection<ApiService.SolicitudCancelacion>(response.Solicitudes);
+                }
+                else if (response != null && !string.IsNullOrEmpty(response.Mensaje))
+                {
+                    MessageBox.Show($"Error del backend: {response.Mensaje}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    SolicitudesCancelacion = new ObservableCollection<ApiService.SolicitudCancelacion>();
+                }
+                else
+                {
+                    MessageBox.Show("Respuesta inesperada del backend al obtener solicitudes de cancelación.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    SolicitudesCancelacion = new ObservableCollection<ApiService.SolicitudCancelacion>();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error al obtener solicitudes de cancelación: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                SolicitudesCancelacion = new ObservableCollection<ApiService.SolicitudCancelacion>();
             }
         }
 
