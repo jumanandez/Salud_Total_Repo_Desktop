@@ -28,10 +28,13 @@ namespace SaludTotal.Desktop.Views
             this.Close();
         }
 
-        private void GestionHorarios_Click(object sender, RoutedEventArgs e)
+        private void GestionProfesionales_Click(object sender, RoutedEventArgs e)
         {
-            // TODO: Implementar gestión de horarios
-            MessageBox.Show("Funcionalidad en desarrollo", "Información", MessageBoxButton.OK, MessageBoxImage.Information);
+            var gestionProfesionalesWindow = new GestionProfesionalesWindow();
+            gestionProfesionalesWindow.Show();
+            
+            // Cerrar la ventana actual del Dashboard
+            this.Close();
         }
 
         private void VerInformes_Click(object sender, RoutedEventArgs e)

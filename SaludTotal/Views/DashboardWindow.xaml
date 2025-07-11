@@ -113,8 +113,8 @@
                         Click="AdministrarTurnos_Click"
                         Style="{StaticResource DashboardButtonStyle}"/>
 
-                <Button Content="Disponibilidades y Horarios" 
-                        Click="GestionHorarios_Click"
+                <Button Content="Gestión de Profesionales" 
+                        Click="GestionProfesionales_Click"
                         Style="{StaticResource DashboardButtonStyle}"/>
 
                 <Button Content="Informes de gestion" 
