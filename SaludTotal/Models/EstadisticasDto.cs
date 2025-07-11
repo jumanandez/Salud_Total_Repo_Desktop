@@ -56,43 +56,38 @@ namespace SaludTotal.Models
 
     public class EstadisticasGlobalesDto
     {
-        [JsonProperty("total_turnos")]
+        [JsonProperty("totalTurnos")]
         public int TotalTurnos { get; set; }
 
-        [JsonProperty("turnos_atendidos")]
+        [JsonProperty("turnosAtendidos")]
         public int TurnosAtendidos { get; set; }
 
-        [JsonProperty("turnos_cancelados")]
+        [JsonProperty("turnosCancelados")]
         public int TurnosCancelados { get; set; }
 
-        [JsonProperty("turnos_rechazados")]
+        [JsonProperty("turnosRechazados")]
         public int TurnosRechazados { get; set; }
 
-        [JsonProperty("turnos_reprogramados")]
+        [JsonProperty("turnosReprogramados")]
         public int TurnosReprogramados { get; set; }
 
-        [JsonProperty("turnos_aceptados")]
+        [JsonProperty("turnosAceptados")]
         public int TurnosAceptados { get; set; }
 
-        [JsonProperty("turnos_desaprovechados")]
+        [JsonProperty("turnosDesaprovechados")]
         public int TurnosDesaprovechados { get; set; }
 
-        [JsonProperty("total_doctores")]
+        [JsonProperty("totalDoctores")]
         public int TotalDoctores { get; set; }
-
-        [JsonProperty("total_pacientes")]
+        [JsonProperty("ausenciasGlobales")]
+        public int TotalAusencias { get; set; }
+        [JsonProperty("totalPacientes")]
         public int TotalPacientes { get; set; }
 
-        [JsonProperty("promedio_turnos_por_doctor")]
-        public double PromedioTurnosPorDoctor { get; set; }
-
-        [JsonProperty("porcentaje_eficiencia")]
-        public double PorcentajeEficiencia { get; set; }
-
-        [JsonProperty("fecha_desde")]
+        [JsonProperty("desde")]
         public DateTime? FechaDesde { get; set; }
 
-        [JsonProperty("fecha_hasta")]
+        [JsonProperty("hasta")]
         public DateTime? FechaHasta { get; set; }
     }
 }

@@ -43,24 +43,7 @@ namespace SaludTotal.Desktop.Views
                 if (estadisticasBackend != null)
                 {
                     // Convertir del DTO del ApiService al DTO completo de Models
-                    _estadisticasActuales = new SaludTotal.Models.EstadisticasGlobalesDto
-                    {
-                        TotalDoctores = estadisticasBackend.TotalDoctores,
-                        TotalPacientes = estadisticasBackend.TotalPacientes,
-                        TotalTurnos = estadisticasBackend.TotalTurnos,
-                        TurnosAtendidos = 0, // No está en el DTO del ApiService
-                        TurnosAceptados = estadisticasBackend.TurnosAceptados,
-                        TurnosCancelados = estadisticasBackend.TurnosCancelados,
-                        TurnosRechazados = estadisticasBackend.TurnosRechazados,
-                        TurnosReprogramados = 0, // No está en el DTO del ApiService
-                        TurnosDesaprovechados = 0, // No está en el DTO del ApiService
-                        PromedioTurnosPorDoctor = estadisticasBackend.TotalDoctores > 0 ? 
-                            (double)estadisticasBackend.TotalTurnos / estadisticasBackend.TotalDoctores : 0,
-                        PorcentajeEficiencia = estadisticasBackend.TotalTurnos > 0 ? 
-                            (double)estadisticasBackend.TurnosAceptados / estadisticasBackend.TotalTurnos * 100 : 0,
-                        FechaDesde = fechaDesde,
-                        FechaHasta = fechaHasta
-                    };
+                    _estadisticasActuales = estadisticasBackend;
                     
                     ActualizarInterfaz();
                 }
@@ -109,8 +92,6 @@ namespace SaludTotal.Desktop.Views
             TurnosReprogramados.Text = _estadisticasActuales.TurnosReprogramados.ToString();
             TurnosAceptados.Text = _estadisticasActuales.TurnosAceptados.ToString();
             TurnosDesaprovechados.Text = _estadisticasActuales.TurnosDesaprovechados.ToString();
-            PromedioTurnosPorDoctor.Text = $"{_estadisticasActuales.PromedioTurnosPorDoctor:F1}";
-            PorcentajeEficiencia.Text = $"{_estadisticasActuales.PorcentajeEficiencia:F1}%";
         }
 
         private async void ActualizarEstadisticas_Click(object sender, RoutedEventArgs e)
@@ -217,8 +198,6 @@ namespace SaludTotal.Desktop.Views
                     AgregarFilaEstadistica(table, "Turnos Reprogramados", _estadisticasActuales.TurnosReprogramados.ToString(), normalFont, statFont);
                     AgregarFilaEstadistica(table, "Turnos Aceptados", _estadisticasActuales.TurnosAceptados.ToString(), normalFont, statFont);
                     AgregarFilaEstadistica(table, "Turnos Desaprovechados", _estadisticasActuales.TurnosDesaprovechados.ToString(), normalFont, statFont);
-                    AgregarFilaEstadistica(table, "Promedio Turnos por Doctor", $"{_estadisticasActuales.PromedioTurnosPorDoctor:F1}", normalFont, statFont);
-                    AgregarFilaEstadistica(table, "Porcentaje de Eficiencia", $"{_estadisticasActuales.PorcentajeEficiencia:F1}%", normalFont, statFont);
                 }
 
                 document.Add(table);

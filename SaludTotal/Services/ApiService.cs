@@ -19,6 +19,7 @@ namespace SaludTotal.Desktop.Services
         private const string ApiTurnosUrl = ApiBaseUrl + "/turnos";
         private const string ApiPacientesUrl = ApiBaseUrl + "/pacientes";
         private const string ApiProfesionalesUrl = ApiBaseUrl + "/profesionales";
+        private const string ApiEstadisticasUrl = ApiBaseUrl + "/estadisticas";
         public ApiService()
         {
             // Configuración inicial del HttpClient, si es necesaria.
@@ -980,12 +981,12 @@ namespace SaludTotal.Desktop.Services
             {
                 var queryParams = new List<string>();
                 if (fechaDesde.HasValue)
-                    queryParams.Add($"fecha_desde={fechaDesde.Value:yyyy-MM-dd}");
+                    queryParams.Add($"desde={fechaDesde.Value:yyyy-MM-dd}");
                 if (fechaHasta.HasValue)
-                    queryParams.Add($"fecha_hasta={fechaHasta.Value:yyyy-MM-dd}");
+                    queryParams.Add($"hasta={fechaHasta.Value:yyyy-MM-dd}");
 
                 string queryString = queryParams.Count > 0 ? "?" + string.Join("&", queryParams) : "";
-                string url = $"{ApiBaseUrl}/estadisticas/globales{queryString}";
+                string url = $"{ApiEstadisticasUrl}/globales{queryString}";
 
                 HttpResponseMessage response = await client.GetAsync(url);
                 if (response.IsSuccessStatusCode)
@@ -1560,28 +1561,6 @@ namespace SaludTotal.Desktop.Services
         [JsonProperty("especialidad")]
         public string Especialidad { get; set; } = string.Empty;
     }
-
-    public class EstadisticasGlobalesDto
-    {
-        [JsonProperty("total_doctores")]
-        public int TotalDoctores { get; set; }
-
-        [JsonProperty("total_pacientes")]
-        public int TotalPacientes { get; set; }
-
-        [JsonProperty("total_turnos")]
-        public int TotalTurnos { get; set; }
-
-        [JsonProperty("turnos_aceptados")]
-        public int TurnosAceptados { get; set; }
-
-        [JsonProperty("turnos_rechazados")]
-        public int TurnosRechazados { get; set; }
-
-        [JsonProperty("turnos_cancelados")]
-        public int TurnosCancelados { get; set; }
-    }
-
     public class SolicitudesReprogramacionResponse
     {
         [JsonProperty("solicitudes")]
