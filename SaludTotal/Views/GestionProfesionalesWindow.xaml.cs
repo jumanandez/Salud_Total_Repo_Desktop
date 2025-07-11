@@ -284,9 +284,9 @@ namespace SaludTotal.Desktop.Views
         {
             if (sender is Button button && button.Tag is DoctorDto profesional)
             {
-                // Por ahora solo mostramos un mensaje indicando que la funcionalidad está en desarrollo
-                MessageBox.Show($"Gestión del profesional: {profesional.NombreCompletoCalculado}\n\nEsta funcionalidad está en desarrollo.", 
-                              "Gestión de Profesional", MessageBoxButton.OK, MessageBoxImage.Information);
+                var detalleProfesionalWindow = new DetalleProfesionalWindow(profesional);
+                detalleProfesionalWindow.Show();
+                this.Close();
             }
         }
 
