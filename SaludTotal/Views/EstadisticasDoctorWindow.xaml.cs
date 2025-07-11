@@ -18,8 +18,9 @@ namespace SaludTotal.Desktop.Views
         private DoctorDto? _doctorDto;
         private List<Turno> _todosTurnos = new List<Turno>();
         private readonly ApiService _apiService;
-        
+
         // Estadísticas calculadas
+        private int _totalTurnos;
         private int _turnosAtendidos;
         private int _turnosCancelados;
         private int _turnosRechazados;
@@ -30,8 +31,9 @@ namespace SaludTotal.Desktop.Views
         // Estadísticas de ausencias
         private int _diasAusencia;
         private int _turnosPerdidosAusencia;
-        private double _porcentajeAsistencia;
-        private DateTime? _ultimaAusencia;
+        private int _ausenciasAnotadas;
+        private DateTime? _ultimaAusenciaInicio;
+        private DateTime? _ultimaAusenciaFin;
 
         public EstadisticasDoctorWindow(Profesional doctor, DoctorDto? doctorDto = null)
         {
@@ -79,35 +81,12 @@ namespace SaludTotal.Desktop.Views
                 
                 if (estadisticasBackend != null && estadisticasBackend.DoctorId > 0)
                 {
-                    // Convertir del DTO del ApiService al DTO de Models para usar las propiedades completas
-                    var estadisticasCompletas = new SaludTotal.Models.EstadisticasDoctorDto
-                    {
-                        DoctorId = estadisticasBackend.DoctorId,
-                        NombreDoctor = estadisticasBackend.NombreDoctor,
-                        Especialidad = estadisticasBackend.Especialidad,
-                        TurnosAtendidos = 0, // Estas propiedades no están en el DTO del ApiService
-                        TurnosAceptados = estadisticasBackend.TurnosAceptados,
-                        TurnosCancelados = estadisticasBackend.TurnosCancelados,
-                        TurnosRechazados = estadisticasBackend.TurnosRechazados,
-                        TurnosReprogramados = 0,
-                        TurnosDesaprovechados = 0,
-                        DiasAusencia = 0,
-                        TurnosPerdidosAusencia = 0,
-                        PorcentajeAsistencia = 0,
-                        UltimaAusencia = null,
-                        TotalTurnos = estadisticasBackend.TotalTurnos,
-                        FechaDesde = fechaDesde,
-                        FechaHasta = fechaHasta
-                    };
-                    
                     // Usar estadísticas del backend
-                    CargarEstadisticasDesdeBackend(estadisticasCompletas);
+                    CargarEstadisticasDesdeBackend(estadisticasBackend);
                 }
                 else
                 {
-                    // Fallback: usar método anterior si el backend no está disponible
-                    _todosTurnos = await _apiService.ObtenerTurnosPorDoctor(_doctor.DoctorId);
-                    CalcularEstadisticas();
+                    return;
                 }
                 
                 // Actualizar UI
@@ -119,7 +98,6 @@ namespace SaludTotal.Desktop.Views
                 try
                 {
                     _todosTurnos = await _apiService.ObtenerTurnosPorDoctor(_doctor.DoctorId);
-                    CalcularEstadisticas();
                     ActualizarInterfaz();
                 }
                 catch (Exception fallbackEx)
@@ -128,75 +106,6 @@ namespace SaludTotal.Desktop.Views
                         MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
-        }
-
-        private void CalcularEstadisticas()
-        {
-            if (_todosTurnos == null) return;
-
-            // Filtrar turnos por fecha si hay filtros activos
-            var turnosFiltrados = _todosTurnos;
-            
-            if (FechaDesde.SelectedDate.HasValue && FechaHasta.SelectedDate.HasValue)
-            {
-                var fechaDesde = FechaDesde.SelectedDate.Value;
-                var fechaHasta = FechaHasta.SelectedDate.Value;
-                
-                turnosFiltrados = _todosTurnos.Where(t => 
-                {
-                    if (DateTime.TryParse(t.Fecha, out DateTime fechaTurno))
-                    {
-                        return fechaTurno.Date >= fechaDesde.Date && fechaTurno.Date <= fechaHasta.Date;
-                    }
-                    return false;
-                }).ToList();
-            }
-
-            // Calcular estadísticas de turnos
-            _turnosAtendidos = turnosFiltrados.Count(t => t.Estado == EstadoTurno.atendido);
-            _turnosCancelados = turnosFiltrados.Count(t => t.Estado == EstadoTurno.cancelado);
-            _turnosRechazados = turnosFiltrados.Count(t => t.Estado == EstadoTurno.rechazado);
-            _turnosReprogramados = turnosFiltrados.Count(t => t.Estado == EstadoTurno.pendiente);
-            _turnosAceptados = turnosFiltrados.Count(t => t.Estado == EstadoTurno.aceptado);
-            _turnosDesaprovechados = turnosFiltrados.Count(t => t.Estado == EstadoTurno.desaprovechado);
-            
-            // Calcular estadísticas de ausencias
-            CalcularEstadisticasAusencias(turnosFiltrados);
-        }
-
-        private void CalcularEstadisticasAusencias(List<Turno> turnosFiltrados)
-        {
-            // Días únicos donde el doctor tuvo turnos programados
-            var diasConTurnos = turnosFiltrados
-                .Where(t => DateTime.TryParse(t.Fecha, out _))
-                .Select(t => DateTime.Parse(t.Fecha).Date)
-                .Distinct()
-                .ToList();
-
-            // Días donde el doctor no asistió (turnos cancelados o rechazados por el doctor)
-            var diasAusencia = turnosFiltrados
-                .Where(t => (t.Estado == EstadoTurno.cancelado || t.Estado == EstadoTurno.rechazado) && DateTime.TryParse(t.Fecha, out _))
-                .Select(t => DateTime.Parse(t.Fecha).Date)
-                .Distinct()
-                .ToList();
-
-            _diasAusencia = diasAusencia.Count;
-            _turnosPerdidosAusencia = turnosFiltrados
-                .Count(t => t.Estado == EstadoTurno.cancelado || t.Estado == EstadoTurno.rechazado);
-
-            // Calcular porcentaje de asistencia
-            if (diasConTurnos.Count > 0)
-            {
-                var diasAsistidos = diasConTurnos.Count - _diasAusencia;
-                _porcentajeAsistencia = (double)diasAsistidos / diasConTurnos.Count * 100;
-            }
-            else
-            {
-                _porcentajeAsistencia = 100;
-            }
-
-            // Última ausencia
-            _ultimaAusencia = diasAusencia.Any() ? diasAusencia.Max() : (DateTime?)null;
         }
 
         private void ActualizarInterfaz()
@@ -208,12 +117,22 @@ namespace SaludTotal.Desktop.Views
             TurnosReprogramados.Text = _turnosReprogramados.ToString();
             TurnosAceptados.Text = _turnosAceptados.ToString();
             TurnosDesaprovechados.Text = _turnosDesaprovechados.ToString();
-            
+            AusenciasAnotadas.Text = _ausenciasAnotadas.ToString();
             // Actualizar estadísticas de ausencias
             DiasAusencia.Text = _diasAusencia.ToString();
             TurnosPerdidosAusencia.Text = _turnosPerdidosAusencia.ToString();
-            PorcentajeAsistencia.Text = $"{_porcentajeAsistencia:F1}%";
-            UltimaAusencia.Text = _ultimaAusencia?.ToString("dd/MM/yyyy") ?? "N/A";
+            if (_ultimaAusenciaInicio.HasValue && _ultimaAusenciaFin.HasValue)
+            {
+                UltimaAusencia.Text = $"{_ultimaAusenciaInicio:dd/MM/yyyy} - {_ultimaAusenciaFin:dd/MM/yyyy}";
+            }
+            else if (_ultimaAusenciaInicio.HasValue)
+            {
+                UltimaAusencia.Text = _ultimaAusenciaInicio.Value.ToString("dd/MM/yyyy");
+            }
+            else
+            {
+                UltimaAusencia.Text = "N/A";
+            }
         }
 
         private void VolverButton_Click(object sender, RoutedEventArgs e)
@@ -255,9 +174,8 @@ namespace SaludTotal.Desktop.Views
                     var datosParaPDF = new
                     {
                         NombreDoctor = _doctor.NombreCompleto,
-                        Telefono = _doctorDto != null && !string.IsNullOrEmpty(_doctorDto.Telefono) ? _doctorDto.Telefono : "No disponible",
-                        Email = _doctorDto != null && !string.IsNullOrEmpty(_doctorDto.Email) ? _doctorDto.Email : "No disponible",
                         Especialidad = _doctor.Especialidad?.Nombre ?? "No especificada",
+                        TotalTurnos = _totalTurnos,
                         TurnosAtendidos = _turnosAtendidos,
                         TurnosCancelados = _turnosCancelados,
                         TurnosRechazados = _turnosRechazados,
@@ -266,8 +184,8 @@ namespace SaludTotal.Desktop.Views
                         TurnosDesaprovechados = _turnosDesaprovechados,
                         DiasAusencia = _diasAusencia,
                         TurnosPerdidosAusencia = _turnosPerdidosAusencia,
-                        PorcentajeAsistencia = _porcentajeAsistencia,
-                        UltimaAusencia = _ultimaAusencia,
+                        AusenciasAnotadas = _ausenciasAnotadas,
+                        UltimaAusencia = "De: " + ((DateTime)_ultimaAusenciaInicio).ToString("dd/MM/yyyy") + " a: " + ((DateTime)_ultimaAusenciaFin).ToString("dd/MM/yyyy"),
                         FechaRango = fechaRango
                     };
 
@@ -316,8 +234,6 @@ namespace SaludTotal.Desktop.Views
                 document.Add(new Paragraph("Información del Doctor", headerFont) { SpacingAfter = 10f });
                 
                 document.Add(new Paragraph($"Nombre: {datosParaPDF.NombreDoctor}", normalFont) { SpacingAfter = 5f });
-                document.Add(new Paragraph($"Teléfono: {datosParaPDF.Telefono}", normalFont) { SpacingAfter = 5f });
-                document.Add(new Paragraph($"Email: {datosParaPDF.Email}", normalFont) { SpacingAfter = 5f });
                 document.Add(new Paragraph($"Especialidad: {datosParaPDF.Especialidad}", normalFont) { SpacingAfter = 20f });
 
                 // Estadísticas
@@ -375,17 +291,13 @@ namespace SaludTotal.Desktop.Views
                 // Agregar estadísticas de ausencias a la tabla
                 AgregarFilaEstadistica(ausenciasTable, "Días de Ausencia", datosParaPDF.DiasAusencia, normalFont, statFont);
                 AgregarFilaEstadistica(ausenciasTable, "Turnos Perdidos", datosParaPDF.TurnosPerdidosAusencia, normalFont, statFont);
-                AgregarFilaEstadisticaTexto(ausenciasTable, "% Asistencia", $"{datosParaPDF.PorcentajeAsistencia:F1}%", normalFont, statFont);
-                
-                string ultimaAusenciaTexto = datosParaPDF.UltimaAusencia != null ? 
-                    ((DateTime)datosParaPDF.UltimaAusencia).ToString("dd/MM/yyyy") : "N/A";
-                AgregarFilaEstadisticaTexto(ausenciasTable, "Última Ausencia", ultimaAusenciaTexto, normalFont, statFont);
+                AgregarFilaEstadistica(ausenciasTable, "Ausencias Anotadas", datosParaPDF.AusenciasAnotadas, normalFont, statFont);
+                AgregarFilaEstadisticaTexto(ausenciasTable, "Última Ausencia", datosParaPDF.UltimaAusencia, normalFont, statFont);
 
                 document.Add(ausenciasTable);
 
                 // Total de turnos
-                int totalTurnos = datosParaPDF.TurnosAtendidos + datosParaPDF.TurnosCancelados + datosParaPDF.TurnosRechazados + 
-                                 datosParaPDF.TurnosReprogramados + datosParaPDF.TurnosAceptados + datosParaPDF.TurnosDesaprovechados;
+                int totalTurnos = datosParaPDF.TotalTurnos;
                 
                 document.Add(new Paragraph($"Total de Turnos: {totalTurnos}", headerFont) 
                 { 
@@ -433,18 +345,26 @@ namespace SaludTotal.Desktop.Views
         private void CargarEstadisticasDesdeBackend(SaludTotal.Models.EstadisticasDoctorDto estadisticas)
         {
             // Cargar estadísticas directamente desde el DTO del backend
+            _totalTurnos = estadisticas.TotalTurnos;
             _turnosAtendidos = estadisticas.TurnosAtendidos;
             _turnosCancelados = estadisticas.TurnosCancelados;
             _turnosRechazados = estadisticas.TurnosRechazados;
             _turnosReprogramados = estadisticas.TurnosReprogramados;
             _turnosAceptados = estadisticas.TurnosAceptados;
             _turnosDesaprovechados = estadisticas.TurnosDesaprovechados;
-            
-            // Cargar estadísticas de ausencias
+            _ausenciasAnotadas = estadisticas.AusenciasAnotadas;
             _diasAusencia = estadisticas.DiasAusencia;
-            _turnosPerdidosAusencia = estadisticas.TurnosPerdidosAusencia;
-            _porcentajeAsistencia = estadisticas.PorcentajeAsistencia;
-            _ultimaAusencia = estadisticas.UltimaAusencia;
+            // Adaptar para el nuevo modelo de UltimaAusencia (inicio y fin)
+            if (estadisticas.UltimaAusencia != null)
+            {
+                _ultimaAusenciaInicio = estadisticas.UltimaAusencia.FechaInicio;
+                _ultimaAusenciaFin = estadisticas.UltimaAusencia.FechaFin;
+            }
+            else
+            {
+                _ultimaAusenciaInicio = null;
+                _ultimaAusenciaFin = null;
+            }
         }
     }
 }

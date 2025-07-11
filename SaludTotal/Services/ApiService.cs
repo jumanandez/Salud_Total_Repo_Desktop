@@ -942,19 +942,19 @@ namespace SaludTotal.Desktop.Services
             {
                 var queryParams = new List<string>();
                 if (fechaDesde.HasValue)
-                    queryParams.Add($"fecha_desde={fechaDesde.Value:yyyy-MM-dd}");
+                    queryParams.Add($"desde={fechaDesde.Value:yyyy-MM-dd}");
                 if (fechaHasta.HasValue)
-                    queryParams.Add($"fecha_hasta={fechaHasta.Value:yyyy-MM-dd}");
+                    queryParams.Add($"hasta={fechaHasta.Value:yyyy-MM-dd}");
 
                 string queryString = queryParams.Count > 0 ? "?" + string.Join("&", queryParams) : "";
-                string url = $"{ApiBaseUrl}/estadisticas/doctor/{doctorId}{queryString}";
+                string url = $"{ApiEstadisticasUrl}/doctor/{doctorId}{queryString}";
 
                 HttpResponseMessage response = await client.GetAsync(url);
                 if (response.IsSuccessStatusCode)
                 {
                     string jsonResponse = await response.Content.ReadAsStringAsync();
-                    var estadisticas = JsonConvert.DeserializeObject<EstadisticasDoctorDto>(jsonResponse);
-                    return estadisticas ?? new EstadisticasDoctorDto();
+                    var estadisticas = JsonConvert.DeserializeObject<ResponseEstadisticasDoctor>(jsonResponse);
+                    return estadisticas.Estadisticas ?? new EstadisticasDoctorDto();
                 }
                 else
                 {
@@ -968,7 +968,17 @@ namespace SaludTotal.Desktop.Services
                 return new EstadisticasDoctorDto();
             }
         }
+        public class ResponseEstadisticasDoctor
+        {
+            [JsonProperty("estadisticas_doctor")]
+            public EstadisticasDoctorDto? Estadisticas { get; set; }
 
+            [JsonProperty("mensaje")]
+            public string? Mensaje { get; set; }
+            
+            [JsonProperty("detalle")]
+            public string? Detalle { get; set; }
+        }
         /// <summary>
         /// Obtiene las estadísticas globales del sistema
         /// </summary>
@@ -1014,38 +1024,80 @@ namespace SaludTotal.Desktop.Services
         /// <param name="fechaDesde">Fecha desde (opcional)</param>
         /// <param name="fechaHasta">Fecha hasta (opcional)</param>
         /// <returns>Lista de estadísticas por doctor</returns>
-        public async Task<List<EstadisticasDoctorDto>> GetEstadisticasTodosDoctoresAsync(DateTime? fechaDesde = null, DateTime? fechaHasta = null)
+        public async Task<ResponseEstadisticasDoctores> GetEstadisticasTodosDoctoresAsync(DateTime? fechaDesde = null, DateTime? fechaHasta = null)
         {
             try
             {
                 var queryParams = new List<string>();
                 if (fechaDesde.HasValue)
-                    queryParams.Add($"fecha_desde={fechaDesde.Value:yyyy-MM-dd}");
+                    queryParams.Add($"desde={fechaDesde.Value:yyyy-MM-dd}");
                 if (fechaHasta.HasValue)
-                    queryParams.Add($"fecha_hasta={fechaHasta.Value:yyyy-MM-dd}");
+                    queryParams.Add($"hasta={fechaHasta.Value:yyyy-MM-dd}");
 
                 string queryString = queryParams.Count > 0 ? "?" + string.Join("&", queryParams) : "";
-                string url = $"{ApiBaseUrl}/estadisticas/doctores{queryString}";
+                string url = $"{ApiEstadisticasUrl}/doctores{queryString}";
 
                 HttpResponseMessage response = await client.GetAsync(url);
-                if (response.IsSuccessStatusCode)
+                string jsonResponse = await response.Content.ReadAsStringAsync();
+                var estadisticasResponse = JsonConvert.DeserializeObject<ResponseEstadisticasDoctores>(jsonResponse);
+                if (!response.IsSuccessStatusCode)
                 {
-                    string jsonResponse = await response.Content.ReadAsStringAsync();
-                    var estadisticas = JsonConvert.DeserializeObject<List<EstadisticasDoctorDto>>(jsonResponse);
-                    return estadisticas ?? new List<EstadisticasDoctorDto>();
+                    if (response.StatusCode == System.Net.HttpStatusCode.InternalServerError)
+                    {
+                        Console.WriteLine("Error interno del servidor al obtener estadísticas de doctores.");
+                        return new ResponseEstadisticasDoctores
+                        {
+                            Mensaje = estadisticasResponse?.Mensaje ?? "Error interno del servidor al obtener estadísticas de doctores.",
+                            Detalle = estadisticasResponse?.Detalle ?? "Ocurrió un error al procesar la solicitud de estadísticas de doctores."
+                        };
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Error al obtener estadísticas de todos los doctores: {response.StatusCode}");
+                        return new ResponseEstadisticasDoctores
+                        {
+                            Mensaje = estadisticasResponse?.Mensaje ?? "Error interno del servidor al obtener estadísticas de doctores.",
+                            Detalle = estadisticasResponse?.Detalle ?? "Ocurrió un error al procesar la solicitud de estadísticas de doctores."
+                        };
+                    }
                 }
-                else
+                return estadisticasResponse ?? new ResponseEstadisticasDoctores
                 {
-                    Console.WriteLine($"Error al obtener estadísticas de todos los doctores: {response.StatusCode}");
-                    return new List<EstadisticasDoctorDto>();
-                }
+                    estadisticasDoctorDtos = new List<EstadisticasDoctorDto>(),
+                    Desde = fechaDesde,
+                    Hasta = fechaHasta,
+                    Mensaje = "No se obtuvieron las estadisticas",
+                    Detalle = "No hay detalles adicionales."
+                };
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Excepción en GetEstadisticasTodosDoctoresAsync: {ex.Message}");
-                return new List<EstadisticasDoctorDto>();
+                return new ResponseEstadisticasDoctores
+                {
+                    Mensaje = "Error al obtener estadísticas de doctores.",
+                    Detalle = ex.Message
+                };
             }
         }
+
+        public class ResponseEstadisticasDoctores
+        {
+            [JsonProperty("estadisticas_doctores")]
+            public List<EstadisticasDoctorDto>? estadisticasDoctorDtos { get; set; }
+
+            [JsonProperty("desde")]
+            public DateTime? Desde { get; set; }
+
+            [JsonProperty("hasta")]
+            public DateTime? Hasta { get; set; }
+            [JsonProperty("mensaje")]
+            public string? Mensaje { get; set; }
+
+            [JsonProperty("detalle")]
+            public string? Detalle { get; set; }
+        }
+
         public async Task<SolicitudesReprogramacionResponse> GetSolicitudesDeReprogramacion()
         {
             try
@@ -1075,6 +1127,7 @@ namespace SaludTotal.Desktop.Services
             }
         }
 
+        
         public async Task<ResultadoApi> AceptarSolicitudReprogramacionAsync(int solicitudId)
         {
             try
@@ -1536,30 +1589,6 @@ namespace SaludTotal.Desktop.Services
     {
         [JsonProperty("hora")]
         public string Hora { get; set; } = string.Empty;
-    }
-
-    public class EstadisticasDoctorDto
-    {
-        [JsonProperty("doctor_id")]
-        public int DoctorId { get; set; }
-
-        [JsonProperty("nombre_doctor")]
-        public string NombreDoctor { get; set; } = string.Empty;
-
-        [JsonProperty("total_turnos")]
-        public int TotalTurnos { get; set; }
-
-        [JsonProperty("turnos_aceptados")]
-        public int TurnosAceptados { get; set; }
-
-        [JsonProperty("turnos_rechazados")]
-        public int TurnosRechazados { get; set; }
-
-        [JsonProperty("turnos_cancelados")]
-        public int TurnosCancelados { get; set; }
-
-        [JsonProperty("especialidad")]
-        public string Especialidad { get; set; } = string.Empty;
     }
     public class SolicitudesReprogramacionResponse
     {

@@ -3,12 +3,20 @@ using System;
 
 namespace SaludTotal.Models
 {
+    public class AusenciaRangoDto
+    {
+        [JsonProperty("fecha_inicio")]
+        public DateTime? FechaInicio { get; set; }
+
+        [JsonProperty("fecha_fin")]
+        public DateTime? FechaFin { get; set; }
+    }
     public class EstadisticasDoctorDto
     {
         [JsonProperty("doctor_id")]
         public int DoctorId { get; set; }
 
-        [JsonProperty("nombre_doctor")]
+        [JsonProperty("nombre")]
         public string NombreDoctor { get; set; } = string.Empty;
 
         [JsonProperty("especialidad")]
@@ -31,26 +39,22 @@ namespace SaludTotal.Models
 
         [JsonProperty("turnos_desaprovechados")]
         public int TurnosDesaprovechados { get; set; }
+        [JsonProperty("ausencias_anotadas")]
+        public int AusenciasAnotadas { get; set; }
 
         [JsonProperty("dias_ausencia")]
         public int DiasAusencia { get; set; }
 
-        [JsonProperty("turnos_perdidos_ausencia")]
-        public int TurnosPerdidosAusencia { get; set; }
-
-        [JsonProperty("porcentaje_asistencia")]
-        public double PorcentajeAsistencia { get; set; }
-
         [JsonProperty("ultima_ausencia")]
-        public DateTime? UltimaAusencia { get; set; }
+        public AusenciaRangoDto? UltimaAusencia { get; set; }
 
         [JsonProperty("total_turnos")]
         public int TotalTurnos { get; set; }
 
-        [JsonProperty("fecha_desde")]
+        [JsonProperty("desde")]
         public DateTime? FechaDesde { get; set; }
 
-        [JsonProperty("fecha_hasta")]
+        [JsonProperty("hasta")]
         public DateTime? FechaHasta { get; set; }
     }
 

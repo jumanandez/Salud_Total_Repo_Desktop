@@ -282,11 +282,11 @@
                                 </StackPanel>
                             </Border>
                             
-                            <!-- Porcentaje de Asistencia -->
+                            <!-- Ausencias Anotadas -->
                             <Border Grid.Row="1" Grid.Column="0" Background="#E8F5E8" CornerRadius="10" Padding="20" Margin="10">
                                 <StackPanel>
-                                    <TextBlock Text="% Asistencia" Style="{StaticResource StatLabelStyle}" HorizontalAlignment="Center"/>
-                                    <TextBlock x:Name="PorcentajeAsistencia" Text="0%" Style="{StaticResource StatValueStyle}"/>
+                                    <TextBlock Text="Ausencias Anotadas" Style="{StaticResource StatLabelStyle}" HorizontalAlignment="Center"/>
+                                    <TextBlock x:Name="AusenciasAnotadas" Text="0" Style="{StaticResource StatValueStyle}"/>
                                 </StackPanel>
                             </Border>
                             

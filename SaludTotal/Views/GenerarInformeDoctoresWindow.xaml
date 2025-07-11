@@ -1,0 +1,33 @@
+<Window x:Class="SaludTotal.Desktop.Views.GenerarInformeDoctoresWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Generar Informe de Doctores" Height="500" Width="800" WindowStartupLocation="CenterOwner" ResizeMode="NoResize">
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <StackPanel Orientation="Horizontal" Margin="0,0,0,10" Grid.Row="0" HorizontalAlignment="Left">
+            <TextBlock Text="Fecha desde:" VerticalAlignment="Center" Margin="0,0,10,0"/>
+            <DatePicker x:Name="FechaDesdePicker" Width="120" Margin="0,0,20,0"/>
+            <TextBlock Text="Fecha hasta:" VerticalAlignment="Center" Margin="0,0,10,0"/>
+            <DatePicker x:Name="FechaHastaPicker" Width="120"/>
+            <Button Content="Buscar" Margin="20,0,0,0" Width="100" Click="Buscar_Click"/>
+        </StackPanel>
+        <DataGrid x:Name="EstadisticasDataGrid" Grid.Row="2" AutoGenerateColumns="False" Margin="0,10,0,10" IsReadOnly="True">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Doctor" Binding="{Binding NombreDoctor}" Width="*"/>
+                <DataGridTextColumn Header="Especialidad" Binding="{Binding Especialidad}" Width="*"/>
+                <DataGridTextColumn Header="Atendidos" Binding="{Binding TurnosAtendidos}" Width="80"/>
+                <DataGridTextColumn Header="Cancelados" Binding="{Binding TurnosCancelados}" Width="80"/>
+                <DataGridTextColumn Header="Rechazados" Binding="{Binding TurnosRechazados}" Width="80"/>
+                <DataGridTextColumn Header="Reprogramados" Binding="{Binding TurnosReprogramados}" Width="80"/>
+                <DataGridTextColumn Header="Aceptados" Binding="{Binding TurnosAceptados}" Width="80"/>
+                <DataGridTextColumn Header="Desaprovechados" Binding="{Binding TurnosDesaprovechados}" Width="100"/>
+            </DataGrid.Columns>
+        </DataGrid>
+        <Button Content="Exportar Informe" Grid.Row="3" HorizontalAlignment="Right" Width="150" Margin="0,10,0,0" Click="ExportarInforme_Click"/>
+    </Grid>
+</Window>

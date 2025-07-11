@@ -20,6 +20,9 @@ namespace SaludTotal.Desktop.Views
         private ObservableCollection<DoctorDto> _profesionalesFiltrados = new();
         private readonly ApiService _apiService;
 
+        // --- NUEVO: Generar Informe de Doctores ---
+        private ObservableCollection<SaludTotal.Models.EstadisticasDoctorDto> _estadisticasDoctores = new();
+
         public InformesProfesionalesWindow()
         {
             InitializeComponent();
@@ -268,8 +271,9 @@ namespace SaludTotal.Desktop.Views
 
         private void GenerarInforme_Click(object sender, RoutedEventArgs e)
         {
-            // TODO: Implementar generación de informe
-            MessageBox.Show("Generando informe de profesionales - Funcionalidad en desarrollo", "Información", MessageBoxButton.OK, MessageBoxImage.Information);
+            var modal = new GenerarInformeDoctoresWindow(_apiService);
+            modal.Owner = this;
+            modal.ShowDialog();
         }
 
         private void ExportarDatos_Click(object sender, RoutedEventArgs e)
