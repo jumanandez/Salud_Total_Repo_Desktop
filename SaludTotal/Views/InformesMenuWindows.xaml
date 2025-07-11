@@ -33,31 +33,6 @@
             </Setter>
         </Style>
 
-        <!-- Estilo para el botón "Volver al inicio" -->
-        <Style x:Key="VolverButtonStyle" TargetType="Button">
-            <Setter Property="Padding" Value="40,20"/>
-            <Setter Property="FontSize" Value="18"/>
-            <Setter Property="FontWeight" Value="Bold"/>
-            <Setter Property="Background" Value="#27ae60"/>
-            <Setter Property="Foreground" Value="White"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}" CornerRadius="8">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Background" Value="#2ecc71"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
         <!-- Estilo para botones de ventana (minimizar/cerrar) -->
         <Style x:Key="WindowButtonStyle" TargetType="Button">
             <Setter Property="Width" Value="40"/>
@@ -115,13 +90,34 @@
 
         <!-- Botón para volver al inicio -->
         <Button Content="Volver al inicio" 
-                Style="{StaticResource VolverButtonStyle}"
                 HorizontalAlignment="Left" 
                 VerticalAlignment="Top" 
+                Height="45"
+                Padding="20,10"
+                FontSize="14"
+                FontWeight="SemiBold"
+                Background="#28A745"
+                Foreground="White"
+                BorderThickness="0"
                 Margin="20"
                 Click="VolverInicio_Click"
-                ToolTip="Regresar al menú principal"
-                />
+                ToolTip="Regresar al menú principal">
+            <Button.Template>
+                <ControlTemplate TargetType="Button">
+                    <Border Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Background" Value="#34CE57"/>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter Property="Background" Value="#1E7E34"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Button.Template>
+        </Button>
 
         <!-- Botones de ventana (minimizar y cerrar) -->
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,15,15,0" Panel.ZIndex="999">

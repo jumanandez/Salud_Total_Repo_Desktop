@@ -267,18 +267,5 @@ namespace SaludTotal.Desktop.Views
             this.Close();
         }
 
-        private void VerMesPasado_Click(object sender, RoutedEventArgs e)
-        {
-            // Configurar fechas para el mes pasado
-            DateTime ahora = DateTime.Now;
-            DateTime primerDiaMesPasado = new DateTime(ahora.Year, ahora.Month, 1).AddMonths(-1);
-            DateTime ultimoDiaMesPasado = primerDiaMesPasado.AddMonths(1).AddDays(-1);
-            
-            FechaDesde.SelectedDate = primerDiaMesPasado;
-            FechaHasta.SelectedDate = ultimoDiaMesPasado;
-            
-            // Cargar estadísticas del mes pasado
-            _ = CargarEstadisticasGlobales();
-        }
     }
 }
