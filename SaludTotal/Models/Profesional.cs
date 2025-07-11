@@ -11,19 +11,21 @@ namespace SaludTotal.Models
     public class Profesional
     {
         [JsonProperty("doctor_id")]
-        public int DoctorId { get; set; }
+        public int Id { get; set; }
 
         [JsonProperty("nombre_apellido")]
         public string NombreApellido { get; set; } = string.Empty;
+        [JsonProperty("email")]
+        public string Email { get; set; } = string.Empty;
+        [JsonProperty("telefono")]
+        public string Telefono { get; set; } = string.Empty;
+
 
         [JsonProperty("especialidad_id")]
         public int EspecialidadId {get; set;}
 
         [JsonProperty("especialidad")]
         public Especialidad? Especialidad { get; set; }
-
-        // Propiedad extra para facilitar la visualización
-        // Si viene 'nombre_apellido' del endpoint, lo usa, sino combina nombre y apellido
         public string NombreCompleto => NombreApellido;
     }
 }
