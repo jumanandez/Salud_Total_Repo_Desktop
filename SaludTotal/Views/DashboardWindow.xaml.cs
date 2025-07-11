@@ -28,12 +28,6 @@ namespace SaludTotal.Desktop.Views
             this.Close();
         }
 
-        private void GestionPacientes_Click(object sender, RoutedEventArgs e)
-        {
-            // TODO: Implementar gestión de pacientes
-            MessageBox.Show("Funcionalidad en desarrollo", "Información", MessageBoxButton.OK, MessageBoxImage.Information);
-        }
-
         private void GestionHorarios_Click(object sender, RoutedEventArgs e)
         {
             // TODO: Implementar gestión de horarios

@@ -99,7 +99,7 @@
         <Border HorizontalAlignment="Center" 
                 VerticalAlignment="Center" 
                 Width="450" 
-                Height="480"
+                Height="400"
                 Background="#DD3A5F8A" 
                 CornerRadius="20">
             <StackPanel Margin="40">
@@ -111,10 +111,6 @@
 
                 <Button Content="Administracion de turnos" 
                         Click="AdministrarTurnos_Click"
-                        Style="{StaticResource DashboardButtonStyle}"/>
-
-                <Button Content="Gestion de pacientes" 
-                        Click="GestionPacientes_Click"
                         Style="{StaticResource DashboardButtonStyle}"/>
 
                 <Button Content="Disponibilidades y Horarios" 
