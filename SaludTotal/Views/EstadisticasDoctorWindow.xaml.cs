@@ -15,7 +15,6 @@ namespace SaludTotal.Desktop.Views
     public partial class EstadisticasDoctorWindow : Window
     {
         private Profesional _doctor;
-        private DoctorDto? _doctorDto;
         private List<Turno> _todosTurnos = new List<Turno>();
         private readonly ApiService _apiService;
 
@@ -35,11 +34,10 @@ namespace SaludTotal.Desktop.Views
         private DateTime? _ultimaAusenciaInicio;
         private DateTime? _ultimaAusenciaFin;
 
-        public EstadisticasDoctorWindow(Profesional doctor, DoctorDto? doctorDto = null)
+        public EstadisticasDoctorWindow(Profesional doctor)
         {
             InitializeComponent();
             _doctor = doctor;
-            _doctorDto = doctorDto;
             _apiService = new ApiService();
             
             // Configurar fechas por defecto (último mes)
@@ -55,10 +53,10 @@ namespace SaludTotal.Desktop.Views
             DoctorNombre.Text = _doctor.NombreCompleto;
             
             // Usar datos del DoctorDto si están disponibles, sino valores por defecto
-            if (_doctorDto != null)
+            if (_doctor != null)
             {
-                DoctorTelefono.Text = !string.IsNullOrEmpty(_doctorDto.Telefono) ? _doctorDto.Telefono : "No disponible";
-                DoctorEmail.Text = !string.IsNullOrEmpty(_doctorDto.Email) ? _doctorDto.Email : "No disponible";
+                DoctorTelefono.Text = !string.IsNullOrEmpty(_doctor.Telefono) ? _doctor.Telefono : "No disponible";
+                DoctorEmail.Text = !string.IsNullOrEmpty(_doctor.Email) ? _doctor.Email : "No disponible";
             }
             else
             {
@@ -77,7 +75,7 @@ namespace SaludTotal.Desktop.Views
                 DateTime? fechaDesde = FechaDesde.SelectedDate;
                 DateTime? fechaHasta = FechaHasta.SelectedDate;
                 
-                var estadisticasBackend = await _apiService.GetEstadisticasDoctorAsync(_doctor.DoctorId, fechaDesde, fechaHasta);
+                var estadisticasBackend = await _apiService.GetEstadisticasDoctorAsync(_doctor.Id, fechaDesde, fechaHasta);
                 
                 if (estadisticasBackend != null && estadisticasBackend.DoctorId > 0)
                 {
@@ -97,7 +95,7 @@ namespace SaludTotal.Desktop.Views
                 // En caso de error con el backend, intentar el fallback
                 try
                 {
-                    _todosTurnos = await _apiService.ObtenerTurnosPorDoctor(_doctor.DoctorId);
+                    _todosTurnos = await _apiService.ObtenerTurnosPorDoctor(_doctor.Id);
                     ActualizarInterfaz();
                 }
                 catch (Exception fallbackEx)

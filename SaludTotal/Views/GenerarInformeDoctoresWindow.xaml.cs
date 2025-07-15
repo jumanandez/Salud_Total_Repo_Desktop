@@ -42,7 +42,7 @@ namespace SaludTotal.Desktop.Views
             try
             {
                 var lista = await _apiService.GetEstadisticasTodosDoctoresAsync(fechaInicio, fechaFin);
-                _estadisticasDoctores = new ObservableCollection<SaludTotal.Models.EstadisticasDoctorDto>(lista.estadisticasDoctorDtos);
+                _estadisticasDoctores = new ObservableCollection<SaludTotal.Models.EstadisticasDoctorDto>(lista.EstadisticasDoctorDtos);
                 var dataGrid = this.FindName("EstadisticasDataGrid") as System.Windows.Controls.DataGrid;
                 if (dataGrid != null)
                     dataGrid.ItemsSource = _estadisticasDoctores;

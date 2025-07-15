@@ -396,7 +396,7 @@ namespace SaludTotal.Desktop.Services
                     if (successToken != null && successToken.Type != Newtonsoft.Json.Linq.JTokenType.Null && successToken.ToObject<bool>() && dataToken != null)
                     {
                         var datos = dataToken.ToObject<DatosFormularioResponse>();
-                        Console.WriteLine($"Datos obtenidos: {datos?.Especialidades?.Count ?? 0} especialidades, {datos?.DoctoresPorEspecialidad?.Count ?? 0} grupos de doctores");
+                        Console.WriteLine($"Datos obtenidos: {datos?.Especialidades?.Count ?? 0} especialidades, {datos?.DoctoresPorEspecialidadDto?.Count ?? 0} grupos de doctores");
                         return datos ?? throw new Exception("No se pudieron deserializar los datos del formulario");
                     }
                     else if (obj["mensaje"] != null)
@@ -578,7 +578,7 @@ namespace SaludTotal.Desktop.Services
         /// Obtiene solo las especialidades y los doctores agrupados por especialidad.
         /// </summary>
         /// <returns>Datos con especialidades y doctores por especialidad.</returns>
-        public async Task<(List<EspecialidadDto> Especialidades, List<DoctoresPorEspecialidadDto> DoctoresPorEspecialidad)> GetEspecialidadesYDoctoresAsync()
+        public async Task<(List<Especialidad> Especialidades, List<DoctoresPorEspecialidadDto> DoctoresPorEspecialidadDto)> GetEspecialidadesYDoctoresAsync()
         {
             string url = $"{ApiTurnosUrl}/especialidades";
             Console.WriteLine($"Obteniendo especialidades y doctores desde: {url}");
@@ -593,9 +593,9 @@ namespace SaludTotal.Desktop.Services
                 var dataToken = obj["data"];
                 if (successToken != null && successToken.Type != Newtonsoft.Json.Linq.JTokenType.Null && successToken.ToObject<bool>() && dataToken != null)
                 {
-                    var especialidades = dataToken["especialidades"]?.ToObject<List<EspecialidadDto>>() ?? new List<EspecialidadDto>();
-                    var doctoresPorEspecialidad = dataToken["doctores_por_especialidad"]?.ToObject<List<DoctoresPorEspecialidadDto>>() ?? new List<DoctoresPorEspecialidadDto>();
-                    return (especialidades, doctoresPorEspecialidad);
+                    var especialidades = dataToken["especialidades"]?.ToObject<List<Especialidad>>() ?? new List<Especialidad>();
+                    var DoctoresPorEspecialidadDto = dataToken["doctores_por_especialidad"]?.ToObject<List<DoctoresPorEspecialidadDto>>() ?? new List<DoctoresPorEspecialidadDto>();
+                    return (especialidades, DoctoresPorEspecialidadDto);
                 }
                 else if (obj["mensaje"] != null)
                 {
@@ -616,7 +616,7 @@ namespace SaludTotal.Desktop.Services
         /// Obtiene la lista de especialidades desde la API.
         /// </summary>
         /// <returns>Lista de especialidades.</returns>
-        public async Task<List<EspecialidadDto>> GetEspecialidadesAsync()
+        public async Task<List<Especialidad>> GetEspecialidadesAsync()
         {
             string url = $"{ApiProfesionalesUrl}/especialidades";
             Console.WriteLine($"Obteniendo especialidades desde: {url}");
@@ -627,7 +627,7 @@ namespace SaludTotal.Desktop.Services
             var obj = Newtonsoft.Json.Linq.JObject.Parse(responseContent);
             if (obj["especialidades"] != null)
             {
-                var especialidades = obj["especialidades"].ToObject<List<EspecialidadDto>>() ?? new List<EspecialidadDto>();
+                var especialidades = obj["especialidades"].ToObject<List<Especialidad>>() ?? new List<Especialidad>();
                 return especialidades;
             }
             else if (obj["mensaje"] != null)
@@ -645,7 +645,7 @@ namespace SaludTotal.Desktop.Services
         /// </summary>
         /// <param name="especialidadId">ID de la especialidad</param>
         /// <returns>Lista de doctores para la especialidad.</returns>
-        public async Task<List<DoctorDto>> GetDoctoresByEspecialidadAsync(int especialidadId)
+        public async Task<List<Profesional>> GetDoctoresByEspecialidadAsync(int especialidadId)
         {
             string url = $"{ApiProfesionalesUrl}/especialidades/{especialidadId}/doctores";
             Console.WriteLine($"Obteniendo doctores para especialidad {especialidadId} desde: {url}");
@@ -656,7 +656,7 @@ namespace SaludTotal.Desktop.Services
             var obj = Newtonsoft.Json.Linq.JObject.Parse(responseContent);
             if (obj["doctores_by_especialidad"] != null)
             {
-                var doctores = obj["doctores_by_especialidad"].ToObject<List<DoctorDto>>() ?? new List<DoctorDto>();
+                var doctores = obj["doctores_by_especialidad"].ToObject<List<Profesional>>() ?? new List<Profesional>();
                 return doctores;
             }
             else if (obj["mensaje"] != null)
@@ -668,7 +668,6 @@ namespace SaludTotal.Desktop.Services
                 throw new Exception("Respuesta inesperada del backend al obtener doctores por especialidad");
             }
         }
-
         /// <summary>
         /// Obtiene los horarios laborales de un doctor.
         /// </summary>
@@ -742,7 +741,7 @@ namespace SaludTotal.Desktop.Services
         /// Obtiene todos los doctores desde la API con sus especialidades.
         /// </summary>
         /// <returns>Lista de todos los doctores con especialidades.</returns>
-        public async Task<List<DoctorDto>> GetTodosDoctoresAsync()
+        public async Task<List<Profesional>> GetTodosDoctoresAsync()
         {
             try
             {
@@ -756,18 +755,18 @@ namespace SaludTotal.Desktop.Services
                 var obj = Newtonsoft.Json.Linq.JObject.Parse(responseContent);
                 if (obj["doctores"] != null)
                 {
-                    var doctores = obj["doctores"]?.ToObject<List<DoctorDto>>() ?? new List<DoctorDto>();
+                    var doctores = obj["doctores"]?.ToObject<List<Profesional>>() ?? new List<Profesional>();
                     Console.WriteLine($"Doctores obtenidos: {doctores.Count}");
 
                     // Debug: Mostrar estructura de los primeros doctores
                     for (int i = 0; i < Math.Min(3, doctores.Count); i++)
                     {
                         var doctor = doctores[i];
-                        Console.WriteLine($"Doctor {i + 1}: ID={doctor.Id}, Nombre='{doctor.NombreCompletoCalculado}', Especialidad='{doctor.Especialidad}', Email='{doctor.Email}'");
+                        Console.WriteLine($"Doctor {i + 1}: ID={doctor.Id}, Nombre='{doctor.NombreCompleto}', Especialidad='{doctor.Especialidad}', Email='{doctor.Email}'");
                     }
 
                     // Si los doctores no tienen especialidad, intentar obtenerla
-                    if (doctores.Any() && string.IsNullOrEmpty(doctores.First().Especialidad))
+                    if (doctores.Any() && string.IsNullOrEmpty(doctores.First().Especialidad.Nombre))
                     {
                         Console.WriteLine("Los doctores no tienen especialidad asignada, intentando obtenerla...");
                         await AsignarEspecialidadesADoctoresAsync(doctores);
@@ -799,17 +798,17 @@ namespace SaludTotal.Desktop.Services
         /// <summary>
         /// Asigna especialidades a doctores que no las tienen.
         /// </summary>
-        private async Task AsignarEspecialidadesADoctoresAsync(List<DoctorDto> doctores)
+        private async Task AsignarEspecialidadesADoctoresAsync(List<Profesional> doctores)
         {
             try
             {
                 // Obtener especialidades y doctores por especialidad
-                var (especialidades, doctoresPorEspecialidad) = await GetEspecialidadesYDoctoresAsync();
+                var (especialidades, DoctoresPorEspecialidadDto) = await GetEspecialidadesYDoctoresAsync();
 
                 // Crear un diccionario para mapear doctor ID a especialidad
                 var doctorEspecialidadMap = new Dictionary<int, string>();
 
-                foreach (var grupo in doctoresPorEspecialidad)
+                foreach (var grupo in DoctoresPorEspecialidadDto)
                 {
                     foreach (var doctorEsp in grupo.Doctores)
                     {
@@ -825,12 +824,12 @@ namespace SaludTotal.Desktop.Services
                 {
                     if (doctorEspecialidadMap.ContainsKey(doctor.Id))
                     {
-                        doctor.Especialidad = doctorEspecialidadMap[doctor.Id];
-                        Console.WriteLine($"Asignada especialidad '{doctor.Especialidad}' al doctor {doctor.NombreCompletoCalculado}");
+                        doctor.Especialidad.Nombre = doctorEspecialidadMap[doctor.Id];
+                        Console.WriteLine($"Asignada especialidad '{doctor.Especialidad}' al doctor {doctor.NombreCompleto}");
                     }
                     else
                     {
-                        doctor.Especialidad = "Sin especialidad";
+                        doctor.Especialidad.Nombre = "Sin especialidad";
                     }
                 }
 
@@ -842,9 +841,9 @@ namespace SaludTotal.Desktop.Services
                 // Asignar una especialidad por defecto
                 foreach (var doctor in doctores)
                 {
-                    if (string.IsNullOrEmpty(doctor.Especialidad))
+                    if (string.IsNullOrEmpty(doctor.Especialidad.Nombre))
                     {
-                        doctor.Especialidad = "General";
+                        doctor.Especialidad.Nombre = "General";
                     }
                 }
             }
@@ -1063,7 +1062,7 @@ namespace SaludTotal.Desktop.Services
                 }
                 return estadisticasResponse ?? new ResponseEstadisticasDoctores
                 {
-                    estadisticasDoctorDtos = new List<EstadisticasDoctorDto>(),
+                    EstadisticasDoctorDtos = new List<EstadisticasDoctorDto>(),
                     Desde = fechaDesde,
                     Hasta = fechaHasta,
                     Mensaje = "No se obtuvieron las estadisticas",
@@ -1084,7 +1083,7 @@ namespace SaludTotal.Desktop.Services
         public class ResponseEstadisticasDoctores
         {
             [JsonProperty("estadisticas_doctores")]
-            public List<EstadisticasDoctorDto>? estadisticasDoctorDtos { get; set; }
+            public List<EstadisticasDoctorDto>? EstadisticasDoctorDtos { get; set; }
 
             [JsonProperty("desde")]
             public DateTime? Desde { get; set; }
@@ -1444,7 +1443,7 @@ namespace SaludTotal.Desktop.Services
             public Paciente? Paciente { get; set; }
 
             [JsonProperty("doctor")]
-            public DoctorDto? Doctor { get; set; }
+            public Profesional? Doctor { get; set; }
         }
 
     }
@@ -1473,24 +1472,14 @@ namespace SaludTotal.Desktop.Services
     public class DatosFormularioResponse
     {
         [JsonProperty("especialidades")]
-        public List<EspecialidadDto> Especialidades { get; set; } = new List<EspecialidadDto>();
+        public List<Especialidad> Especialidades { get; set; } = new List<Especialidad>();
 
         [JsonProperty("doctores_por_especialidad")]
-        public List<DoctoresPorEspecialidadDto> DoctoresPorEspecialidad { get; set; } = new List<DoctoresPorEspecialidadDto>();
+        public List<DoctoresPorEspecialidadDto> DoctoresPorEspecialidadDto { get; set; } = new List<DoctoresPorEspecialidadDto>();
 
         [JsonProperty("horarios_disponibles")]
         public List<HorarioDisponibleDto> HorariosDisponibles { get; set; } = new List<HorarioDisponibleDto>();
     }
-
-    public class EspecialidadDto
-    {
-        [JsonProperty("especialidad_id")]
-        public int Id { get; set; }
-
-        [JsonProperty("nombre")]
-        public string Nombre { get; set; } = string.Empty;
-    }
-
     public class DoctoresPorEspecialidadDto
     {
         [JsonProperty("especialidad_id")]
@@ -1500,52 +1489,8 @@ namespace SaludTotal.Desktop.Services
         public string EspecialidadNombre { get; set; } = string.Empty;
 
         [JsonProperty("doctores")]
-        public List<DoctorDto> Doctores { get; set; } = new List<DoctorDto>();
+        public List<Profesional> Doctores { get; set; } = new List<Profesional>();
     }
-
-    public class DoctorDto
-    {
-        [JsonProperty("doctor_id")]
-        public int Id { get; set; }
-
-        [JsonProperty("nombre_apellido")]
-        public string NombreCompleto { get; set; } = string.Empty;
-
-        [JsonProperty("email")]
-        public string Email { get; set; } = string.Empty;
-
-        [JsonProperty("telefono")]
-        public string Telefono { get; set; } = string.Empty;
-
-        [JsonProperty("especialidad")]
-        public string Especialidad { get; set; } = string.Empty;
-
-        // Para compatibilidad con el formato de API de todos los doctores
-        [JsonProperty("nombre")]
-        public string? Nombre { get; set; }
-
-        [JsonProperty("apellido")]
-        public string? Apellido { get; set; }
-
-        // Propiedad calculada para mostrar el ID como string
-        public string DoctorId => $"DOC{Id:D3}";
-
-        // Propiedad calculada para el nombre completo si viene separado
-        public string NombreCompletoCalculado 
-        { 
-            get 
-            {
-                if (!string.IsNullOrEmpty(NombreCompleto))
-                    return NombreCompleto;
-                
-                if (!string.IsNullOrEmpty(Nombre) && !string.IsNullOrEmpty(Apellido))
-                    return $"Dr(a). {Nombre} {Apellido}";
-                
-                return "N/A";
-            }
-        }
-    }
-
     public class HorarioDisponibleDto
     {
         [JsonProperty("hora")]

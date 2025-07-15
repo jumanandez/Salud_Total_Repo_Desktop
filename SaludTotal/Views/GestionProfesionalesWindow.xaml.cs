@@ -6,14 +6,15 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Threading.Tasks;
 using SaludTotal.Desktop.Services;
+using SaludTotal.Models;
 
 namespace SaludTotal.Desktop.Views
 {
     public partial class GestionProfesionalesWindow : Window
     {
         private readonly ApiService _apiService;
-        private List<DoctorDto> _todosLosProfesionales = new List<DoctorDto>();
-        private List<DoctorDto> _profesionalesFiltrados = new List<DoctorDto>();
+        private List<Profesional> _todosLosProfesionales = new List<Profesional>();
+        private List<Profesional> _profesionalesFiltrados = new List<Profesional>();
 
         public GestionProfesionalesWindow()
         {
@@ -38,17 +39,16 @@ namespace SaludTotal.Desktop.Views
             {
                 MessageBox.Show($"Error al cargar los profesionales: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 // Cargar datos de ejemplo como fallback
-                LoadSampleData();
             }
         }
 
-        private async System.Threading.Tasks.Task CargarTodosDoctoresConEspecialidadesAsync()
+        private async Task CargarTodosDoctoresConEspecialidadesAsync()
         {
             try
             {
                 // Primero obtener todas las especialidades
                 var especialidades = await _apiService.GetEspecialidadesAsync();
-                var todosLosDoctores = new List<DoctorDto>();
+                var todosLosDoctores = new List<Profesional>();
 
                 Console.WriteLine($"Especialidades encontradas: {especialidades.Count}");
 
@@ -57,15 +57,15 @@ namespace SaludTotal.Desktop.Views
                 {
                     try
                     {
-                        var doctoresEspecialidad = await _apiService.GetDoctoresByEspecialidadAsync(especialidad.Id);
-                        
+                        var doctoresEspecialidad = await _apiService.GetDoctoresByEspecialidadAsync(especialidad.EspecialidadId);
+
                         foreach (var doctor in doctoresEspecialidad)
                         {
-                            doctor.Especialidad = especialidad.Nombre;
-                            Console.WriteLine($"Asignando especialidad: '{doctor.Especialidad}' al doctor {doctor.NombreCompletoCalculado}");
+                            doctor.Especialidad.Nombre = especialidad.Nombre;
+                            Console.WriteLine($"Asignando especialidad: '{doctor.Especialidad}' al doctor {doctor.NombreCompleto}");
                             todosLosDoctores.Add(doctor);
                         }
-                        
+
                         Console.WriteLine($"Especialidad '{especialidad.Nombre}': {doctoresEspecialidad.Count} doctores");
                     }
                     catch (Exception ex)
@@ -76,13 +76,13 @@ namespace SaludTotal.Desktop.Views
 
                 // Actualizar las colecciones
                 _todosLosProfesionales = todosLosDoctores;
-                _profesionalesFiltrados = new List<DoctorDto>(_todosLosProfesionales);
+                _profesionalesFiltrados = new List<Profesional>(_todosLosProfesionales);
                 ProfesionalesDataGrid.ItemsSource = _profesionalesFiltrados;
-                
+
                 Console.WriteLine($"Total de doctores cargados: {todosLosDoctores.Count}");
                 foreach (var doctor in todosLosDoctores.Take(5))
                 {
-                    Console.WriteLine($"Doctor: {doctor.NombreCompletoCalculado}, Especialidad: '{doctor.Especialidad}' (Length: {doctor.Especialidad?.Length})");
+                    Console.WriteLine($"Doctor: {doctor.NombreCompleto}, Especialidad: '{doctor.Especialidad}' (Length: {doctor.Especialidad.Nombre?.Length})");
                 }
             }
             catch (Exception ex)
@@ -91,26 +91,6 @@ namespace SaludTotal.Desktop.Views
                 throw;
             }
         }
-
-        private void LoadSampleData()
-        {
-            // Datos de ejemplo como fallback
-            _todosLosProfesionales = new List<DoctorDto>
-            {
-                new DoctorDto { Id = 1, NombreCompleto = "Dr. Juan Carlos Pérez", Email = "juan.perez@saludtotal.com", Telefono = "+54 11 1234-5678", Especialidad = "Cardiología" },
-                new DoctorDto { Id = 2, NombreCompleto = "Dra. María Elena García", Email = "maria.garcia@saludtotal.com", Telefono = "+54 11 2345-6789", Especialidad = "Ginecología" },
-                new DoctorDto { Id = 3, NombreCompleto = "Dr. Roberto Martínez", Email = "roberto.martinez@saludtotal.com", Telefono = "+54 11 3456-7890", Especialidad = "Pediatría" },
-                new DoctorDto { Id = 4, NombreCompleto = "Dra. Ana Sofía López", Email = "ana.lopez@saludtotal.com", Telefono = "+54 11 4567-8901", Especialidad = "Clínica General" },
-                new DoctorDto { Id = 5, NombreCompleto = "Dr. Carlos Eduardo Ruiz", Email = "carlos.ruiz@saludtotal.com", Telefono = "+54 11 5678-9012", Especialidad = "Cardiología" },
-                new DoctorDto { Id = 6, NombreCompleto = "Dra. Laura Patricia Mendoza", Email = "laura.mendoza@saludtotal.com", Telefono = "+54 11 6789-0123", Especialidad = "Ginecología" },
-                new DoctorDto { Id = 7, NombreCompleto = "Dr. Fernando Andrés Silva", Email = "fernando.silva@saludtotal.com", Telefono = "+54 11 7890-1234", Especialidad = "Pediatría" },
-                new DoctorDto { Id = 8, NombreCompleto = "Dra. Isabel Cristina Torres", Email = "isabel.torres@saludtotal.com", Telefono = "+54 11 8901-2345", Especialidad = "Clínica General" }
-            };
-
-            _profesionalesFiltrados = new List<DoctorDto>(_todosLosProfesionales);
-            ProfesionalesDataGrid.ItemsSource = _profesionalesFiltrados;
-        }
-
         private void MinimizeWindow_Click(object sender, RoutedEventArgs e)
         {
             this.WindowState = WindowState.Minimized;
@@ -185,7 +165,7 @@ namespace SaludTotal.Desktop.Views
 
         private void AplicarFiltrosYBusqueda()
         {
-            var profesionalesFiltrados = new List<DoctorDto>(_todosLosProfesionales);
+            var profesionalesFiltrados = new List<Profesional>(_todosLosProfesionales);
 
             // Aplicar filtro de especialidad
             string especialidadActiva = ObtenerEspecialidadActiva();
@@ -199,11 +179,11 @@ namespace SaludTotal.Desktop.Views
             if (!string.IsNullOrEmpty(terminoBusqueda))
             {
                 profesionalesFiltrados = profesionalesFiltrados.Where(p => 
-                    (p.NombreCompletoCalculado?.ToLower().Contains(terminoBusqueda) ?? false) ||
+                    (p.NombreCompleto?.ToLower().Contains(terminoBusqueda) ?? false) ||
                     (p.NombreCompleto?.ToLower().Contains(terminoBusqueda) ?? false) ||
                     (p.Email?.ToLower().Contains(terminoBusqueda) ?? false) ||
                     (p.Telefono?.ToLower().Contains(terminoBusqueda) ?? false) ||
-                    (p.Especialidad?.ToLower().Contains(terminoBusqueda) ?? false)
+                    (p.Especialidad.Nombre?.ToLower().Contains(terminoBusqueda) ?? false)
                 ).ToList();
             }
 
@@ -227,21 +207,21 @@ namespace SaludTotal.Desktop.Views
                 return "Todos";
         }
 
-        private List<DoctorDto> FiltrarPorEspecialidad(List<DoctorDto> profesionales, string especialidad)
+        private List<Profesional> FiltrarPorEspecialidad(List<Profesional> profesionales, string especialidad)
         {
             if (especialidad == "Clínica General")
             {
                 return profesionales.Where(p => 
-                    p.Especialidad?.Equals("Clínica General", StringComparison.OrdinalIgnoreCase) == true ||
-                    p.Especialidad?.Equals("Clinica General", StringComparison.OrdinalIgnoreCase) == true ||
-                    p.Especialidad?.Equals("Medicina General", StringComparison.OrdinalIgnoreCase) == true
+                    p.Especialidad.Nombre?.Equals("Clínica General", StringComparison.OrdinalIgnoreCase) == true ||
+                    p.Especialidad.Nombre?.Equals("Clinica General", StringComparison.OrdinalIgnoreCase) == true ||
+                    p.Especialidad.Nombre?.Equals("Medicina General", StringComparison.OrdinalIgnoreCase) == true
                 ).ToList();
             }
             else
             {
                 return profesionales.Where(p => 
-                    p.Especialidad?.Equals(especialidad, StringComparison.OrdinalIgnoreCase) == true ||
-                    p.Especialidad?.Equals(especialidad.Replace("í", "i").Replace("é", "e"), StringComparison.OrdinalIgnoreCase) == true
+                    p.Especialidad.Nombre?.Equals(especialidad, StringComparison.OrdinalIgnoreCase) == true ||
+                    p.Especialidad.Nombre?.Equals(especialidad.Replace("í", "i").Replace("é", "e"), StringComparison.OrdinalIgnoreCase) == true
                 ).ToList();
             }
         }
@@ -282,7 +262,7 @@ namespace SaludTotal.Desktop.Views
 
         private void GestionarProfesional_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is Button button && button.Tag is DoctorDto profesional)
+            if (sender is Button button && button.Tag is Profesional profesional)
             {
                 var detalleProfesionalWindow = new DetalleProfesionalWindow(profesional);
                 detalleProfesionalWindow.Show();

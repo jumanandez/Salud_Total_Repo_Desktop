@@ -17,9 +17,12 @@ namespace SaludTotal.Models
         public int MotivoId { get; set; }
         [JsonProperty("motivo")]
         public MotivoAusencia Motivo { get; set; } = new MotivoAusencia();
+        [JsonProperty("fecha_inicio")]
         public DateTime FechaInicio { get; set; }
+        [JsonProperty("fecha_fin")]
         public DateTime FechaFin { get; set; }
-        public string Descripcion { get; set; }
+        [JsonProperty("descripcion")]
+        public string Descripcion { get; set; } = string.Empty;
         // Propiedad calculada para mostrar el rango de fechas
         public string RangoFechas => $"{FechaInicio:dd/MM/yyyy} - {FechaFin:dd/MM/yyyy}";
         // Propiedad para indicar si la ausencia está activa (hoy está dentro del rango)

@@ -16,8 +16,8 @@ namespace SaludTotal.Desktop.Views
     /// </summary>
     public partial class InformesProfesionalesWindow : Window
     {
-        private ObservableCollection<DoctorDto> _todosLosProfesionales = new();
-        private ObservableCollection<DoctorDto> _profesionalesFiltrados = new();
+        private ObservableCollection<Profesional> _todosLosProfesionales = new();
+        private ObservableCollection<Profesional> _profesionalesFiltrados = new();
         private readonly ApiService _apiService;
 
         // --- NUEVO: Generar Informe de Doctores ---
@@ -41,7 +41,6 @@ namespace SaludTotal.Desktop.Views
             {
                 MessageBox.Show($"Error al cargar los profesionales: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 // Cargar datos de ejemplo como fallback
-                LoadSampleData();
             }
         }
 
@@ -51,7 +50,7 @@ namespace SaludTotal.Desktop.Views
             {
                 // Primero obtener todas las especialidades
                 var especialidades = await _apiService.GetEspecialidadesAsync();
-                var todosLosDoctores = new List<DoctorDto>();
+                var todosLosDoctores = new List<Profesional>();
 
                 Console.WriteLine($"Especialidades encontradas: {especialidades.Count}");
 
@@ -60,12 +59,12 @@ namespace SaludTotal.Desktop.Views
                 {
                     try
                     {
-                        var doctoresEspecialidad = await _apiService.GetDoctoresByEspecialidadAsync(especialidad.Id);
+                        var doctoresEspecialidad = await _apiService.GetDoctoresByEspecialidadAsync(especialidad.EspecialidadId);
                         
                         foreach (var doctor in doctoresEspecialidad)
                         {
-                            doctor.Especialidad = especialidad.Nombre;
-                            Console.WriteLine($"Asignando especialidad: '{doctor.Especialidad}' al doctor {doctor.NombreCompletoCalculado}");
+                            doctor.Especialidad.Nombre = especialidad.Nombre;
+                            Console.WriteLine($"Asignando especialidad: '{doctor.Especialidad}' al doctor {doctor.NombreCompleto}");
                             todosLosDoctores.Add(doctor);
                         }
                         
@@ -84,13 +83,13 @@ namespace SaludTotal.Desktop.Views
                     _todosLosProfesionales.Add(doctor);
                 }
 
-                _profesionalesFiltrados = new ObservableCollection<DoctorDto>(_todosLosProfesionales);
+                _profesionalesFiltrados = new ObservableCollection<Profesional>(_todosLosProfesionales);
                 ProfesionalesDataGrid.ItemsSource = _profesionalesFiltrados;
                 
                 Console.WriteLine($"Total de doctores cargados: {todosLosDoctores.Count}");
                 foreach (var doctor in todosLosDoctores.Take(5))
                 {
-                    Console.WriteLine($"Doctor: {doctor.NombreCompletoCalculado}, Especialidad: '{doctor.Especialidad}' (Length: {doctor.Especialidad?.Length})");
+                    Console.WriteLine($"Doctor: {doctor.NombreCompleto}, Especialidad: '{doctor.Especialidad}' (Length: {doctor.Especialidad.Nombre?.Length})");
                 }
             }
             catch (Exception ex)
@@ -99,26 +98,6 @@ namespace SaludTotal.Desktop.Views
                 throw;
             }
         }
-
-        private void LoadSampleData()
-        {
-            // Datos de ejemplo como fallback
-            _todosLosProfesionales = new ObservableCollection<DoctorDto>
-            {
-                new DoctorDto { Id = 1, NombreCompleto = "Dr. Juan Carlos Pérez", Email = "juan.perez@saludtotal.com", Telefono = "+54 11 1234-5678", Especialidad = "Cardiología" },
-                new DoctorDto { Id = 2, NombreCompleto = "Dra. María Elena García", Email = "maria.garcia@saludtotal.com", Telefono = "+54 11 2345-6789", Especialidad = "Ginecología" },
-                new DoctorDto { Id = 3, NombreCompleto = "Dr. Roberto Martínez", Email = "roberto.martinez@saludtotal.com", Telefono = "+54 11 3456-7890", Especialidad = "Pediatría" },
-                new DoctorDto { Id = 4, NombreCompleto = "Dra. Ana Sofía López", Email = "ana.lopez@saludtotal.com", Telefono = "+54 11 4567-8901", Especialidad = "Clínica General" },
-                new DoctorDto { Id = 5, NombreCompleto = "Dr. Carlos Eduardo Ruiz", Email = "carlos.ruiz@saludtotal.com", Telefono = "+54 11 5678-9012", Especialidad = "Cardiología" },
-                new DoctorDto { Id = 6, NombreCompleto = "Dra. Laura Patricia Mendoza", Email = "laura.mendoza@saludtotal.com", Telefono = "+54 11 6789-0123", Especialidad = "Ginecología" },
-                new DoctorDto { Id = 7, NombreCompleto = "Dr. Fernando Andrés Silva", Email = "fernando.silva@saludtotal.com", Telefono = "+54 11 7890-1234", Especialidad = "Pediatría" },
-                new DoctorDto { Id = 8, NombreCompleto = "Dra. Isabel Cristina Torres", Email = "isabel.torres@saludtotal.com", Telefono = "+54 11 8901-2345", Especialidad = "Clínica General" }
-            };
-
-            _profesionalesFiltrados = new ObservableCollection<DoctorDto>(_todosLosProfesionales);
-            ProfesionalesDataGrid.ItemsSource = _profesionalesFiltrados;
-        }
-
         private void VolverMenu_Click(object sender, RoutedEventArgs e)
         {
             // Crear y mostrar la ventana del menú de informes
@@ -197,7 +176,7 @@ namespace SaludTotal.Desktop.Views
                 Console.WriteLine($"Especialidades disponibles:");
                 foreach (var esp in especialidades)
                 {
-                    Console.WriteLine($"  - ID: {esp.Id}, Nombre: '{esp.Nombre}'");
+                    Console.WriteLine($"  - ID: {esp.EspecialidadId}, Nombre: '{esp.Nombre}'");
                 }
                 
                 // Buscar la especialidad de manera flexible (sin tildes, case insensitive)
@@ -206,16 +185,16 @@ namespace SaludTotal.Desktop.Views
                 
                 if (especialidadObj != null)
                 {
-                    Console.WriteLine($"Especialidad encontrada: {especialidadObj.Nombre} (ID: {especialidadObj.Id})");
+                    Console.WriteLine($"Especialidad encontrada: {especialidadObj.Nombre} (ID: {especialidadObj.EspecialidadId})");
                     
                     // Obtener doctores por especialidad específica
-                    var doctores = await _apiService.GetDoctoresByEspecialidadAsync(especialidadObj.Id);
+                    var doctores = await _apiService.GetDoctoresByEspecialidadAsync(especialidadObj.EspecialidadId);
                     _profesionalesFiltrados.Clear();
                     
                     foreach (var doctor in doctores)
                     {
                         // Asegurar que la especialidad esté asignada con el nombre original de la API
-                        doctor.Especialidad = especialidadObj.Nombre;
+                        doctor.Especialidad.Nombre = especialidadObj.Nombre;
                         _profesionalesFiltrados.Add(doctor);
                     }
                     
@@ -227,7 +206,7 @@ namespace SaludTotal.Desktop.Views
                     Console.WriteLine($"Especialidad '{especialidad}' no encontrada en API, intentando filtro local");
                     
                     var doctoresFiltrados = _todosLosProfesionales.Where(p => 
-                        NormalizarTexto(p.Especialidad).Contains(NormalizarTexto(especialidad), StringComparison.OrdinalIgnoreCase)).ToList();
+                        NormalizarTexto(p.Especialidad.Nombre).Contains(NormalizarTexto(especialidad), StringComparison.OrdinalIgnoreCase)).ToList();
                     
                     _profesionalesFiltrados.Clear();
                     foreach (var doctor in doctoresFiltrados)
@@ -248,7 +227,7 @@ namespace SaludTotal.Desktop.Views
                 // Fallback a filtro local
                 _profesionalesFiltrados.Clear();
                 foreach (var profesional in _todosLosProfesionales.Where(p => 
-                    NormalizarTexto(p.Especialidad).Contains(NormalizarTexto(especialidad), StringComparison.OrdinalIgnoreCase)))
+                    NormalizarTexto(p.Especialidad.Nombre).Contains(NormalizarTexto(especialidad), StringComparison.OrdinalIgnoreCase)))
                 {
                     _profesionalesFiltrados.Add(profesional);
                 }
@@ -332,7 +311,7 @@ namespace SaludTotal.Desktop.Views
             return "Todos";
         }
 
-        private void GenerarPDFProfesionales(string rutaArchivo, List<DoctorDto> profesionales, string filtro)
+        private void GenerarPDFProfesionales(string rutaArchivo, List<Profesional> profesionales, string filtro)
         {
             try
             {
@@ -381,8 +360,8 @@ namespace SaludTotal.Desktop.Views
                 // Agregar datos de profesionales
                 foreach (var profesional in profesionales)
                 {
-                    AgregarCeldaTabla(table, profesional.NombreCompletoCalculado ?? "", normalFont);
-                    AgregarCeldaTabla(table, profesional.Especialidad ?? "", normalFont);
+                    AgregarCeldaTabla(table, profesional.NombreCompleto ?? "", normalFont);
+                    AgregarCeldaTabla(table, profesional.Especialidad.Nombre ?? "", normalFont);
                     AgregarCeldaTabla(table, profesional.Email ?? "", normalFont);
                     AgregarCeldaTabla(table, profesional.Telefono ?? "", normalFont);
                 }
@@ -530,7 +509,7 @@ namespace SaludTotal.Desktop.Views
                 // Filtrar por nombre completo
                 var profesionalesFiltrados = _todosLosProfesionales.Where(p =>
                     NormalizarTexto(p.NombreCompleto).Contains(NormalizarTexto(busqueda), StringComparison.OrdinalIgnoreCase) ||
-                    NormalizarTexto(p.Especialidad).Contains(NormalizarTexto(busqueda), StringComparison.OrdinalIgnoreCase) ||
+                    NormalizarTexto(p.Especialidad.Nombre).Contains(NormalizarTexto(busqueda), StringComparison.OrdinalIgnoreCase) ||
                     NormalizarTexto(p.Email).Contains(NormalizarTexto(busqueda), StringComparison.OrdinalIgnoreCase)
                 ).ToList();
 
@@ -584,21 +563,20 @@ namespace SaludTotal.Desktop.Views
             try
             {
                 // Verificar que hay un profesional seleccionado
-                if (ProfesionalesDataGrid.SelectedItem is DoctorDto profesionalSeleccionado)
+                if (ProfesionalesDataGrid.SelectedItem is Profesional profesionalSeleccionado)
                 {
                     // Convertir DoctorDto a Profesional para la ventana de estadísticas
                     var profesional = new SaludTotal.Models.Profesional
                     {
-                        DoctorId = profesionalSeleccionado.Id,
-                        NombreApellido = profesionalSeleccionado.NombreCompletoCalculado,
+                        Id = profesionalSeleccionado.Id,
+                        NombreApellido = profesionalSeleccionado.NombreCompleto,
                         Especialidad = new SaludTotal.Models.Especialidad 
                         { 
-                            Nombre = profesionalSeleccionado.Especialidad ?? "No especificada" 
+                            Nombre = profesionalSeleccionado.Especialidad.Nombre ?? "No especificada" 
                         }
                     };
 
-                    // Pasar también el DoctorDto para tener acceso a email y teléfono
-                    var estadisticasWindow = new EstadisticasDoctorWindow(profesional, profesionalSeleccionado);
+                    var estadisticasWindow = new EstadisticasDoctorWindow(profesional);
                     estadisticasWindow.ShowDialog();
                 }
                 else

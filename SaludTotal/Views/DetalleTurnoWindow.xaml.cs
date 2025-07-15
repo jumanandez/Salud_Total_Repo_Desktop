@@ -139,7 +139,7 @@ namespace SaludTotal.Desktop.Views
                 return;
             }
             // Obtener doctorId, fecha y hora
-            int doctorId = _turno.Profesional?.DoctorId ?? _turno.DoctorId;
+            int doctorId = _turno.Profesional?.Id ?? _turno.Id;
             string nuevaFecha = CalendarFecha.SelectedDate?.ToString("yyyy-MM-dd") ?? string.Empty;
             string nuevaHora = (ComboHora.SelectedItem as System.Windows.Controls.ComboBoxItem)?.Content?.ToString() ?? string.Empty;
 
@@ -356,13 +356,13 @@ namespace SaludTotal.Desktop.Views
         {
             ActualizarFechaNueva();
             // --- NUEVO: Cargar horarios disponibles para la reprogramación ---
-            if (_turno?.Profesional != null && _turno.Profesional.DoctorId > 0 && CalendarFecha.SelectedDate.HasValue)
+            if (_turno?.Profesional != null && _turno.Profesional.Id > 0 && CalendarFecha.SelectedDate.HasValue)
             {
                 try
                 {
                     var apiService = new Services.ApiService();
                     var fecha = CalendarFecha.SelectedDate.Value.ToString("yyyy-MM-dd");
-                    var slots = await apiService.GetSlotsTurnosDisponiblesAsync(_turno.Profesional.DoctorId, fecha);
+                    var slots = await apiService.GetSlotsTurnosDisponiblesAsync(_turno.Profesional.Id, fecha);
                     ComboHora.Items.Clear();
                     if (slots != null && slots.Any())
                     {
@@ -397,12 +397,12 @@ namespace SaludTotal.Desktop.Views
         // --- NUEVO: Mostrar horarios laborales del doctor en la sección de reprogramación ---
         private async Task CargarHorariosLaboralesReprogramacionAsync()
         {
-            if (_turno?.Profesional != null && _turno.Profesional.DoctorId > 0)
+            if (_turno?.Profesional != null && _turno.Profesional.Id > 0)
             {
                 try
                 {
                     var apiService = new Services.ApiService();
-                    var horarios = await apiService.GetHorariosLaboralesAsync(_turno.Profesional.DoctorId);
+                    var horarios = await apiService.GetHorariosLaboralesAsync(_turno.Profesional.Id);
                     if (DiasLaboralesTextBlock != null)
                     {
                         if (horarios.Any())

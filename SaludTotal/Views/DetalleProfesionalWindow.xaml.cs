@@ -4,16 +4,17 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using SaludTotal.Desktop.Services;
+using SaludTotal.Models;
 
 namespace SaludTotal.Desktop.Views
 {
     public partial class DetalleProfesionalWindow : Window
     {
-        private DoctorDto _profesional;
+        private Profesional _profesional;
         private List<AusenciaDto> _todasLasAusencias = new List<AusenciaDto>();
         private List<AusenciaDto> _ausenciasFiltradas = new List<AusenciaDto>();
 
-        public DetalleProfesionalWindow(DoctorDto profesional)
+        public DetalleProfesionalWindow(Profesional profesional)
         {
             InitializeComponent();
             _profesional = profesional;
@@ -28,16 +29,16 @@ namespace SaludTotal.Desktop.Views
 
         private void CargarDatosProfesional()
         {
-            NombreApellidoText.Text = _profesional.NombreCompletoCalculado;
+            NombreApellidoText.Text = _profesional.NombreCompleto;
             EmailText.Text = _profesional.Email ?? "No especificado";
             TelefonoText.Text = _profesional.Telefono ?? "No especificado";
-            EspecialidadText.Text = _profesional.Especialidad ?? "No especificada";
+            EspecialidadText.Text = _profesional.Especialidad.Nombre ?? "No especificada";
 
             // Aplicar color de especialidad
             var border = EspecialidadText.Parent as Border;
             if (border != null)
             {
-                switch (_profesional.Especialidad?.ToLower())
+                switch (_profesional.Especialidad.Nombre?.ToLower())
                 {
                     case "cardiología":
                     case "cardiologia":
@@ -195,7 +196,7 @@ namespace SaludTotal.Desktop.Views
             var totalAusencias = _todasLasAusencias.Count;
             var totalDias = _todasLasAusencias.Sum(a => a.Dias);
 
-            MessageBox.Show($"Resumen de Ausencias - {_profesional.NombreCompletoCalculado}\n\n" +
+            MessageBox.Show($"Resumen de Ausencias - {_profesional.NombreCompleto}\n\n" +
                           $"Total de ausencias: {totalAusencias}\n" +
                           $"Total días de ausencia: {totalDias} días", 
                           "Resumen de Ausencias", MessageBoxButton.OK, MessageBoxImage.Information);
@@ -203,7 +204,7 @@ namespace SaludTotal.Desktop.Views
 
         private void ExportarAusencias_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show($"Exportar ausencias de {_profesional.NombreCompletoCalculado}\n\nFuncionalidad en desarrollo.\n\nEl archivo PDF incluirá:\n• Información del profesional\n• Lista completa de ausencias\n• Estadísticas y resumen", 
+            MessageBox.Show($"Exportar ausencias de {_profesional.NombreCompleto}\n\nFuncionalidad en desarrollo.\n\nEl archivo PDF incluirá:\n• Información del profesional\n• Lista completa de ausencias\n• Estadísticas y resumen", 
                           "Exportar a PDF", MessageBoxButton.OK, MessageBoxImage.Information);
         }
     }

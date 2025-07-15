@@ -69,7 +69,7 @@ namespace SaludTotal.Desktop.Views
 
                 // Obtener especialidades
                 var especialidades = await _apiService.GetEspecialidadesAsync();
-                _datosFormulario.Especialidades = especialidades.Select(e => new EspecialidadDto { Id = e.Id, Nombre = e.Nombre }).ToList();
+                _datosFormulario.Especialidades = especialidades.Select(e => new Especialidad { EspecialidadId = e.EspecialidadId, Nombre = e.Nombre }).ToList();
                 CargarEspecialidades();
 
                 EspecialidadComboBox.IsEnabled = true;
@@ -102,7 +102,7 @@ namespace SaludTotal.Desktop.Views
                 EspecialidadComboBox.Items.Add(new ComboBoxItem
                 {
                     Content = especialidad.Nombre,
-                    Tag = especialidad.Id
+                    Tag = especialidad.EspecialidadId
                 });
             }
 
