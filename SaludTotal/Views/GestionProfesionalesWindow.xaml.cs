@@ -13,7 +13,7 @@ namespace SaludTotal.Desktop.Views
     public partial class GestionProfesionalesWindow : Window
     {
         private readonly ApiService _apiService;
-        private List<Profesional> _todosLosProfesionales = new List<Profesional>();
+        private List<Profesional> _profesionales = new List<Profesional>();
         private List<Profesional> _profesionalesFiltrados = new List<Profesional>();
 
         public GestionProfesionalesWindow()
@@ -25,65 +25,16 @@ namespace SaludTotal.Desktop.Views
 
         private async void GestionProfesionalesWindow_Loaded(object sender, RoutedEventArgs e)
         {
-            await CargarProfesionales();
+            await CargarDoctoresAsync();
         }
-
-        private async System.Threading.Tasks.Task CargarProfesionales()
+        private async Task CargarDoctoresAsync()
         {
             try
             {
-                // Cargar todos los doctores con sus especialidades
-                await CargarTodosDoctoresConEspecialidadesAsync();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error al cargar los profesionales: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                // Cargar datos de ejemplo como fallback
-            }
-        }
-
-        private async Task CargarTodosDoctoresConEspecialidadesAsync()
-        {
-            try
-            {
-                // Primero obtener todas las especialidades
-                var especialidades = await _apiService.GetEspecialidadesAsync();
-                var todosLosDoctores = new List<Profesional>();
-
-                Console.WriteLine($"Especialidades encontradas: {especialidades.Count}");
-
-                // Para cada especialidad, obtener sus doctores
-                foreach (var especialidad in especialidades)
-                {
-                    try
-                    {
-                        var doctoresEspecialidad = await _apiService.GetDoctoresByEspecialidadAsync(especialidad.EspecialidadId);
-
-                        foreach (var doctor in doctoresEspecialidad)
-                        {
-                            doctor.Especialidad.Nombre = especialidad.Nombre;
-                            Console.WriteLine($"Asignando especialidad: '{doctor.Especialidad}' al doctor {doctor.NombreCompleto}");
-                            todosLosDoctores.Add(doctor);
-                        }
-
-                        Console.WriteLine($"Especialidad '{especialidad.Nombre}': {doctoresEspecialidad.Count} doctores");
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine($"Error al cargar doctores de {especialidad.Nombre}: {ex.Message}");
-                    }
-                }
-
-                // Actualizar las colecciones
-                _todosLosProfesionales = todosLosDoctores;
-                _profesionalesFiltrados = new List<Profesional>(_todosLosProfesionales);
+                var doctores = await _apiService.GetDoctoresAsync();
+                _profesionales = doctores;
+                _profesionalesFiltrados = doctores;
                 ProfesionalesDataGrid.ItemsSource = _profesionalesFiltrados;
-
-                Console.WriteLine($"Total de doctores cargados: {todosLosDoctores.Count}");
-                foreach (var doctor in todosLosDoctores.Take(5))
-                {
-                    Console.WriteLine($"Doctor: {doctor.NombreCompleto}, Especialidad: '{doctor.Especialidad}' (Length: {doctor.Especialidad.Nombre?.Length})");
-                }
             }
             catch (Exception ex)
             {
@@ -165,7 +116,7 @@ namespace SaludTotal.Desktop.Views
 
         private void AplicarFiltrosYBusqueda()
         {
-            var profesionalesFiltrados = new List<Profesional>(_todosLosProfesionales);
+            var profesionalesFiltrados = new List<Profesional>(_profesionales);
 
             // Aplicar filtro de especialidad
             string especialidadActiva = ObtenerEspecialidadActiva();
@@ -272,7 +223,7 @@ namespace SaludTotal.Desktop.Views
 
         private async void ActualizarLista_Click(object sender, RoutedEventArgs e)
         {
-            await CargarProfesionales();
+            await CargarDoctoresAsync();
             
             // Resetear filtros
             SearchTextBox.Text = "";

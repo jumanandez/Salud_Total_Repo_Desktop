@@ -59,7 +59,7 @@ namespace SaludTotal.Desktop.Views
                 {
                     try
                     {
-                        var doctoresEspecialidad = await _apiService.GetDoctoresByEspecialidadAsync(especialidad.EspecialidadId);
+                        var doctoresEspecialidad = await _apiService.GetDoctoresAsync();
                         
                         foreach (var doctor in doctoresEspecialidad)
                         {

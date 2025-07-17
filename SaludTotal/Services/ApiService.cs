@@ -26,17 +26,6 @@ namespace SaludTotal.Desktop.Services
             // Por ejemplo, si tuvieras que añadir un token de autenticación:
             // client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", "tu_token_aqui");
         }
-
-        // --- MÉTODOS PARA INTERACTUAR CON LA API ---
-
-        /// <summary>
-        /// Obtiene la lista de turnos desde la API, permitiendo filtrar por especialidad, fecha, doctor y paciente.
-        /// </summary>
-        /// <param name="especialidad">Nombre de la especialidad</param>
-        /// <param name="fecha">Fecha del turno</param>
-        /// <param name="doctor">Nombre del doctor</param>
-        /// <param name="paciente">Nombre del paciente</param>
-        /// <returns>Una lista de objetos Turno.</returns>
         public async Task<List<Turno>> GetTurnosAsync(string? especialidad = null, string? fecha = null, string? doctor = null, string? paciente = null, string? estado = null)
         {
             try
@@ -69,7 +58,6 @@ namespace SaludTotal.Desktop.Services
                 throw;
             }
         }
-
         public async Task<ResultadoApi> AceptarTurnoAsync(int turnoId)
         {
             try
@@ -140,7 +128,6 @@ namespace SaludTotal.Desktop.Services
                 };
             }
         }
-
         public async Task<ResultadoApi> CancelarTurnoAsync(int turnoId)
         {
             try
@@ -242,7 +229,6 @@ namespace SaludTotal.Desktop.Services
                 };
             }
         }
-
         public async Task<ResultadoApi> ReprogramarTurnoAsync(int turnoId, int doctorId, string fecha, string hora)
         {
             try
@@ -306,13 +292,6 @@ namespace SaludTotal.Desktop.Services
                 };
             }
         }
-
-
-        /// <summary>
-        /// Crea un nuevo turno en la API.
-        /// </summary>
-        /// <param name="nuevoTurno">Objeto con los datos del nuevo turno.</param>
-        /// <returns>El turno creado con todos sus datos.</returns>
         public async Task<Turno> CrearTurnoAsync(NuevoTurnoRequest nuevoTurno)
         {
             try
@@ -363,13 +342,6 @@ namespace SaludTotal.Desktop.Services
                 throw new Exception($"Error en el formato de respuesta: {e.Message}");
             }
         }
-
-        /// <summary>
-        /// Obtiene los datos necesarios para el formulario de nuevo turno (especialidades, doctores, horarios).
-        /// </summary>
-        /// <param name="doctorId">ID del doctor para obtener horarios disponibles (opcional).</param>
-        /// <param name="fecha">Fecha para obtener horarios disponibles (opcional).</param>
-        /// <returns>Datos del formulario incluyendo especialidades, doctores y horarios disponibles.</returns>
         public async Task<DatosFormularioResponse> GetDatosFormularioAsync(int? doctorId = null, string? fecha = null)
         {
             try
@@ -434,11 +406,6 @@ namespace SaludTotal.Desktop.Services
                 throw new Exception($"Error en el formato de respuesta: {e.Message}");
             }
         }
-
-        /// <summary>
-        /// Obtiene todos los pacientes desde la API.
-        /// </summary>
-        /// <returns>Una lista de objetos Paciente.</returns>
         public async Task<List<SaludTotal.Models.Paciente>> GetPacientesAsync()
         {
             try
@@ -476,12 +443,6 @@ namespace SaludTotal.Desktop.Services
                 throw new Exception($"Error en el formato de respuesta: {e.Message}");
             }
         }
-
-        /// <summary>
-        /// Busca pacientes por nombre, email o DNI.
-        /// </summary>
-        /// <param name="query">Término de búsqueda para nombre, email o DNI</param>
-        /// <returns>Una lista de objetos Paciente que coinciden con la búsqueda</returns>
         public async Task<List<SaludTotal.Models.Paciente>> BuscarPacientesAsync(string query)
         {
             try
@@ -528,13 +489,6 @@ namespace SaludTotal.Desktop.Services
                 throw new Exception($"Error en el formato de respuesta: {e.Message}");
             }
         }
-
-        /// <summary>
-        /// Obtiene los horarios disponibles para un doctor y una fecha.
-        /// </summary>
-        /// <param name="doctorId">ID del doctor</param>
-        /// <param name="fecha">Fecha en formato YYYY-MM-DD</param>
-        /// <returns>Lista de strings con los horarios disponibles</returns>
         public async Task<List<string>> GetHorariosDisponiblesAsync(int doctorId, string fecha)
         {
             try
@@ -573,49 +527,6 @@ namespace SaludTotal.Desktop.Services
                 throw new Exception($"Error en el formato de respuesta: {e.Message}");
             }
         }
-
-        /// <summary>
-        /// Obtiene solo las especialidades y los doctores agrupados por especialidad.
-        /// </summary>
-        /// <returns>Datos con especialidades y doctores por especialidad.</returns>
-        public async Task<(List<Especialidad> Especialidades, List<DoctoresPorEspecialidadDto> DoctoresPorEspecialidadDto)> GetEspecialidadesYDoctoresAsync()
-        {
-            string url = $"{ApiTurnosUrl}/especialidades";
-            Console.WriteLine($"Obteniendo especialidades y doctores desde: {url}");
-            HttpResponseMessage response = await client.GetAsync(url);
-            string responseContent = await response.Content.ReadAsStringAsync();
-            response.EnsureSuccessStatusCode();
-
-            var token = Newtonsoft.Json.Linq.JToken.Parse(responseContent);
-            if (token is Newtonsoft.Json.Linq.JObject obj)
-            {
-                var successToken = obj["success"];
-                var dataToken = obj["data"];
-                if (successToken != null && successToken.Type != Newtonsoft.Json.Linq.JTokenType.Null && successToken.ToObject<bool>() && dataToken != null)
-                {
-                    var especialidades = dataToken["especialidades"]?.ToObject<List<Especialidad>>() ?? new List<Especialidad>();
-                    var DoctoresPorEspecialidadDto = dataToken["doctores_por_especialidad"]?.ToObject<List<DoctoresPorEspecialidadDto>>() ?? new List<DoctoresPorEspecialidadDto>();
-                    return (especialidades, DoctoresPorEspecialidadDto);
-                }
-                else if (obj["mensaje"] != null)
-                {
-                    throw new Exception($"Mensaje del backend: {obj["mensaje"]}");
-                }
-                else
-                {
-                    throw new Exception($"Error en la respuesta del servidor: {obj["error"] ?? "Respuesta inválida"}");
-                }
-            }
-            else
-            {
-                throw new Exception("Respuesta inesperada del backend");
-            }
-        }
-
-        /// <summary>
-        /// Obtiene la lista de especialidades desde la API.
-        /// </summary>
-        /// <returns>Lista de especialidades.</returns>
         public async Task<List<Especialidad>> GetEspecialidadesAsync()
         {
             string url = $"{ApiProfesionalesUrl}/especialidades";
@@ -639,14 +550,34 @@ namespace SaludTotal.Desktop.Services
                 throw new Exception("Respuesta inesperada del backend al obtener especialidades");
             }
         }
-
-        /// <summary>
-        /// Obtiene la lista de doctores para una especialidad específica.
-        /// </summary>
-        /// <param name="especialidadId">ID de la especialidad</param>
-        /// <returns>Lista de doctores para la especialidad.</returns>
-        public async Task<List<Profesional>> GetDoctoresByEspecialidadAsync(int especialidadId)
+        public async Task<List<Profesional>> GetDoctoresAsync()
         {
+            string url = $"{ApiProfesionalesUrl}/";
+            Console.WriteLine($"Obteniendo doctores desde: {url}");
+            try
+            {
+                HttpResponseMessage response = await client.GetAsync(url);
+                string responseContent = await response.Content.ReadAsStringAsync();
+                response.EnsureSuccessStatusCode();
+                var data = JsonConvert.DeserializeObject<ResponseDoctoresDto>(responseContent);
+                return data.Doctores ?? new List<Profesional>();
+            }
+            catch (Exception reqEx)
+            {
+                throw new Exception(reqEx.Message); //FEO FEO FEO
+            }
+        }
+        public class ResponseDoctoresDto
+        {
+            [JsonProperty("doctores")]
+            public List<Profesional>? Doctores { get; set; } = new List<Profesional>();
+            [JsonProperty("mensaje")]
+            public string? Mensaje { get; set; }
+            [JsonProperty("detalle")]
+            public string? Detalle { get; set; }
+        }
+        public async Task<List<Profesional>> GetDoctoresByEspecialidadAsync(int especialidadId)
+        {                                                                   
             string url = $"{ApiProfesionalesUrl}/especialidades/{especialidadId}/doctores";
             Console.WriteLine($"Obteniendo doctores para especialidad {especialidadId} desde: {url}");
             HttpResponseMessage response = await client.GetAsync(url);
@@ -668,11 +599,6 @@ namespace SaludTotal.Desktop.Services
                 throw new Exception("Respuesta inesperada del backend al obtener doctores por especialidad");
             }
         }
-        /// <summary>
-        /// Obtiene los horarios laborales de un doctor.
-        /// </summary>
-        /// <param name="doctorId">ID del doctor</param>
-        /// <returns>Lista de horarios laborales.</returns>
         public async Task<List<HorarioLaboralDto>> GetHorariosLaboralesAsync(int doctorId)
         {
             string url = $"{ApiProfesionalesUrl}/{doctorId}/horarios";
@@ -696,13 +622,6 @@ namespace SaludTotal.Desktop.Services
                 throw new Exception("Respuesta inesperada del backend al obtener horarios laborales");
             }
         }
-
-        /// <summary>
-        /// Obtiene los slots de turnos disponibles para un doctor y una fecha.
-        /// </summary>
-        /// <param name="doctorId">ID del doctor</param>
-        /// <param name="fecha">Fecha en formato YYYY-MM-DD</param>
-        /// <returns>Lista de slots disponibles.</returns>
         public async Task<List<SlotTurnoDto>> GetSlotsTurnosDisponiblesAsync(int doctorId, string fecha)
         {
             string url = $"{ApiTurnosUrl}/disponibles?doctor_id={doctorId}&fecha={Uri.EscapeDataString(fecha)}";
@@ -736,176 +655,6 @@ namespace SaludTotal.Desktop.Services
                 throw new Exception("Respuesta inesperada del backend al obtener slots de turnos disponibles");
             }
         }
-
-        /// <summary>
-        /// Obtiene todos los doctores desde la API con sus especialidades.
-        /// </summary>
-        /// <returns>Lista de todos los doctores con especialidades.</returns>
-        public async Task<List<Profesional>> GetTodosDoctoresAsync()
-        {
-            try
-            {
-                string url = $"{ApiProfesionalesUrl}/";
-                Console.WriteLine($"Obteniendo todos los doctores desde: {url}");
-                HttpResponseMessage response = await client.GetAsync(url);
-                string responseContent = await response.Content.ReadAsStringAsync();
-                Console.WriteLine($"Respuesta del servidor: {responseContent}");
-                response.EnsureSuccessStatusCode();
-
-                var obj = Newtonsoft.Json.Linq.JObject.Parse(responseContent);
-                if (obj["doctores"] != null)
-                {
-                    var doctores = obj["doctores"]?.ToObject<List<Profesional>>() ?? new List<Profesional>();
-                    Console.WriteLine($"Doctores obtenidos: {doctores.Count}");
-
-                    // Debug: Mostrar estructura de los primeros doctores
-                    for (int i = 0; i < Math.Min(3, doctores.Count); i++)
-                    {
-                        var doctor = doctores[i];
-                        Console.WriteLine($"Doctor {i + 1}: ID={doctor.Id}, Nombre='{doctor.NombreCompleto}', Especialidad='{doctor.Especialidad}', Email='{doctor.Email}'");
-                    }
-
-                    // Si los doctores no tienen especialidad, intentar obtenerla
-                    if (doctores.Any() && string.IsNullOrEmpty(doctores.First().Especialidad.Nombre))
-                    {
-                        Console.WriteLine("Los doctores no tienen especialidad asignada, intentando obtenerla...");
-                        await AsignarEspecialidadesADoctoresAsync(doctores);
-                    }
-
-                    return doctores;
-                }
-                else if (obj["mensaje"] != null)
-                {
-                    throw new Exception($"Mensaje del backend: {obj["mensaje"]}");
-                }
-                else
-                {
-                    throw new Exception("Respuesta inesperada del backend al obtener todos los doctores");
-                }
-            }
-            catch (HttpRequestException e)
-            {
-                Console.WriteLine($"Error de solicitud HTTP al obtener todos los doctores: {e.Message}");
-                throw new Exception($"Error de conexión: {e.Message}");
-            }
-            catch (JsonException e)
-            {
-                Console.WriteLine($"Error de deserialización JSON al obtener todos los doctores: {e.Message}");
-                throw new Exception($"Error en el formato de respuesta: {e.Message}");
-            }
-        }
-
-        /// <summary>
-        /// Asigna especialidades a doctores que no las tienen.
-        /// </summary>
-        private async Task AsignarEspecialidadesADoctoresAsync(List<Profesional> doctores)
-        {
-            try
-            {
-                // Obtener especialidades y doctores por especialidad
-                var (especialidades, DoctoresPorEspecialidadDto) = await GetEspecialidadesYDoctoresAsync();
-
-                // Crear un diccionario para mapear doctor ID a especialidad
-                var doctorEspecialidadMap = new Dictionary<int, string>();
-
-                foreach (var grupo in DoctoresPorEspecialidadDto)
-                {
-                    foreach (var doctorEsp in grupo.Doctores)
-                    {
-                        if (!doctorEspecialidadMap.ContainsKey(doctorEsp.Id))
-                        {
-                            doctorEspecialidadMap[doctorEsp.Id] = grupo.EspecialidadNombre;
-                        }
-                    }
-                }
-
-                // Asignar especialidades a los doctores
-                foreach (var doctor in doctores)
-                {
-                    if (doctorEspecialidadMap.ContainsKey(doctor.Id))
-                    {
-                        doctor.Especialidad.Nombre = doctorEspecialidadMap[doctor.Id];
-                        Console.WriteLine($"Asignada especialidad '{doctor.Especialidad}' al doctor {doctor.NombreCompleto}");
-                    }
-                    else
-                    {
-                        doctor.Especialidad.Nombre = "Sin especialidad";
-                    }
-                }
-
-                Console.WriteLine($"Especialidades asignadas a {doctores.Count} doctores");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error al asignar especialidades: {ex.Message}");
-                // Asignar una especialidad por defecto
-                foreach (var doctor in doctores)
-                {
-                    if (string.IsNullOrEmpty(doctor.Especialidad.Nombre))
-                    {
-                        doctor.Especialidad.Nombre = "General";
-                    }
-                }
-            }
-        }
-
-        public async Task<string> TestConexionAsync()
-        {
-            try
-            {
-                string url = $"{ApiTurnosUrl}/test";
-                HttpResponseMessage response = await client.GetAsync(url);
-
-                response.EnsureSuccessStatusCode();
-
-                string jsonResponse = await response.Content.ReadAsStringAsync();
-                return $"✅ Conexión exitosa: {jsonResponse}";
-            }
-            catch (HttpRequestException e)
-            {
-                return $"❌ Error de conexión HTTP: {e.Message}";
-            }
-            catch (Exception e)
-            {
-                return $"❌ Error general: {e.Message}";
-            }
-        }
-
-        public async Task<string> TestDeserializacionAsync()
-        {
-            try
-            {
-                string url = $"{ApiTurnosUrl}/";
-                HttpResponseMessage response = await client.GetAsync(url);
-                response.EnsureSuccessStatusCode();
-
-                string jsonResponse = await response.Content.ReadAsStringAsync();
-                var turnos = JsonConvert.DeserializeObject<List<Turno>>(jsonResponse) ?? new List<Turno>();
-
-                string resultado = $"✅ Se deserializaron {turnos.Count} turnos correctamente:\n";
-
-                // Mostrar solo los primeros 3 turnos para debug
-                int maxTurnos = Math.Min(3, turnos.Count);
-                for (int i = 0; i < maxTurnos; i++)
-                {
-                    var turno = turnos[i];
-                    resultado += $"- Turno {turno.Id}: Paciente='{turno.Paciente?.NombreCompleto ?? "NULL"}', Profesional='{turno.Profesional?.NombreCompleto ?? "NULL"}'\n";
-                }
-
-                return resultado;
-            }
-            catch (Exception e)
-            {
-                return $"❌ Error en deserialización: {e.Message}";
-            }
-        }
-
-
-        /// <summary>
-        /// Obtiene todos los turnos de un doctor específico para calcular estadísticas.
-        /// </summary>
-        /// <param name="doctorId">ID del doctor</param>
-        /// <returns>Lista de turnos del doctor</returns>
         public async Task<List<Turno>> ObtenerTurnosPorDoctor(int doctorId)
         {
             try
@@ -925,16 +674,6 @@ namespace SaludTotal.Desktop.Services
                 throw new Exception($"Error en el formato de respuesta: {e.Message}");
             }
         }
-
-        // --- MÉTODOS PARA ESTADÍSTICAS ---
-
-        /// <summary>
-        /// Obtiene las estadísticas de un doctor específico
-        /// </summary>
-        /// <param name="doctorId">ID del doctor</param>
-        /// <param name="fechaDesde">Fecha desde (opcional)</param>
-        /// <param name="fechaHasta">Fecha hasta (opcional)</param>
-        /// <returns>Estadísticas del doctor</returns>
         public async Task<EstadisticasDoctorDto> GetEstadisticasDoctorAsync(int doctorId, DateTime? fechaDesde = null, DateTime? fechaHasta = null)
         {
             try
@@ -978,12 +717,6 @@ namespace SaludTotal.Desktop.Services
             [JsonProperty("detalle")]
             public string? Detalle { get; set; }
         }
-        /// <summary>
-        /// Obtiene las estadísticas globales del sistema
-        /// </summary>
-        /// <param name="fechaDesde">Fecha desde (opcional)</param>
-        /// <param name="fechaHasta">Fecha hasta (opcional)</param>
-        /// <returns>Estadísticas globales</returns>
         public async Task<EstadisticasGlobalesDto> GetEstadisticasGlobalesAsync(DateTime? fechaDesde = null, DateTime? fechaHasta = null)
         {
             try
@@ -1016,13 +749,6 @@ namespace SaludTotal.Desktop.Services
                 return new EstadisticasGlobalesDto();
             }
         }
-
-        /// <summary>
-        /// Obtiene las estadísticas de todos los doctores
-        /// </summary>
-        /// <param name="fechaDesde">Fecha desde (opcional)</param>
-        /// <param name="fechaHasta">Fecha hasta (opcional)</param>
-        /// <returns>Lista de estadísticas por doctor</returns>
         public async Task<ResponseEstadisticasDoctores> GetEstadisticasTodosDoctoresAsync(DateTime? fechaDesde = null, DateTime? fechaHasta = null)
         {
             try
@@ -1079,7 +805,6 @@ namespace SaludTotal.Desktop.Services
                 };
             }
         }
-
         public class ResponseEstadisticasDoctores
         {
             [JsonProperty("estadisticas_doctores")]
@@ -1096,7 +821,6 @@ namespace SaludTotal.Desktop.Services
             [JsonProperty("detalle")]
             public string? Detalle { get; set; }
         }
-
         public async Task<SolicitudesReprogramacionResponse> GetSolicitudesDeReprogramacion()
         {
             try
@@ -1125,8 +849,6 @@ namespace SaludTotal.Desktop.Services
                 throw new Exception($"Error en el formato de respuesta: {e.Message}");
             }
         }
-
-        
         public async Task<ResultadoApi> AceptarSolicitudReprogramacionAsync(int solicitudId)
         {
             try
@@ -1313,7 +1035,6 @@ namespace SaludTotal.Desktop.Services
                 throw new Exception($"Error de conexión: {e.Message}");
             }
         }
-        
         public async Task<ResultadoApi> RechazarSolicitudCancelacionAsync(int turno_id)
         {
             try
@@ -1412,7 +1133,6 @@ namespace SaludTotal.Desktop.Services
                 throw new Exception($"Error en el formato de respuesta: {e.Message}");
             }
         }
-
         public class SolicitudesCancelacionResponse
         {
             [JsonProperty("mensaje")]
@@ -1422,7 +1142,6 @@ namespace SaludTotal.Desktop.Services
 
 
         }
-
         public class SolicitudCancelacion
         {
             [JsonProperty("turno_id")]
@@ -1445,12 +1164,7 @@ namespace SaludTotal.Desktop.Services
             [JsonProperty("doctor")]
             public Profesional? Doctor { get; set; }
         }
-
     }
-
-    /// <summary>
-    /// Clase para enviar datos de nuevo turno a la API.
-    /// </summary>
     public class NuevoTurnoRequest
     {
         [JsonProperty("paciente_id")]
@@ -1465,10 +1179,6 @@ namespace SaludTotal.Desktop.Services
         [JsonProperty("hora")]
         public string Hora { get; set; } = string.Empty;
     }
-
-    /// <summary>
-    /// Clase para recibir datos del formulario desde la API.
-    /// </summary>
     public class DatosFormularioResponse
     {
         [JsonProperty("especialidades")]
@@ -1502,7 +1212,6 @@ namespace SaludTotal.Desktop.Services
         [JsonProperty("display")]
         public string Display { get; set; } = string.Empty;
     }
-
     public class HorarioLaboralDto
     {
         [JsonProperty("disponibilidad_id")]
@@ -1529,7 +1238,6 @@ namespace SaludTotal.Desktop.Services
         [JsonProperty("updated_at")]
         public string? UpdatedAt { get; set; }
     }
-
     public class SlotTurnoDto
     {
         [JsonProperty("hora")]

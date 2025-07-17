@@ -340,68 +340,68 @@
                                                 <Style TargetType="Border">
                                                     <Style.Triggers>
                                                         <!-- Cardiología -->
-                                                        <DataTrigger Binding="{Binding Especialidad}" Value="Cardiología">
+                                                        <DataTrigger Binding="{Binding Especialidad.Nombre}" Value="Cardiología">
                                                             <Setter Property="Background" Value="#FF6B35"/>
                                                         </DataTrigger>
-                                                        <DataTrigger Binding="{Binding Especialidad}" Value="Cardiologia">
+                                                        <DataTrigger Binding="{Binding Especialidad.Nombre}" Value="Cardiologia">
                                                             <Setter Property="Background" Value="#FF6B35"/>
                                                         </DataTrigger>
-                                                        <DataTrigger Binding="{Binding Especialidad}" Value="CARDIOLOGÍA">
+                                                        <DataTrigger Binding="{Binding Especialidad.Nombre}" Value="CARDIOLOGÍA">
                                                             <Setter Property="Background" Value="#FF6B35"/>
                                                         </DataTrigger>
                                                         
                                                         <!-- Ginecología -->
-                                                        <DataTrigger Binding="{Binding Especialidad}" Value="Ginecología">
+                                                        <DataTrigger Binding="{Binding Especialidad.Nombre}" Value="Ginecología">
                                                             <Setter Property="Background" Value="#D946EF"/>
                                                         </DataTrigger>
-                                                        <DataTrigger Binding="{Binding Especialidad}" Value="Ginecologia">
+                                                        <DataTrigger Binding="{Binding Especialidad.Nombre}" Value="Ginecologia">
                                                             <Setter Property="Background" Value="#D946EF"/>
                                                         </DataTrigger>
-                                                        <DataTrigger Binding="{Binding Especialidad}" Value="GINECOLOGÍA">
+                                                        <DataTrigger Binding="{Binding Especialidad.Nombre}" Value="GINECOLOGÍA">
                                                             <Setter Property="Background" Value="#D946EF"/>
                                                         </DataTrigger>
                                                         
                                                         <!-- Pediatría -->
-                                                        <DataTrigger Binding="{Binding Especialidad}" Value="Pediatría">
+                                                        <DataTrigger Binding="{Binding Especialidad.Nombre}" Value="Pediatría">
                                                             <Setter Property="Background" Value="#0EA5E9"/>
                                                         </DataTrigger>
-                                                        <DataTrigger Binding="{Binding Especialidad}" Value="Pediatria">
+                                                        <DataTrigger Binding="{Binding Especialidad.Nombre}" Value="Pediatria">
                                                             <Setter Property="Background" Value="#0EA5E9"/>
                                                         </DataTrigger>
-                                                        <DataTrigger Binding="{Binding Especialidad}" Value="PEDIATRÍA">
+                                                        <DataTrigger Binding="{Binding Especialidad.Nombre}" Value="PEDIATRÍA">
                                                             <Setter Property="Background" Value="#0EA5E9"/>
                                                         </DataTrigger>
                                                         
                                                         <!-- Clínica General -->
-                                                        <DataTrigger Binding="{Binding Especialidad}" Value="Clínica General">
+                                                        <DataTrigger Binding="{Binding Especialidad.Nombre}" Value="Clínica General">
                                                             <Setter Property="Background" Value="#10B981"/>
                                                         </DataTrigger>
-                                                        <DataTrigger Binding="{Binding Especialidad}" Value="Clinica General">
+                                                        <DataTrigger Binding="{Binding Especialidad.Nombre}" Value="Clinica General">
                                                             <Setter Property="Background" Value="#10B981"/>
                                                         </DataTrigger>
-                                                        <DataTrigger Binding="{Binding Especialidad}" Value="CLÍNICA GENERAL">
+                                                        <DataTrigger Binding="{Binding Especialidad.Nombre}" Value="CLÍNICA GENERAL">
                                                             <Setter Property="Background" Value="#10B981"/>
                                                         </DataTrigger>
-                                                        <DataTrigger Binding="{Binding Especialidad}" Value="Medicina General">
+                                                        <DataTrigger Binding="{Binding Especialidad.Nombre}" Value="Medicina General">
                                                             <Setter Property="Background" Value="#10B981"/>
                                                         </DataTrigger>
                                                         
                                                         <!-- Dermatología -->
-                                                        <DataTrigger Binding="{Binding Especialidad}" Value="Dermatología">
+                                                        <DataTrigger Binding="{Binding Especialidad.Nombre}" Value="Dermatología">
                                                             <Setter Property="Background" Value="#F59E0B"/>
                                                         </DataTrigger>
-                                                        <DataTrigger Binding="{Binding Especialidad}" Value="Dermatologia">
+                                                        <DataTrigger Binding="{Binding Especialidad.Nombre}" Value="Dermatologia">
                                                             <Setter Property="Background" Value="#F59E0B"/>
                                                         </DataTrigger>
                                                         
                                                         <!-- Otras especialidades -->
-                                                        <DataTrigger Binding="{Binding Especialidad}" Value="Neurología">
+                                                        <DataTrigger Binding="{Binding Especialidad.Nombre}" Value="Neurología">
                                                             <Setter Property="Background" Value="#8B5CF6"/>
                                                         </DataTrigger>
-                                                        <DataTrigger Binding="{Binding Especialidad}" Value="Psicología">
+                                                        <DataTrigger Binding="{Binding Especialidad.Nombre}" Value="Psicología">
                                                             <Setter Property="Background" Value="#EC4899"/>
                                                         </DataTrigger>
-                                                        <DataTrigger Binding="{Binding Especialidad}" Value="Traumatología">
+                                                        <DataTrigger Binding="{Binding Especialidad.Nombre}" Value="Traumatología">
                                                             <Setter Property="Background" Value="#6B7280"/>
                                                         </DataTrigger>
                                                         
@@ -410,7 +410,7 @@
                                                     <Setter Property="Background" Value="#94A3B8"/>
                                                 </Style>
                                             </Border.Style>
-                                            <TextBlock Text="{Binding Especialidad, FallbackValue='N/A'}" 
+                                            <TextBlock Text="{Binding Especialidad.Nombre, FallbackValue='N/A'}" 
                                                        Foreground="White" 
                                                        FontWeight="Medium" 
                                                        FontSize="11" 
