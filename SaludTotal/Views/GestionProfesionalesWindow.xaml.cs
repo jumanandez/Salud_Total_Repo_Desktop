@@ -7,6 +7,7 @@ using System.Windows.Input;
 using System.Threading.Tasks;
 using SaludTotal.Desktop.Services;
 using SaludTotal.Models;
+using SaludTotal.Views;
 
 namespace SaludTotal.Desktop.Views
 {
@@ -232,5 +233,13 @@ namespace SaludTotal.Desktop.Views
         }
 
         #endregion
+
+        private void AddProfesrional_Click(object sender, RoutedEventArgs e)
+        {
+            var addProfesionalWindow = new AddProfessional();
+            addProfesionalWindow.Owner = this;
+            addProfesionalWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+            addProfesionalWindow.Show();
+        }
     }
 }

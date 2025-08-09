@@ -1133,6 +1133,33 @@ namespace SaludTotal.Desktop.Services
                 throw new Exception($"Error en el formato de respuesta: {e.Message}");
             }
         }
+
+        public static async Task<ResultadoApi> AddProfessionalAsync(Profesional profesional)
+        {
+            try
+            {
+                string url = $"{ApiProfesionalesUrl}/";
+                Console.WriteLine($"Agregando profesional en: {url}");
+                var jsonContent = JsonConvert.SerializeObject(profesional);
+                var content = new StringContent(jsonContent, System.Text.Encoding.UTF8, "application/json");
+                HttpResponseMessage response = await client.PostAsync(url, content);
+                string responseContent = await response.Content.ReadAsStringAsync();
+                response.EnsureSuccessStatusCode();
+                var resultado = JsonConvert.DeserializeObject<ResultadoApi>(responseContent);
+                return resultado ?? new ResultadoApi { Success = false, Mensaje = "Error al agregar profesional" };
+            }
+            catch (HttpRequestException e)
+            {
+                Console.WriteLine($"Error de solicitud HTTP al agregar profesional: {e.Message}");
+                throw new Exception($"Error de conexión: {e.Message}");
+            }
+            catch (JsonException e)
+            {
+                Console.WriteLine($"Error de deserialización JSON al agregar profesional: {e.Message}");
+                throw new Exception($"Error en el formato de respuesta: {e.Message}");
+            }
+        }
+
         public class SolicitudesCancelacionResponse
         {
             [JsonProperty("mensaje")]

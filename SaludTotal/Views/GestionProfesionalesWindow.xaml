@@ -311,7 +311,7 @@
 
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="80" MinWidth="60"/>
-                                
+
                                 <DataGridTemplateColumn Header="Nombre y Apellido" Width="*" MinWidth="200">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
@@ -321,7 +321,7 @@
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
-                                
+
                                 <DataGridTemplateColumn Header="Email" Width="*" MinWidth="220">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
@@ -331,7 +331,7 @@
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
-                                
+
                                 <DataGridTemplateColumn Header="Teléfono" Width="180" MinWidth="150">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
@@ -359,7 +359,7 @@
                                                             <DataTrigger Binding="{Binding Especialidad.Nombre}" Value="CARDIOLOGÍA">
                                                                 <Setter Property="Background" Value="#FF6B35"/>
                                                             </DataTrigger>
-                                                            
+
                                                             <!-- Ginecología -->
                                                             <DataTrigger Binding="{Binding Especialidad.Nombre}" Value="Ginecología">
                                                                 <Setter Property="Background" Value="#D946EF"/>
@@ -370,7 +370,7 @@
                                                             <DataTrigger Binding="{Binding Especialidad.Nombre}" Value="GINECOLOGÍA">
                                                                 <Setter Property="Background" Value="#D946EF"/>
                                                             </DataTrigger>
-                                                            
+
                                                             <!-- Pediatría -->
                                                             <DataTrigger Binding="{Binding Especialidad.Nombre}" Value="Pediatría">
                                                                 <Setter Property="Background" Value="#0EA5E9"/>
@@ -381,7 +381,7 @@
                                                             <DataTrigger Binding="{Binding Especialidad.Nombre}" Value="PEDIATRÍA">
                                                                 <Setter Property="Background" Value="#0EA5E9"/>
                                                             </DataTrigger>
-                                                            
+
                                                             <!-- Clínica General -->
                                                             <DataTrigger Binding="{Binding Especialidad.Nombre}" Value="Clínica General">
                                                                 <Setter Property="Background" Value="#10B981"/>
@@ -395,7 +395,7 @@
                                                             <DataTrigger Binding="{Binding Especialidad.Nombre}" Value="Medicina General">
                                                                 <Setter Property="Background" Value="#10B981"/>
                                                             </DataTrigger>
-                                                            
+
                                                             <!-- Dermatología -->
                                                             <DataTrigger Binding="{Binding Especialidad.Nombre}" Value="Dermatología">
                                                                 <Setter Property="Background" Value="#F59E0B"/>
@@ -403,7 +403,7 @@
                                                             <DataTrigger Binding="{Binding Especialidad.Nombre}" Value="Dermatologia">
                                                                 <Setter Property="Background" Value="#F59E0B"/>
                                                             </DataTrigger>
-                                                            
+
                                                             <!-- Otras especialidades -->
                                                             <DataTrigger Binding="{Binding Especialidad.Nombre}" Value="Neurología">
                                                                 <Setter Property="Background" Value="#8B5CF6"/>
@@ -448,17 +448,20 @@
 
                 <!-- Panel de botones de acción -->
                 <Border Grid.Row="3" Background="#F0FFFFFF" BorderBrush="#E0E0E0" BorderThickness="1,0,1,1" CornerRadius="0,0,10,10" Padding="20,15">
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                        <Button Content="🔄 Actualizar" 
-                                Height="40"
-                                Padding="20,8"
-                                FontSize="14"
-                                FontWeight="SemiBold"
-                                Background="#28A745" 
-                                Foreground="White"
-                                BorderThickness="0"
-                                Click="ActualizarLista_Click"
-                                ToolTip="Actualizar lista de profesionales">
+                    <DockPanel LastChildFill="False">
+                        <Button Content="🔄 Actualizar"
+				Height="40"
+				Padding="20,8"
+				FontSize="14"
+				FontWeight="SemiBold"
+				Background="#28A745" 
+				Foreground="White"
+				BorderThickness="0"
+				Click="ActualizarLista_Click"
+				ToolTip="Actualizar lista de profesionales"
+				HorizontalAlignment="Left"
+				DockPanel.Dock="Left"
+				Margin="0,0,10,0">
                             <Button.Template>
                                 <ControlTemplate TargetType="Button">
                                     <Border Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}">
@@ -475,7 +478,20 @@
                                 </ControlTemplate>
                             </Button.Template>
                         </Button>
-                    </StackPanel>
+
+                        <Button Content="+ Agregar Profesional"
+				Height="40"
+				Padding="20,8"
+				FontSize="14"
+				FontWeight="SemiBold"
+				BorderThickness="0"
+				ToolTip="Agregar nuevo profesional"
+				HorizontalAlignment="Right"
+				DockPanel.Dock="Right"
+				Margin="10,0,0,0" Click="AddProfesrional_Click"
+                                Style="{StaticResource SecondaryButtonStyle}" Cursor="Hand">
+                        </Button>
+                    </DockPanel>
                 </Border>
             </Grid>
         </Border>

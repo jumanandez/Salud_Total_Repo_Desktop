@@ -68,7 +68,7 @@
 
         <!-- Botones de ventana (minimizar y cerrar) -->
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,15,15,0" Panel.ZIndex="999">
-            <Button Style="{StaticResource WindowButtonStyle}" Content="⎯" Click="MinimizeWindow_Click" ToolTip="Minimizar"/>
+            <Button Style="{StaticResource WindowButtonStyle}" Content="⎯" Click="MinimizeWindow_Click" ToolTip="Minimizar" Background="#FF4A90E2"/>
             <Button Style="{StaticResource WindowButtonStyle}" Content="✕" Click="CloseWindow_Click" ToolTip="Cerrar"/>
         </StackPanel>
 
@@ -104,7 +104,17 @@
                                         </Border>
                                         <ControlTemplate.Triggers>
                                             <Trigger Property="IsMouseOver" Value="True">
-                                                <Setter Property="Background" Value="#6BA6CD"/>
+                                                <Setter Property="Background" Value="#A8D0F3"/>
+                                                <Setter Property="BorderBrush" Value="#4A90E2"/>
+                                                <Setter Property="Effect">
+                                                    <Setter.Value>
+                                                        <DropShadowEffect Color="Black" Direction="315" ShadowDepth="3" Opacity="0.4" BlurRadius="6"/>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </Trigger>
+                                            <Trigger Property="IsPressed" Value="True">
+                                                <Setter Property="Background" Value="#2C3E50"/>
+                                                <Setter Property="BorderBrush" Value="#34495E"/>
                                             </Trigger>
                                         </ControlTemplate.Triggers>
                                     </ControlTemplate>

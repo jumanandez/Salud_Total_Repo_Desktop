@@ -1,0 +1,140 @@
+﻿<UserControl x:Class="SaludTotal.Components.MessageControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:SaludTotal.Components"
+             mc:Ignorable="d" 
+             d:DesignHeight="400" d:DesignWidth="400">
+    <UserControl.Resources>
+        <Style x:Key="MessageStyle" TargetType="Border">
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="Padding" Value="12,8"/>
+            <Setter Property="Margin" Value="0,4"/>
+            <Setter Property="Opacity" Value="0"/>
+            <Setter Property="Visibility" Value="Collapsed"/>
+            <Style.Triggers>
+                <MultiTrigger>
+                    <MultiTrigger.Conditions>
+                        <Condition Property="Tag" Value="Error"/>
+                    </MultiTrigger.Conditions>
+                    <Setter Property="Background" Value="{StaticResource DangerMutedBrush}"/>
+                    <Setter Property="BorderBrush" Value="{StaticResource DangerBrush}"/>
+                </MultiTrigger>
+
+                <MultiTrigger>
+                    <MultiTrigger.Conditions>
+                        <Condition Property="Tag" Value="Warning"/>
+                    </MultiTrigger.Conditions>
+                    <Setter Property="Background" Value="{StaticResource WarningMutedBrush}"/>
+                    <Setter Property="BorderBrush" Value="{StaticResource WarningBrush}"/>
+                </MultiTrigger>
+
+                <!-- Info Style -->
+                <MultiTrigger>
+                    <MultiTrigger.Conditions>
+                        <Condition Property="Tag" Value="Info"/>
+                    </MultiTrigger.Conditions>
+                    <Setter Property="Background" Value="{StaticResource PrimaryMutedBrush}"/>
+                    <Setter Property="BorderBrush" Value="{StaticResource PrimaryBrush}"/>
+                </MultiTrigger>
+
+                <!-- Success Style -->
+                <MultiTrigger>
+                    <MultiTrigger.Conditions>
+                        <Condition Property="Tag" Value="Success"/>
+                    </MultiTrigger.Conditions>
+                    <Setter Property="Background" Value="{StaticResource SuccessMutedBrush}"/>
+                    <Setter Property="BorderBrush" Value="{StaticResource SuccessBrush}"/>
+                </MultiTrigger>
+
+                <!-- Show/Hide Animation -->
+                <DataTrigger Binding="{Binding HasMessage, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="True">
+                    <Setter Property="Visibility" Value="Visible"/>
+                    <DataTrigger.EnterActions>
+                        <BeginStoryboard>
+                            <Storyboard>
+                                <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                               From="0" To="1"
+                                               Duration="0:0:0.3"/>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </DataTrigger.EnterActions>
+                    <DataTrigger.ExitActions>
+                        <BeginStoryboard>
+                            <Storyboard>
+                                <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                               From="1" To="0"
+                                               Duration="0:0:0.2"/>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </DataTrigger.ExitActions>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <!--<Style x:Key="MessageIconStyle" TargetType="Path">
+            <Setter Property="Width" Value="16"/>
+            <Setter Property="Height" Value="16"/>
+            <Setter Property="Margin" Value="0,0,8,0"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Style.Triggers>
+                --><!-- Error Icon --><!--
+                <DataTrigger Binding="{Binding MessageType, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="Error">
+                    <Setter Property="Fill" Value="{StaticResource DangerBrush}"/>
+                </DataTrigger>
+
+                --><!-- Warning Icon --><!--
+                <DataTrigger Binding="{Binding MessageType, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="Warning">
+                    <Setter Property="Fill" Value="{StaticResource WarningBrush}"/>
+                </DataTrigger>
+
+                --><!-- Info Icon --><!--
+                <DataTrigger Binding="{Binding MessageType, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="Info">
+                    <Setter Property="Fill" Value="{StaticResource PrimaryBrush}"/>
+                </DataTrigger>
+
+                --><!-- Success Icon --><!--
+                <DataTrigger Binding="{Binding MessageType, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="Success">
+                    <Setter Property="Fill" Value="{StaticResource SuccessBrush}"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>-->
+
+        <Style x:Key="MessageTextStyle" TargetType="TextBlock">
+            <Setter Property="FontWeight" Value="Medium"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+            <Style.Triggers>
+                <!-- Error Text Color -->
+                <DataTrigger Binding="{Binding MessageType, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="Error">
+                    <Setter Property="Foreground" Value="{StaticResource DangerBrush}"/>
+                </DataTrigger>
+
+                <!-- Warning Text Color -->
+                <DataTrigger Binding="{Binding MessageType, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="Warning">
+                    <Setter Property="Foreground" Value="{StaticResource WarningBrush}"/>
+                </DataTrigger>
+
+                <!-- Info Text Color -->
+                <DataTrigger Binding="{Binding MessageType, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="Info">
+                    <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}"/>
+                </DataTrigger>
+
+                <!-- Success Text Color -->
+                <DataTrigger Binding="{Binding MessageType, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="Success">
+                    <Setter Property="Foreground" Value="{StaticResource SuccessBrush}"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </UserControl.Resources>
+
+    <Border Style="{StaticResource MessageStyle}" 
+            Tag="{Binding MessageType, RelativeSource={RelativeSource AncestorType=UserControl}}">
+        <StackPanel Orientation="Horizontal">
+            <TextBlock Text="{Binding Message, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                       Style="{StaticResource MessageTextStyle}"/>
+        </StackPanel>
+    </Border>
+</UserControl>
