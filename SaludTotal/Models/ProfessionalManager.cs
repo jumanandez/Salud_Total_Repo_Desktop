@@ -11,13 +11,7 @@ namespace SaludTotal.Models
 {
     public class ProfessionalManager
     {
-        public static ObservableCollection<Profesional> _databaseProfessionals { get; set; }
         private readonly ApiService _apiService = new();
-
-        public static ObservableCollection<Profesional> GetProfessionals()
-        {
-            return _databaseProfessionals;
-        }
 
         public static async Task AddProfessional(Profesional profesional)
         {
@@ -31,6 +25,11 @@ namespace SaludTotal.Models
         public async Task<List<Especialidad>> GetSpecializations()
         {
             return await _apiService.GetEspecialidadesAsync();
+        }
+
+        public async Task<List<Profesional>> getProfessionals()
+        {
+            return await _apiService.GetDoctoresAsync();
         }
     }
 }

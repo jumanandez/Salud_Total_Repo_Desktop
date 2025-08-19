@@ -1,3 +1,4 @@
+using SaludTotal.Views;
 using System.Windows;
 
 namespace SaludTotal.Desktop.Views
@@ -30,7 +31,7 @@ namespace SaludTotal.Desktop.Views
 
         private void GestionProfesionales_Click(object sender, RoutedEventArgs e)
         {
-            var gestionProfesionalesWindow = new GestionProfesionalesWindow();
+            var gestionProfesionalesWindow = new ProfessionalManagment();
             gestionProfesionalesWindow.Show();
             
             // Cerrar la ventana actual del Dashboard

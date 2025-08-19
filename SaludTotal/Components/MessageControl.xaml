@@ -15,39 +15,30 @@
             <Setter Property="Opacity" Value="0"/>
             <Setter Property="Visibility" Value="Collapsed"/>
             <Style.Triggers>
-                <MultiTrigger>
-                    <MultiTrigger.Conditions>
-                        <Condition Property="Tag" Value="Error"/>
-                    </MultiTrigger.Conditions>
+
+                <!-- Error Text Color -->
+                <DataTrigger Binding="{Binding MessageType, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="Error">
                     <Setter Property="Background" Value="{StaticResource DangerMutedBrush}"/>
                     <Setter Property="BorderBrush" Value="{StaticResource DangerBrush}"/>
-                </MultiTrigger>
+                </DataTrigger>
 
-                <MultiTrigger>
-                    <MultiTrigger.Conditions>
-                        <Condition Property="Tag" Value="Warning"/>
-                    </MultiTrigger.Conditions>
+                <!-- Warning Text Color -->
+                <DataTrigger Binding="{Binding MessageType, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="Warning">
                     <Setter Property="Background" Value="{StaticResource WarningMutedBrush}"/>
                     <Setter Property="BorderBrush" Value="{StaticResource WarningBrush}"/>
-                </MultiTrigger>
+                </DataTrigger>
 
-                <!-- Info Style -->
-                <MultiTrigger>
-                    <MultiTrigger.Conditions>
-                        <Condition Property="Tag" Value="Info"/>
-                    </MultiTrigger.Conditions>
-                    <Setter Property="Background" Value="{StaticResource PrimaryMutedBrush}"/>
-                    <Setter Property="BorderBrush" Value="{StaticResource PrimaryBrush}"/>
-                </MultiTrigger>
+                <!-- Info Text Color -->
+                <DataTrigger Binding="{Binding MessageType, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="Info">
+                    <Setter Property="Background" Value="{StaticResource InfoMutedBrush}"/>
+                    <Setter Property="BorderBrush" Value="{StaticResource InfoBrush}"/>
+                </DataTrigger>
 
-                <!-- Success Style -->
-                <MultiTrigger>
-                    <MultiTrigger.Conditions>
-                        <Condition Property="Tag" Value="Success"/>
-                    </MultiTrigger.Conditions>
+                <!-- Success Text Color -->
+                <DataTrigger Binding="{Binding MessageType, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="Success">
                     <Setter Property="Background" Value="{StaticResource SuccessMutedBrush}"/>
                     <Setter Property="BorderBrush" Value="{StaticResource SuccessBrush}"/>
-                </MultiTrigger>
+                </DataTrigger>
 
                 <!-- Show/Hide Animation -->
                 <DataTrigger Binding="{Binding HasMessage, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="True">
@@ -128,13 +119,99 @@
                 </DataTrigger>
             </Style.Triggers>
         </Style>
+        <Style x:Key="CloseButtonStyle" TargetType="Button">
+                <Setter Property="FontWeight" Value="Medium"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <ContentPresenter 
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    RecognizesAccessKey="True"/>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <!-- Error Text Color -->
+                <DataTrigger Binding="{Binding MessageType, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="Error">
+                    <Setter Property="Foreground" Value="{StaticResource DangerBrush}"/>
+                </DataTrigger>
+
+                <!-- Warning Text Color -->
+                <DataTrigger Binding="{Binding MessageType, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="Warning">
+                    <Setter Property="Foreground" Value="{StaticResource WarningBrush}"/>
+                </DataTrigger>
+
+                <!-- Info Text Color -->
+                <DataTrigger Binding="{Binding MessageType, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="Info">
+                    <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}"/>
+                </DataTrigger>
+
+                <!-- Success Text Color -->
+                <DataTrigger Binding="{Binding MessageType, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="Success">
+                    <Setter Property="Foreground" Value="{StaticResource SuccessBrush}"/>
+                </DataTrigger>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Trigger.EnterActions>
+                        <BeginStoryboard>
+                            <Storyboard>
+                                <DoubleAnimation 
+                            Storyboard.TargetProperty="(Button.Foreground).(SolidColorBrush.Opacity)" 
+                            To="0.6" Duration="0:0:0.2"/>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </Trigger.EnterActions>
+                    <Trigger.ExitActions>
+                        <BeginStoryboard>
+                            <Storyboard>
+                                <DoubleAnimation 
+                            Storyboard.TargetProperty="(Button.Foreground).(SolidColorBrush.Opacity)" 
+                            To="1.0" Duration="0:0:0.4"/>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </Trigger.ExitActions>
+                </Trigger>
+
+                <Trigger Property="IsPressed" Value="True">
+                    <Trigger.EnterActions>
+                        <BeginStoryboard>
+                            <Storyboard>
+                                <DoubleAnimation 
+                            Storyboard.TargetProperty="(Button.Foreground).(SolidColorBrush.Opacity)" 
+                            To="0.4" Duration="0:0:0.2"/>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </Trigger.EnterActions>
+                    <Trigger.ExitActions>
+                        <BeginStoryboard>
+                            <Storyboard>
+                                <DoubleAnimation 
+                            Storyboard.TargetProperty="(Button.Foreground).(SolidColorBrush.Opacity)" 
+                            To="1.0" Duration="0:0:0.1"/>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </Trigger.ExitActions>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
     </UserControl.Resources>
 
     <Border Style="{StaticResource MessageStyle}" 
             Tag="{Binding MessageType, RelativeSource={RelativeSource AncestorType=UserControl}}">
-        <StackPanel Orientation="Horizontal">
+        <DockPanel HorizontalAlignment="Stretch">
             <TextBlock Text="{Binding Message, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                       HorizontalAlignment="Left"
                        Style="{StaticResource MessageTextStyle}"/>
-        </StackPanel>
+            <Button Content="X" 
+                    Command="{Binding ClearMessage, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                    Margin="8,0,0,0"
+                    
+                    HorizontalAlignment="Right"
+                    Style="{StaticResource CloseButtonStyle}"
+                    VerticalAlignment="Center"/>
+        </DockPanel>
     </Border>
 </UserControl>

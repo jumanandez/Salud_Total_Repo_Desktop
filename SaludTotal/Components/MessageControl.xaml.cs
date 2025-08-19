@@ -37,6 +37,10 @@ namespace SaludTotal.Components
             DependencyProperty.Register("MessageType", typeof(MessageType), typeof(MessageControl),
                 new PropertyMetadata(MessageType.Info));
 
+        public static readonly DependencyProperty ClearMessageProperty =
+            DependencyProperty.Register(nameof(ClearMessage), typeof(ICommand), typeof(MessageControl),
+                new PropertyMetadata(null));
+
         public bool HasMessage
         {
             get { return (bool)GetValue(HasMessageProperty); }
@@ -53,6 +57,12 @@ namespace SaludTotal.Components
         {
             get { return (MessageType)GetValue(MessageTypeProperty); }
             set { SetValue(MessageTypeProperty, value); }
+        }
+
+        public ICommand ClearMessage
+        {
+            get => (ICommand)GetValue(ClearMessageProperty);
+            set => SetValue(ClearMessageProperty, value);
         }
 
         public MessageControl()

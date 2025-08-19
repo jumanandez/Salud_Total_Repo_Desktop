@@ -32,12 +32,18 @@ namespace SaludTotal.Desktop.Views
             NombreApellidoText.Text = _profesional.NombreCompleto;
             EmailText.Text = _profesional.Email ?? "No especificado";
             TelefonoText.Text = _profesional.Telefono ?? "No especificado";
-            EspecialidadText.Text = _profesional.Especialidad.Nombre ?? "No especificada";
+            EspecialidadText.Text = _profesional.Especialidad != null ?
+                _profesional.Especialidad.Nombre ?? "No especificada" : "No especificada";
 
             // Aplicar color de especialidad
             var border = EspecialidadText.Parent as Border;
             if (border != null)
             {
+                if(_profesional.Especialidad == null || string.IsNullOrEmpty(_profesional.Especialidad.Nombre))
+                {
+                    border.Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(148, 163, 184)); // #94A3B8
+                    return;
+                }
                 switch (_profesional.Especialidad.Nombre?.ToLower())
                 {
                     case "cardiología":

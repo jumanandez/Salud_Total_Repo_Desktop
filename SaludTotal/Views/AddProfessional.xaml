@@ -6,21 +6,36 @@
         xmlns:local="clr-namespace:SaludTotal.Views"
         xmlns:components="clr-namespace:SaludTotal.Components"
         mc:Ignorable="d"
-        Title="AddProfessional" Height="700" Width="800" Loaded="Window_Loaded">
+        UseLayoutRounding="True"
+        Title="AddProfessional" Height="700" Width="800" Loaded="Window_Loaded" ResizeMode="CanResizeWithGrip" WindowStyle="None">
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVis"/>
     </Window.Resources>
     <Grid>
-        <Border>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="80"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <Border Grid.RowSpan="2">
             <Border.Background>
                 <ImageBrush ImageSource="pack://application:,,,/Resources/Img/Fondo_desktop_1.jpg" Stretch="UniformToFill"/>
             </Border.Background>
         </Border>
-        <Border HorizontalAlignment="Center" 
+
+        <Border Grid.Row="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="Transparent" MouseLeftButtonDown="Border_MouseLeftButtonDown">
+            <!-- Botones de ventana (minimizar y cerrar) -->
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,15,15,0" Panel.ZIndex="999">
+                <Button Style="{StaticResource WindowButtonStyle}" Content="⎯" Click="MinimizeWindow_Click" ToolTip="Minimizar"/>
+                <Button Style="{StaticResource WindowButtonStyle}" Content="□" Click="MaximizeWindow_Click" ToolTip="Maximizar"/>
+                <Button Style="{StaticResource WindowButtonStyle}" Content="✕" Click="CloseWindow_Click" ToolTip="Cerrar"/>
+            </StackPanel>
+        </Border>
+
+        <Border Grid.Row="1" HorizontalAlignment="Center" 
             VerticalAlignment="Center" 
             Background="{StaticResource BackgroundBrush}" 
             CornerRadius="15"
-            Margin="0,0,0,0">
+            Margin="0,0,0,20">
             <Border.Effect>
                 <DropShadowEffect Color="Black" Direction="315" ShadowDepth="5" Opacity="0.3" BlurRadius="10"/>
             </Border.Effect>

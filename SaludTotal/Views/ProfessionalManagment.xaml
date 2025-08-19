@@ -1,0 +1,359 @@
+﻿<Window x:Class="SaludTotal.Views.ProfessionalManagment"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:SaludTotal.Views"
+        xmlns:components="clr-namespace:SaludTotal.Components"
+        mc:Ignorable="d"
+        UseLayoutRounding="True"
+        Title="Salud Total - Gestión de Profesionales" Height="800" Width="1400" 
+        WindowStartupLocation="CenterScreen" WindowStyle="None" Loaded="Window_Loaded" ResizeMode="CanResizeWithGrip">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="80"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <!-- Imagen De fondo-->
+        <Border Grid.RowSpan="3">
+            <Border.Background>
+                <ImageBrush ImageSource="/Resources/Img/Fondo_desktop_1.jpg" 
+           Stretch="UniformToFill"/>
+            </Border.Background>
+        </Border>
+
+        <Border Grid.Row="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="Transparent" MouseLeftButtonDown="Border_MouseLeftButtonDown">
+            <!-- Botones de ventana (minimizar y cerrar) -->
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,15,15,0" Panel.ZIndex="999">
+                <Button Style="{StaticResource WindowButtonStyle}" Content="⎯" Click="MinimizeWindow_Click" ToolTip="Minimizar"/>
+                <Button Style="{StaticResource WindowButtonStyle}" Content="□" Click="MaximizeWindow_Click" ToolTip="Maximizar"/>
+                <Button Style="{StaticResource WindowButtonStyle}" Content="✕" Click="CloseWindow_Click" ToolTip="Cerrar"/>
+            </StackPanel>
+        </Border>
+        <!--Contenido de la ventana-->
+        <components:WindowLayout Grid.Row="1" HeaderBackgroundColor="{StaticResource PrimaryBrush}"
+                                 HeaderForegroundColor="{StaticResource PrimaryForegroundBrush}"
+                                 Title="Gestion de profesionales">
+            <Border Background="White" CornerRadius="10,10,10,10" Padding="20,15">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <!--Busqueda-->
+                    <WrapPanel Grid.Row="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,0,10">
+                        <TextBlock Text="Buscar profesional:" FontSize="14" FontWeight="Medium" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                        <TextBox
+                                 Width="300" Margin="0,0,5,0"
+                                 Style="{StaticResource RoundedValidationTextBox}"
+                                 BorderBrush="#A8D0F3"
+                                 BorderThickness="2"
+                                 Text="{Binding SearchTerm, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True}"
+                                 >
+                            <TextBox.InputBindings>
+                                <KeyBinding Key="Enter" Command="{Binding SearchCommand}"/>
+                            </TextBox.InputBindings>
+                        </TextBox>
+                        <Button Content="🔍" Margin="5,0,0,0" 
+                                    FontWeight="Light"
+                                    Style="{StaticResource PrimaryButtonStyle}"
+                                    Command="{Binding SearchCommand}"
+                                    ToolTip="Buscar"/>
+                        <Button Content="✖" Margin="5,0,0,0" 
+                                    FontWeight="Light"
+                                    Style="{StaticResource DangerButtonStyle}"
+                                    Command="{Binding ClearSearchTermCommand}"
+                                    ToolTip="Limpiar búsqueda"/>
+                    </WrapPanel>
+
+                    <!-- Filtros por especialidad -->
+                    <WrapPanel Grid.Row="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,0,10">
+                        <TextBlock Text="Especialidades:" FontSize="14" FontWeight="Medium" VerticalAlignment="Center"/>
+                        <ItemsControl Margin="5,0,0,0"
+                            VerticalAlignment="Center"
+                            ItemsSource="{Binding Specialties}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Orientation="Horizontal"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Button Content="{Binding Nombre}" 
+                                        Margin="5,0,0,0"
+                                        FontSize="14"
+                                        Padding="20,8"
+                                        FontWeight="Medium"
+                                        BorderThickness="1"
+                                        BorderBrush="#A8D0F3"
+                                        Command="{Binding DataContext.SetSpecialityCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}" 
+                                        CommandParameter="{Binding EspecialidadId}">
+                                        <Button.Style>
+                                            <Style TargetType="Button" BasedOn="{StaticResource LightButtonStyle}">
+                                                <Setter Property="Background" Value="#E8F4FD"/>
+                                                <Setter Property="Foreground" Value="#2C3E50"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Value="True">
+                                                        <DataTrigger.Binding>
+                                                            <MultiBinding Converter="{StaticResource EqualityMultiConverter}">
+                                                                <Binding Path="DataContext.SelectedSpecialtyId"
+                                                                    RelativeSource="{RelativeSource AncestorType=ItemsControl}" />
+                                                                <Binding Path="EspecialidadId"/>
+                                                            </MultiBinding>
+                                                        </DataTrigger.Binding>
+                                                        <Setter Property="Background" Value="DodgerBlue"/>
+                                                        <Setter Property="Foreground" Value="White"/>
+                                                        <Setter Property="FontWeight" Value="SemiBold"/>
+                                                        <Setter Property="BorderBrush" Value="#2C3E50"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Button.Style>
+                                    </Button>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                        <!-- "Todos" button -->
+                        <Button Margin="5,0,0,0"
+                            Content="Todos"
+                            BorderThickness="1"
+                            BorderBrush="#A8D0F3"
+                            Command="{Binding ClearSpecialityFilterCommand}">
+                            <Button.Style>
+                                <Style TargetType="Button" BasedOn="{StaticResource LightButtonStyle}">
+                                    <Setter Property="Background" Value="#E8F4FD"/>
+                                    <Setter Property="Foreground" Value="#2C3E50"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding SelectedSpecialtyId}" Value="{x:Null}">
+                                            <Setter Property="Background" Value="DodgerBlue"/>
+                                            <Setter Property="Foreground" Value="White"/>
+                                            <Setter Property="FontWeight" Value="SemiBold"/>
+                                            <Setter Property="BorderBrush" Value="Black"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+                    </WrapPanel>
+
+                    <!-- Tabla de profesionales -->
+                    <Border Grid.Row="2" Background="#F0FFFFFF">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <DataGrid Grid.Row="0" 
+                              ItemsSource="{Binding Professionals}" 
+                              CanUserAddRows="False"
+                              HeadersVisibility="Column"
+                              MinColumnWidth="50"
+                              MinRowHeight="25"
+                              HorizontalAlignment="Stretch"
+                              ScrollViewer.CanContentScroll="True" 
+                              ScrollViewer.VerticalScrollBarVisibility="Auto"
+                              ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                              VerticalAlignment="Stretch"
+                              AutoGenerateColumns="False"
+                              GridLinesVisibility="Horizontal"
+                              HorizontalGridLinesBrush="#5a6775"
+                              BorderBrush="#5a6775"
+                              SelectionMode="Single"
+                              IsReadOnly="True" 
+                              CanUserSortColumns="False" Margin="0,0,0,4" Grid.RowSpan="3">
+                                <DataGrid.Resources>
+                                    <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource BaseDataGridHeaderStyle}">
+                                    </Style>
+                                    <Style TargetType="DataGridCell">
+                                        <Setter Property="BorderThickness" Value="0"/>
+                                        <Setter Property="FontSize" Value="14" />
+                                        <Setter Property="VerticalContentAlignment" Value="Center"/>
+                                        <Style.Triggers>
+                                            <Trigger Property="IsSelected" Value="True">
+                                                <Setter Property="Background" Value="#5a6775"/>
+                                            </Trigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </DataGrid.Resources>
+                                <DataGrid.Columns>
+                                    <DataGridTemplateColumn Header="ID" Width="Auto">
+                                        <DataGridTemplateColumn.HeaderTemplate>
+                                            <DataTemplate>
+                                                <Button
+                                                    Style="{StaticResource SortableHeaderButtonStyle}"
+                                                    Tag="ID"
+                                                    CommandParameter="Id"/>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.HeaderTemplate>
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding Id, FallbackValue='N/A'}" Margin="4,2"/>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+
+                                    <DataGridTemplateColumn Header="Nombre y apellido" Width="*">
+                                        <DataGridTemplateColumn.HeaderTemplate>
+                                            <DataTemplate>
+                                                <Button
+                                                    Style="{StaticResource SortableHeaderButtonStyle}"
+                                                    Tag="Nombre y apellido"
+                                                    CommandParameter="NombreCompleto"/>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.HeaderTemplate>
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding NombreCompleto, FallbackValue='N/A'}" Margin="4,2"/>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+
+                                    <DataGridTemplateColumn Header="Email" Width="*">
+                                        <DataGridTemplateColumn.HeaderTemplate>
+                                            <DataTemplate>
+                                                <Button
+                                                    Style="{StaticResource SortableHeaderButtonStyle}"
+                                                    Tag="Email"
+                                                    CommandParameter="Email"/>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.HeaderTemplate>
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding Email, FallbackValue='N/A'}" Margin="4,2"/>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+
+                                    <DataGridTemplateColumn Header="Teléfono" Width="*">
+                                        <DataGridTemplateColumn.HeaderTemplate>
+                                            <DataTemplate>
+                                                <Button
+                                                    Style="{StaticResource SortableHeaderButtonStyle}"
+                                                    Tag="Teléfono"
+                                                    CommandParameter="Telefono"/>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.HeaderTemplate>
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding Telefono, FallbackValue='N/A'}" Margin="4,2"/>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+
+                                    <DataGridTemplateColumn Header="Especialidad" Width="*">
+                                        <DataGridTemplateColumn.HeaderTemplate>
+                                            <DataTemplate>
+                                                <Button
+                                                    Style="{StaticResource SortableHeaderButtonStyle}"
+                                                    Tag="Especialidad"
+                                                    ToolTip="Ordenar por Especialidad"
+                                                    CommandParameter="EspecialidadText"/>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.HeaderTemplate>
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding EspecialidadText, FallbackValue='N/A'}" Margin="4,2"/>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                    
+
+                                    <!-- Columna de Gestionar -->
+                                    <DataGridTemplateColumn Header="Gestionar" Width="*" MinWidth="120" HeaderStyle="{StaticResource BaseNonClickDataGridHeaderStyle}">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <Button Content="⚙️ Gestionar"
+                                                    FontSize="12"
+                                                    Margin="0, 5"
+                                                    HorizontalAlignment="Center"
+                                                    Command="{Binding DataContext.ManageProfessionalCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                    CommandParameter="{Binding Id}"
+                                                    Style="{StaticResource PrimaryButtonStyle}"
+                                                    ToolTip="Gestionar profesional"/>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                </DataGrid.Columns>
+                            </DataGrid>
+
+                            <!-- Indicador de carga -->
+                            <Border Background="#80FFFFFF" 
+                                            Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                            VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+                                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <TextBlock Text="Cargando profesionales..." FontSize="18" FontWeight="SemiBold" Foreground="#2C3E50"/>
+                                    <ProgressBar IsIndeterminate="True" Width="300" Height="8" Margin="0,10,0,0"/>
+                                </StackPanel>
+                            </Border>
+                            <!--ErrorDisplay-->
+                            <components:MessageControl Grid.Row="2"
+                            MessageType="Error"
+                            ClearMessage="{Binding ClearMessage}"
+                            DataContext="{Binding ErrorMessageviewModel}"
+                            Message="{Binding Message}"
+                            HasMessage="{Binding HasMessage}" />
+
+                            <!--StatusDisplay-->
+                            <components:MessageControl Grid.Row="3"
+                            MessageType="Success"
+                            ClearMessage="{Binding ClearMessage}"
+                            DataContext="{Binding StatusMessageviewModel}"
+                            Message="{Binding Message}"
+                            HasMessage="{Binding HasMessage}" />
+
+                            <!-- Panel de botones de acción -->
+                            <Border Grid.Row="4" Background="#F0FFFFFF" Padding="0,10">
+                                <DockPanel LastChildFill="False">
+                                    <Button Content="🔄 Actualizar"
+				                    FontSize="14"
+                                    Padding="20,10"
+				                    FontWeight="SemiBold"
+				                    ToolTip="Actualizar lista de profesionales"
+				                    HorizontalAlignment="Left"
+				                    DockPanel.Dock="Left"
+                                    Style="{StaticResource SuccessButtonStyle}"
+                                    Command="{Binding ReloadCommand}"
+                                    Cursor="Hand"
+				                    Margin="0,0,10,0"/>
+
+                                    <Button Content="+ Agregar Profesional"
+				                    Padding="20,10"
+				                    FontSize="14"
+				                    FontWeight="SemiBold"
+				                    BorderThickness="0"
+				                    ToolTip="Agregar nuevo profesional"
+				                    HorizontalAlignment="Right"
+				                    DockPanel.Dock="Right"
+				                    Margin="10,0,0,0"
+                                    Command="{Binding AddProfessionalCommand}"
+                                    Style="{StaticResource SecondaryButtonStyle}" 
+                                    Cursor="Hand"/>
+                                </DockPanel>
+                            </Border>
+                        </Grid>
+                    </Border>
+                </Grid>
+            </Border>
+        </components:WindowLayout>
+
+        <!-- Botón de Volver al Menú -->
+        <Button Grid.Row="2" x:Name="VolverMenuButton" 
+            Content="← Volver al Menú"
+            HorizontalAlignment="Left" 
+            VerticalAlignment="Bottom" 
+            Margin="20,0,0,20"
+            Padding="15,8"
+            FontSize="14"
+            FontWeight="SemiBold"
+            Click="VolverMenu_Click"
+            Panel.ZIndex="999"
+            ToolTip="Volver al menú principal"
+            Style="{StaticResource SuccessButtonStyle}"/>
+    </Grid>
+</Window>
