@@ -15,7 +15,7 @@
                 HorizontalAlignment="Stretch" 
                 CornerRadius="15"
                 Padding="10, 0, 10, 10"
-                Margin="40,40">
+                Margin="40,20">
                     <Border.Background>
                         <SolidColorBrush Color="{Binding HeaderBackgroundColor.(SolidColorBrush.Color), RelativeSource={RelativeSource AncestorType=UserControl}}" 
                      Opacity="0.8"/>

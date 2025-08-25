@@ -25,8 +25,8 @@ namespace SaludTotal.ViewModels
         private string _email = string.Empty;
         private string _phone = string.Empty;
         private int? _specialtyId = null;
-        public MessageViewModel ErrorMessageviewModel { get; set; }
-        public MessageViewModel StatusMessageviewModel { get; set; }
+        public MessageViewModel ErrorMessageviewModel { get; set; } = new();
+        public MessageViewModel StatusMessageviewModel { get; set; } = new();
 
         public AddProfessionalViewModel(Profesional? profesional = null)
         {

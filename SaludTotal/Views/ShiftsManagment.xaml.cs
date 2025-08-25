@@ -1,11 +1,9 @@
 ﻿using SaludTotal.Desktop.Views;
-using SaludTotal.Views.Interfaces;
 using SaludTotal.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -19,28 +17,19 @@ using System.Windows.Shapes;
 namespace SaludTotal.Views
 {
     /// <summary>
-    /// Lógica de interacción para AddProfessional.xaml
+    /// Interaction logic for ShiftsManagment.xaml
     /// </summary>
-    public partial class AddProfessional : Window, IClosable
+    public partial class ShiftsManagment : Window
     {
-        private readonly AddProfessionalViewModel _viewModel;
-        public AddProfessional()
+
+        private readonly ManagementViewModel _viewModel;
+
+        public ShiftsManagment()
         {
             InitializeComponent();
             _viewModel = new();
             _viewModel.RequestClose += () => this.Close();
             DataContext = _viewModel;
-        }
-
-        private void NumberValidationTextBox(object sender, TextCompositionEventArgs e)
-        {
-            Regex regex = new Regex("[^0-9]+");
-            e.Handled = regex.IsMatch(e.Text);
-        }
-
-        private async void Window_Loaded(object sender, RoutedEventArgs e)
-        {
-            await _viewModel.InitializeAsync();
         }
 
         #region WindowManipulationMethods
@@ -74,6 +63,12 @@ namespace SaludTotal.Views
         }
 
         #endregion
+
+        private async void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            await _viewModel.InitializeAsync();
+        }
+
 
     }
 }

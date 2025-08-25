@@ -45,6 +45,6 @@ namespace SaludTotal.Commands
         }
 
         public void RaiseCanExecuteChanged() =>
-    CanExecuteChanged?.Invoke(this, EventArgs.Empty);
+        CanExecuteChanged?.Invoke(this, EventArgs.Empty);
     }
 }

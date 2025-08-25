@@ -3,7 +3,7 @@ using System.Globalization;
 using System.Windows.Data;
 using SaludTotal.Models;
 
-namespace SaludTotal.Desktop.Converters
+namespace SaludTotal.Converters
 {
     public class TurnoSeleccionadoToBooleanConverter : IValueConverter
     {

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SaludTotal.Interfaces
+namespace SaludTotal.Views.Interfaces
 {
     public interface IClosable
     {

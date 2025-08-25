@@ -19,7 +19,6 @@ public class ProfessionalManagmentViewModel : ViewModelBase, INotifyPropertyChan
     private bool _isLoading;
 
     public event Action? RequestClose;
-
     public Window? Window;
 
     public ObservableCollection<Profesional> Professionals
@@ -148,8 +147,15 @@ public class ProfessionalManagmentViewModel : ViewModelBase, INotifyPropertyChan
 
     private async void ExecuteClearSearchTerm()
     {
-        SearchTerm = string.Empty;
-        await CargarDoctoresAsync();
+        try
+        {
+            SearchTerm = string.Empty;
+            await CargarDoctoresAsync();
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Error al limpiar el término de búsqueda: {ex.Message}";
+        }
     }
 
     private async Task CargarDoctoresAsync()
@@ -276,9 +282,15 @@ public class ProfessionalManagmentViewModel : ViewModelBase, INotifyPropertyChan
 
     private async Task SetSpecializations()
     {
-        var data = await _professionalManager.GetSpecializations();
-        Specialties = new ObservableCollection<Especialidad>(data);
-        OnPropertyChanged(nameof(Specialties));
+        try
+        {
+            var data = await _professionalManager.GetSpecializations();
+            Specialties = new ObservableCollection<Especialidad>(data);
+            OnPropertyChanged(nameof(Specialties));
+        }
+        catch (Exception ex) { 
+            ErrorMessage = $"Error al cargar las especialidades: {ex.Message}";
+        }
     }
 
     public async Task InitializeAsync()

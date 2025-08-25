@@ -22,7 +22,7 @@ namespace SaludTotal.Desktop.Views
 
         private void AdministrarTurnos_Click(object sender, RoutedEventArgs e)
         {
-            var administracionWindow = new AdministracionTurnosWindow();
+            var administracionWindow = new ShiftsManagment();
             administracionWindow.Show();
             
             // Cerrar la ventana actual del Dashboard

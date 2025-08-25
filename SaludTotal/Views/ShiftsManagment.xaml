@@ -1,0 +1,800 @@
+﻿<Window x:Class="SaludTotal.Views.ShiftsManagment"
+		xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+		xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+		xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+		xmlns:local="clr-namespace:SaludTotal.Views"
+        xmlns:sys="clr-namespace:System;assembly=mscorlib"
+		mc:Ignorable="d"
+		xmlns:components="clr-namespace:SaludTotal.Components"
+		xmlns:converters="clr-namespace:SaludTotal.Converters"
+		Title="Salud Total - Administración de Turnos" Height="800" Width="1400"
+		Loaded="Window_Loaded"
+		WindowStartupLocation="CenterScreen" WindowStyle="None" ResizeMode="CanResizeWithGrip" UseLayoutRounding="true" SnapsToDevicePixels="true">
+    <Window.Resources>
+        <converters:DateTimeFormatConverter x:Key="DateTimeFormatConverter"/>
+        <converters:BooleanToSiNoConverter x:Key="BooleanToSiNoConverter"/>
+        <converters:InverseBooleanConverter x:Key="InverseBooleanConverter"/>
+
+        <!-- Estilo personalizado para TabControl -->
+        <Style x:Key="CustomTabControlStyle" TargetType="TabControl">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Margin" Value="0"/>
+        </Style>
+
+        <!-- Estilo personalizado para TabItem -->
+        <Style x:Key="CustomTabItemStyle" TargetType="TabItem">
+            <Setter Property="Background" Value="#4A90E2"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Padding" Value="20,10"/>
+            <Setter Property="Margin" Value="0,0,2,0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TabItem">
+                        <Border Name="Border" 
+								Background="{TemplateBinding Background}"
+								BorderBrush="{TemplateBinding BorderBrush}"
+								BorderThickness="{TemplateBinding BorderThickness}"
+								CornerRadius="8,8,0,0"
+								Padding="{TemplateBinding Padding}"
+								Margin="{TemplateBinding Margin}">
+                            <ContentPresenter x:Name="ContentSite"
+											  VerticalAlignment="Center"
+											  HorizontalAlignment="Center"
+											  ContentSource="Header"
+											  Margin="0"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="Border" Property="Background" Value="White"/>
+                                <Setter Property="Foreground" Value="#2C3E50"/>
+                                <Setter TargetName="Border" Property="BorderBrush" Value="#2C3E50"/>
+                                <Setter Property="FontWeight" Value="Bold"/>
+                            </Trigger>
+                            <MultiTrigger>
+                                <MultiTrigger.Conditions>
+                                    <Condition Property="IsSelected" Value="False"/>
+                                    <Condition Property="IsMouseOver" Value="True" />
+                                </MultiTrigger.Conditions>
+                                <Setter Property="Background" Value="{StaticResource PrimaryBrush}" />
+                                <Setter Property="Cursor" Value="Hand"/>
+                            </MultiTrigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="70"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <!-- Imagen De fondo-->
+        <Border Grid.RowSpan="3">
+            <Border.Background>
+                <ImageBrush ImageSource="/Resources/Img/Fondo_desktop_1.jpg" 
+		   Stretch="UniformToFill"/>
+            </Border.Background>
+        </Border>
+        <Border Grid.Row="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="Transparent" MouseLeftButtonDown="Border_MouseLeftButtonDown">
+            <!-- Botones de ventana (minimizar y cerrar) -->
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,15,15,0" Panel.ZIndex="999">
+                <Button Style="{StaticResource WindowButtonStyle}" Content="⎯" Click="MinimizeWindow_Click" ToolTip="Minimizar"/>
+                <Button Style="{StaticResource WindowButtonStyle}" Content="□" Click="MaximizeWindow_Click" ToolTip="Maximizar"/>
+                <Button Style="{StaticResource WindowButtonStyle}" Content="✕" Click="CloseWindow_Click" ToolTip="Cerrar"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Contenedor Principal -->
+        <components:WindowLayout Grid.Row="1" HeaderBackgroundColor="#CC2C3E50" Title="Administracion de turnos" HeaderForegroundColor="{StaticResource PrimaryForegroundBrush}">
+            <!-- TabControl -->
+            <TabControl 
+				Grid.Row="1" 
+				Style="{StaticResource CustomTabControlStyle}"
+				Background="Transparent">
+                <!-- Tab 1: Gestión de Turnos -->
+                <TabItem
+                    FontWeight="Normal"
+                    FontSize="13"
+                         DataContext="{Binding ShiftsViewModel}"
+						 Style="{StaticResource CustomTabItemStyle}" Margin="0,0,2,0">
+                    <TabItem.Header>
+                        <TextBlock Text="📋 Gestión de Turnos" FontSize="16" FontWeight="SemiBold"/>
+                    </TabItem.Header>
+                    <Border Background="White" Margin="2, 0, 0, 0" CornerRadius="0,10,10,10" Padding="20,15">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <!-- Búsqueda -->
+                            <WrapPanel Grid.Row="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,0,10">
+                                <TextBlock Text="Buscar por:" FontWeight="Medium" FontSize="14" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                <ComboBox
+							MinWidth="110"
+							Margin="10, 0"
+							IsEnabled="{Binding IsLoading, Converter={StaticResource InverseBooleanConverter}}"
+							ItemsSource="{Binding SearchOptions}"
+							DisplayMemberPath="Key"
+                                    SelectedValuePath="Value"
+							SelectedValue="{Binding SelectedSearchOption, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+							Style="{StaticResource SearchableCombobox}"
+							/>
+                                <TextBox
+								 Width="300" Margin="0,0,5,0"
+								 Style="{StaticResource RoundedValidationTextBox}"
+								 BorderThickness="2"
+								 Text="{Binding SearchTerm, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True}"
+								 >
+                                    <TextBox.InputBindings>
+                                        <KeyBinding Key="Enter" Command="{Binding SearchCommand}"/>
+                                    </TextBox.InputBindings>
+                                </TextBox>
+                                <Button Content="🔍" Margin="5,0,0,0" 
+									FontWeight="Light"
+									Style="{StaticResource PrimaryButtonStyle}"
+									Command="{Binding SearchCommand}"
+									ToolTip="Buscar"/>
+                                <Button Content="✖" Margin="5,0,0,0" 
+									FontWeight="Light"
+									Style="{StaticResource DangerButtonStyle}"
+									Command="{Binding ClearSearchTermCommand}"
+									ToolTip="Limpiar búsqueda"/>
+                            </WrapPanel>
+
+                            <!--Filtrado de turnos-->
+                            <WrapPanel Grid.Row="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,0,10">
+                                <TextBlock FontSize="14" Text="Especialidad:" FontWeight="Medium" VerticalAlignment="Center"/>
+                                <ComboBox
+							MinWidth="150"
+							MinHeight="35"
+							Margin="10, 0"
+							IsEnabled="{Binding IsLoading, Converter={StaticResource InverseBooleanConverter}}"
+							ItemsSource="{Binding SpecialtiesOptions}"
+							DisplayMemberPath="Key"
+							SelectedValuePath="Value"
+							SelectedValue="{Binding SelectedSpecialtyId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+							Style="{StaticResource SearchableCombobox}" />
+                                <TextBlock FontSize="14" Text="Estado:" FontWeight="Medium" VerticalAlignment="Center"/>
+                                <ComboBox
+							MinWidth="150"
+							MinHeight="35"
+							Margin="10, 0"
+							IsEnabled="{Binding IsLoading, Converter={StaticResource InverseBooleanConverter}}"
+							ItemsSource="{Binding StatusOptions}"
+							SelectedItem="{Binding SelectedShiftStatus, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+							Style="{StaticResource SearchableCombobox}" />
+                            </WrapPanel>
+
+                            <!--Grid de turnos-->
+                            <DataGrid Grid.Row="2"
+							  ItemsSource="{Binding Shifts}"
+							  CanUserAddRows="False"
+							  HeadersVisibility="Column"
+							  MinColumnWidth="50"
+							  MinRowHeight="25"
+							  HorizontalAlignment="Stretch"
+							  ScrollViewer.CanContentScroll="True" 
+							  ScrollViewer.VerticalScrollBarVisibility="Auto"
+							  ScrollViewer.HorizontalScrollBarVisibility="Auto"
+							  VerticalAlignment="Stretch"
+							  AutoGenerateColumns="False"
+							  GridLinesVisibility="Horizontal"
+							  HorizontalGridLinesBrush="#5a6775"
+							  BorderBrush="#5a6775"
+							  SelectionMode="Single"
+							  IsReadOnly="True"
+							  CanUserSortColumns="False"
+							  Margin="0,0,0,4">
+                                <DataGrid.Resources>
+                                    <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource BaseDataGridHeaderStyle}">
+                                    </Style>
+                                    <Style TargetType="DataGridCell" BasedOn="{StaticResource BaseDataGridCellStyle}">
+                                    </Style>
+                                </DataGrid.Resources>
+                                <DataGrid.Columns>
+
+                                    <DataGridTemplateColumn Header="ID" Width="Auto">
+                                        <DataGridTemplateColumn.HeaderTemplate>
+                                            <DataTemplate>
+                                                <Button
+											MinHeight="40"
+											Style="{StaticResource SortableHeaderButtonStyle}"
+											Tag="ID"
+											CommandParameter="Id"/>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.HeaderTemplate>
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <TextBlock VerticalAlignment="Center" Text="{Binding Id, FallbackValue='N/A'}"
+												   Margin="4,2"/>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+
+                                    <DataGridTemplateColumn Header="Fecha y hora" Width="*">
+                                        <DataGridTemplateColumn.HeaderTemplate>
+                                            <DataTemplate>
+                                                <Button
+											Style="{StaticResource SortableHeaderButtonStyle}"
+											Tag="Fecha y hora"
+											CommandParameter="Fecha"/>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.HeaderTemplate>
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <StackPanel Orientation="Vertical" VerticalAlignment="Center" Margin="5,0">
+                                                    <TextBlock Text="{Binding Fecha, Converter={StaticResource DateTimeFormatConverter}}"
+													   FontWeight="Medium" FontSize="13"/>
+                                                    <TextBlock Text="{Binding Hora}" 
+													   FontSize="12"/>
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+
+                                    <DataGridTemplateColumn Header="Paciente" Width="*">
+                                        <DataGridTemplateColumn.HeaderTemplate>
+                                            <DataTemplate>
+                                                <Button
+											Style="{StaticResource SortableHeaderButtonStyle}"
+											Tag="Paciente"
+											CommandParameter="Paciente.NombreCompleto"/>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.HeaderTemplate>
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding Paciente.NombreCompleto, FallbackValue='N/A'}"
+												   VerticalAlignment="Center"
+												   Margin="4,2"/>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+
+                                    <DataGridTemplateColumn Header="Profesional" Width="*">
+                                        <DataGridTemplateColumn.HeaderTemplate>
+                                            <DataTemplate>
+                                                <Button
+											Style="{StaticResource SortableHeaderButtonStyle}"
+											Tag="Profesional"
+											CommandParameter="Profesional.NombreCompleto"/>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.HeaderTemplate>
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding Profesional.NombreCompleto, FallbackValue='N/A'}"
+												   VerticalAlignment="Center"
+												   Margin="4,2"/>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+
+                                    <DataGridTemplateColumn Header="Solicita cancelacion" Width="Auto">
+                                        <DataGridTemplateColumn.HeaderTemplate>
+                                            <DataTemplate>
+                                                <Button
+											Style="{StaticResource SortableHeaderButtonStyle}"
+											Tag="Solicita cancelacion"
+											CommandParameter="SolicitaCancelacion"/>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.HeaderTemplate>
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <Border CornerRadius="6" BorderThickness="2" Padding="12,6" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                    <Border.Style>
+                                                        <Style TargetType="Border">
+                                                            <Setter Property="Background" Value="#60baca"/>
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding SolicitaCancelacion}" Value="True">
+                                                                    <Setter Property="BorderBrush" Value="#28A745"/>
+                                                                    <Setter Property="Background" Value="#6028A745"/>
+                                                                </DataTrigger>
+                                                                <DataTrigger Binding="{Binding SolicitaCancelacion}" Value="False">
+                                                                    <Setter Property="BorderBrush" Value="#DC3545"/>
+                                                                    <Setter Property="Background" Value="#60FF0000"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </Border.Style>
+                                                    <TextBlock 
+												Text="{Binding SolicitaCancelacion, Converter={StaticResource BooleanToSiNoConverter}, FallbackValue='N/A'}"
+												FontWeight="SemiBold"
+												FontSize="13"
+												HorizontalAlignment="Center"
+												VerticalAlignment="Center"/>
+                                                </Border>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+
+                                    <DataGridTemplateColumn Header="Estado" Width="*">
+                                        <DataGridTemplateColumn.HeaderTemplate>
+                                            <DataTemplate>
+                                                <Button
+											Style="{StaticResource SortableHeaderButtonStyle}"
+											Tag="Estado"
+											CommandParameter="Estado"/>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.HeaderTemplate>
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <Border CornerRadius="6" BorderThickness="2" Margin="0,10" Padding="12,6" HorizontalAlignment="Center">
+                                                    <Border.Style>
+                                                        <Style TargetType="Border">
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding Estado}" Value="activo">
+                                                                    <Setter Property="Background" Value="#6028A745"/>
+                                                                    <Setter Property="BorderBrush" Value="#28A745"/>
+                                                                </DataTrigger>
+                                                                <DataTrigger Binding="{Binding Estado}" Value="pendiente">
+                                                                    <Setter Property="Background" Value="#60FFC107"/>
+                                                                    <Setter Property="BorderBrush" Value="#FFC107"/>
+                                                                </DataTrigger>
+                                                                <DataTrigger Binding="{Binding Estado}" Value="cancelado">
+                                                                    <Setter Property="Background" Value="#60DC3545"/>
+                                                                    <Setter Property="BorderBrush" Value="#DC3545"/>
+                                                                </DataTrigger>
+                                                                <DataTrigger Binding="{Binding Estado}" Value="aceptado">
+                                                                    <Setter Property="Background" Value="#60007BFF"/>
+                                                                    <Setter Property="BorderBrush" Value="#007BFF"/>
+                                                                </DataTrigger>
+                                                                <DataTrigger Binding="{Binding Estado}" Value="rechazado">
+                                                                    <Setter Property="Background" Value="#606F42C1"/>
+                                                                    <Setter Property="BorderBrush" Value="#6F42C1"/>
+                                                                </DataTrigger>
+                                                                <DataTrigger Binding="{Binding Estado}" Value="atendido">
+                                                                    <Setter Property="Background" Value="#6020C997"/>
+                                                                    <Setter Property="BorderBrush" Value="#20C997"/>
+                                                                </DataTrigger>
+                                                                <DataTrigger Binding="{Binding Estado}" Value="desaprovechado">
+                                                                    <Setter Property="Background" Value="#606C757D"/>
+                                                                    <Setter Property="BorderBrush" Value="#6C757D"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </Border.Style>
+                                                    <TextBlock Text="{Binding Estado, FallbackValue='N/A'}"
+												   Margin="4,2"/>
+                                                </Border>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                    <!-- Columna de Gestionar -->
+                                    <DataGridTemplateColumn Header="Gestionar" Width="*" MinWidth="120" HeaderStyle="{StaticResource BaseNonClickDataGridHeaderStyle}">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <Button Content="⚙️ Gestionar"
+                                                    FontSize="12"
+                                                    Margin="0, 5"
+                                                    HorizontalAlignment="Center"
+                                                    Command="{Binding DataContext.ManageShiftCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                    CommandParameter="{Binding Id}"
+                                                    Style="{StaticResource WarningButtonStyle}"
+                                                    ToolTip="Gestionar turno"/>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                            <!-- Indicador de carga -->
+                            <Border Grid.Row="2" Background="#80FFFFFF"
+							Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}"
+							VerticalAlignment="Stretch"
+							HorizontalAlignment="Stretch">
+                                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <TextBlock Text="Cargando turnos..." FontSize="18" FontWeight="SemiBold" Foreground="#2C3E50"/>
+                                    <ProgressBar IsIndeterminate="True" Width="300" Height="8" Margin="0,10,0,0"/>
+                                </StackPanel>
+                            </Border>
+
+                            <!--ErrorDisplay-->
+                            <components:MessageControl Grid.Row="3"
+							MessageType="Error"
+							ClearMessage="{Binding ClearMessage}"
+							DataContext="{Binding ErrorMessageviewModel}"
+							Message="{Binding Message}"
+							HasMessage="{Binding HasMessage}" />
+
+                            <!--StatusDisplay-->
+                            <components:MessageControl Grid.Row="4"
+							MessageType="Success"
+							ClearMessage="{Binding ClearMessage}"
+							DataContext="{Binding StatusMessageviewModel}"
+							Message="{Binding Message}"
+							HasMessage="{Binding HasMessage}" />
+
+                            <!-- Panel de botones de acción -->
+                            <Border Grid.Row="5" Background="#F0FFFFFF" Padding="0,10">
+                                <DockPanel LastChildFill="False">
+                                    <Button Content="🔄 Actualizar"
+									FontSize="14"
+									Padding="20,10"
+									FontWeight="SemiBold"
+									ToolTip="Actualizar lista de profesionales"
+									HorizontalAlignment="Left"
+									DockPanel.Dock="Left"
+									Style="{StaticResource SuccessButtonStyle}"
+									Command="{Binding ReloadCommand}"
+									Cursor="Hand"
+									Margin="0,0,10,0"/>
+
+                                    <Button Content="+ Nuevo Turno"
+									Padding="20,10"
+									FontSize="14"
+									FontWeight="SemiBold"
+									BorderThickness="0"
+									ToolTip="Agregar nuevo turno"
+									HorizontalAlignment="Right"
+									DockPanel.Dock="Right"
+									Margin="10,0,0,0"
+									Command="{Binding AddShiftCommand}"
+									Style="{StaticResource SecondaryButtonStyle}" 
+									Cursor="Hand"/>
+                                </DockPanel>
+                            </Border>
+                        </Grid>
+                    </Border>
+                </TabItem>
+                <!-- Tab 2: Gestión de Especialidades -->
+                <TabItem
+						 Style="{StaticResource CustomTabItemStyle}"
+                    FontWeight="Normal"
+                    FontSize="13"
+                         DataContext="{Binding RequestsViewModel}">
+                    <TabItem.Header>
+                        <TextBlock Text="📅 Solicitudes de Reprogramación" FontSize="16" FontWeight="SemiBold"/>
+                    </TabItem.Header>
+                    <Border Background="White" Margin="2, 0, 0, 0" CornerRadius="0,10,10,10" Padding="20,15">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <!-- Búsqueda -->
+                            <WrapPanel Grid.Row="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,0,10">
+                                <TextBlock Text="Buscar por:" FontWeight="Medium" FontSize="14" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                <ComboBox
+									MinWidth="110"
+									Margin="10, 0"
+									IsEnabled="{Binding IsLoading, Converter={StaticResource InverseBooleanConverter}}"
+									ItemsSource="{Binding SearchOptions}"
+									DisplayMemberPath="Key"
+									SelectedValuePath="Value"
+									SelectedValue="{Binding SelectedSearchOption, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+									Style="{StaticResource SearchableCombobox}"/>
+                                <TextBox
+									Width="300" Margin="0,0,5,0"
+									Style="{StaticResource RoundedValidationTextBox}"
+									BorderThickness="2"
+									Text="{Binding SearchTerm, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True}"
+									>
+                                    <TextBox.InputBindings>
+                                        <KeyBinding Key="Enter" Command="{Binding SearchCommand}"/>
+                                    </TextBox.InputBindings>
+                                </TextBox>
+                                <Button Content="🔍" Margin="5,0,0,0" 
+										FontWeight="Light"
+										Style="{StaticResource PrimaryButtonStyle}"
+										Command="{Binding SearchCommand}"
+										ToolTip="Buscar"/>
+                                <Button Content="✖" Margin="5,0,0,0" 
+										FontWeight="Light"
+										Style="{StaticResource DangerButtonStyle}"
+										Command="{Binding ClearSearchTermCommand}"
+										ToolTip="Limpiar búsqueda"/>
+                            </WrapPanel>
+
+                            <!--Filtrado de turnos-->
+                            <WrapPanel Grid.Row="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,0,10">
+                                <!--<TextBlock FontSize="14" Text="Especialidad:" FontWeight="Medium" VerticalAlignment="Center"/>
+                                <ComboBox
+									DisplayMemberPath="Key"
+									IsEnabled="{Binding IsLoading, Converter={StaticResource InverseBooleanConverter}}"
+									ItemsSource="{Binding SpecialtiesOptions}"
+									Margin="10, 0"
+									MinHeight="35"
+									MinWidth="150"
+									SelectedValue="{Binding SelectedSpecialtyId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+									SelectedValuePath="Value"
+									Style="{StaticResource SearchableCombobox}" />-->
+                                <TextBlock FontSize="14" Text="Estado:" FontWeight="Medium" VerticalAlignment="Center"/>
+                                <ComboBox
+                                    MinWidth="150"
+                                    MinHeight="35"
+                                    Margin="10, 0"
+                                    IsEnabled="{Binding IsLoading, Converter={StaticResource InverseBooleanConverter}}"
+                                    ItemsSource="{Binding StatusOptions}"
+                                    SelectedItem="{Binding SelectedRequestStatus, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                    Style="{StaticResource SearchableCombobox}" />
+                            </WrapPanel>
+
+                            <!--Grid de turnos-->
+                            <DataGrid Grid.Row="2"
+                                      ItemsSource="{Binding Requests}"
+                                      CanUserAddRows="False"
+                                      HeadersVisibility="Column"
+                                      MinRowHeight="25"
+                                      HorizontalAlignment="Stretch"
+                                      ScrollViewer.CanContentScroll="True" 
+                                      ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                      ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                                      VerticalAlignment="Stretch"
+                                      AutoGenerateColumns="False"
+                                      GridLinesVisibility="Horizontal"
+                                      HorizontalGridLinesBrush="#5a6775"
+                                      BorderBrush="#5a6775"
+                                      SelectionMode="Single"
+                                      IsReadOnly="True"
+                                      CanUserSortColumns="False"
+                                      Margin="0,0,0,4">
+                                <DataGrid.Resources>
+                                    <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource BaseDataGridHeaderStyle}">
+                                        <Setter Property="BorderBrush" Value="#a679f7"/>
+                                        <Setter Property="Background" Value="#E66F42C1"/>
+                                        <Setter Property="Foreground" Value="White"/>
+                                        <Style.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter Property="Background" Value="#53348a"/>
+                                            </Trigger>
+                                            <Trigger Property="IsPressed" Value="True">
+                                                <Setter Property="Background" Value="#53348a"/>
+                                            </Trigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                    <Style TargetType="DataGridCell" BasedOn="{StaticResource BaseDataGridCellStyle}">
+                                        <Style.Triggers>
+                                            <Trigger Property="IsSelected" Value="True">
+                                                <Setter Property="Background" Value="#a9a691cc"/>
+                                            </Trigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </DataGrid.Resources>
+                                <DataGrid.Columns>
+                                    <DataGridTemplateColumn Header="ID" Width="Auto">
+                                        <DataGridTemplateColumn.HeaderTemplate>
+                                            <DataTemplate>
+                                                <Button
+                                                    MinHeight="40"
+                                                    Style="{StaticResource SortableHeaderButtonStyle}"
+                                                    Tag="ID"
+                                                    CommandParameter="Id"/>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.HeaderTemplate>
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <TextBlock VerticalAlignment="Center" 
+                                                           Text="{Binding Id, FallbackValue='N/A'}"
+                                                           Margin="4,2"/>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+
+                                    <DataGridTemplateColumn Header="Fecha y hora original" MinWidth="90" Width="*">
+                                        <DataGridTemplateColumn.HeaderTemplate>
+                                            <DataTemplate>
+                                                <Button
+                                                    Style="{StaticResource SortableHeaderButtonStyle}"
+                                                    Tag="Fecha y hora original"
+                                                    CommandParameter="Turno.Fecha"/>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.HeaderTemplate>
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <StackPanel Orientation="Vertical" VerticalAlignment="Center" Margin="5,0">
+                                                    <TextBlock Text="{Binding Turno.Fecha, Converter={StaticResource DateTimeFormatConverter}}" 
+                                                               FontWeight="Medium" FontSize="13" Foreground="#28A745"/>
+                                                    <TextBlock Text="{Binding Turno.Hora}" 
+                                                               FontSize="12" Foreground="#28A745"/>
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+
+                                    <DataGridTemplateColumn Header="Fecha y hora nueva" MinWidth="90" Width="*">
+                                        <DataGridTemplateColumn.HeaderTemplate>
+                                            <DataTemplate>
+                                                <Button
+                                                    Style="{StaticResource SortableHeaderButtonStyle}"
+                                                    Tag="Fecha y hora"
+                                                    CommandParameter="Fecha"/>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.HeaderTemplate>
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <StackPanel Orientation="Vertical" VerticalAlignment="Center" Margin="5,0">
+                                                    <TextBlock Text="{Binding Fecha, Converter={StaticResource DateTimeFormatConverter}}" 
+                                                               FontWeight="Medium" FontSize="13" Foreground="#28A745"/>
+                                                    <TextBlock Text="{Binding Hora}" 
+                                                               FontSize="12" Foreground="#28A745"/>
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+
+                                    <DataGridTemplateColumn Header="Paciente" MinWidth="140" Width="*">
+                                        <DataGridTemplateColumn.HeaderTemplate>
+                                            <DataTemplate>
+                                                <Button
+                                                    Style="{StaticResource SortableHeaderButtonStyle}"
+                                                    Tag="Paciente"
+                                                    CommandParameter="Turno.Paciente.NombreApellido"/>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.HeaderTemplate>
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding Turno.Paciente.NombreApellido, FallbackValue='N/A'}"
+                                                           VerticalAlignment="Center"
+                                                           Margin="4,2"/>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+
+                                    <DataGridTemplateColumn Header="Profesional" MinWidth="140" Width="*">
+                                        <DataGridTemplateColumn.HeaderTemplate>
+                                            <DataTemplate>
+                                                <Button
+                                                    Style="{StaticResource SortableHeaderButtonStyle}"
+                                                    Tag="Profesional"
+                                                    CommandParameter="Turno.Profesional.NombreApellido"/>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.HeaderTemplate>
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding Turno.Profesional.NombreApellido, FallbackValue='N/A'}"
+                                                           VerticalAlignment="Center"
+                                                           Margin="4,2"/>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+
+                                    <DataGridTemplateColumn Header="Estado" MinWidth="110" Width="*">
+                                        <DataGridTemplateColumn.HeaderTemplate>
+                                            <DataTemplate>
+                                                <Button
+                                                    Style="{StaticResource SortableHeaderButtonStyle}"
+                                                    Tag="Estado"
+                                                    CommandParameter="Estado"/>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.HeaderTemplate>
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <Border CornerRadius="6" BorderThickness="2" Margin="0,10" Padding="12,6" HorizontalAlignment="Center">
+                                                    <Border.Style>
+                                                        <Style TargetType="Border">
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding Estado}" Value="aceptado">
+                                                                    <Setter Property="Background" Value="#6028A745"/>
+                                                                    <Setter Property="BorderBrush" Value="#28A745"/>
+                                                                </DataTrigger>
+                                                                <DataTrigger Binding="{Binding Estado}" Value="pendiente">
+                                                                    <Setter Property="Background" Value="#60FFC107"/>
+                                                                    <Setter Property="BorderBrush" Value="#FFC107"/>
+                                                                </DataTrigger>
+                                                                <DataTrigger Binding="{Binding Estado}" Value="rechazado">
+                                                                    <Setter Property="Background" Value="#60DC3545"/>
+                                                                    <Setter Property="BorderBrush" Value="#DC3545"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </Border.Style>
+                                                    <TextBlock Text="{Binding Estado, FallbackValue='N/A'}"
+                                                               Margin="4,2"/>
+                                                </Border>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+
+                                    <DataGridTemplateColumn Header="Acciones" MinWidth="170" Width="*">
+                                        <DataGridTemplateColumn.HeaderStyle>
+                                            <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource BaseNonClickDataGridHeaderStyle}">
+                                                <Setter Property="HorizontalContentAlignment" Value="Center"/>
+                                                <Setter Property="VerticalContentAlignment" Value="Center"/>
+                                                <Setter Property="Background" Value="#E66F42C1"/>
+                                                <Setter Property="BorderBrush" Value="#a679f7"/>
+                                            </Style>
+                                        </DataGridTemplateColumn.HeaderStyle>
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                                    <Button Content="✓ Aceptar"
+                                                    FontSize="12"
+                                                    Margin="5, 10"
+                                                    Padding="10, 5"
+                                                    HorizontalAlignment="Center"
+                                                    Style="{StaticResource SuccessButtonStyle}"
+                                                    IsEnabled="{Binding DataContext.AcceptRequestCommand.CanExecute, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                    Command="{Binding DataContext.AcceptRequestCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                    CommandParameter="{Binding Id}"
+                                                    ToolTip="Aceptar la solicitud de reprogramación"/>
+
+                                                    <Button Content="✗ Rechazar"
+                                                    FontSize="12"
+                                                            Margin="5, 10"
+                                                            Padding="10, 5"
+                                                    HorizontalAlignment="Center"
+                                                    Command="{Binding DataContext.RejectRequestCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                    CommandParameter="{Binding Id}"
+                                                    Style="{StaticResource DangerButtonStyle}"
+                                                    ToolTip="Rechazar la solicitud de reprogramación"/>
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                            <!-- Indicador de carga -->
+                            <Border Grid.Row="2" Background="#80FFFFFF"
+                                    Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                    VerticalAlignment="Stretch"
+                                    HorizontalAlignment="Stretch">
+                                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <TextBlock Text="Cargando solicitudes..." FontSize="18" FontWeight="SemiBold" Foreground="#2C3E50"/>
+                                    <ProgressBar IsIndeterminate="True" Width="300" Height="8" Margin="0,10,0,0"/>
+                                </StackPanel>
+                            </Border>
+
+                            <!--ErrorDisplay-->
+                            <components:MessageControl Grid.Row="3"
+                                                       MessageType="Error"
+                                                       ClearMessage="{Binding ClearMessage}"
+                                                       DataContext="{Binding ErrorMessageviewModel}"
+                                                       Message="{Binding Message}"
+                                                       HasMessage="{Binding HasMessage}" />
+                            <!--StatusDisplay-->
+                            <components:MessageControl Grid.Row="4"
+                                                       MessageType="Success"
+                                                       ClearMessage="{Binding ClearMessage}"
+                                                       DataContext="{Binding StatusMessageviewModel}"
+                                                       Message="{Binding Message}"
+                                                       HasMessage="{Binding HasMessage}" />
+
+                            <!-- Panel de botones de acción -->
+                            <Border Grid.Row="5" Background="#F0FFFFFF" Padding="0,10">
+                                <DockPanel LastChildFill="False">
+                                    <Button Content="🔄 Actualizar"
+                                            FontSize="14"
+                                            Padding="20,10"
+                                            FontWeight="SemiBold"
+                                            ToolTip="Actualizar lista de profesionales"
+                                            HorizontalAlignment="Left"
+                                            DockPanel.Dock="Left"
+                                            Style="{StaticResource SuccessButtonStyle}"
+                                            Command="{Binding ReloadCommand}"
+                                            Cursor="Hand"
+                                            Margin="0,0,10,0"/>
+                                </DockPanel>
+                            </Border>
+                        </Grid>
+                    </Border>
+                </TabItem>
+            </TabControl>
+        </components:WindowLayout>
+
+
+        <Button Grid.Row="2" x:Name="VolverMenuButton" 
+			Content="← Volver al Menú"
+			HorizontalAlignment="Left" 
+			VerticalAlignment="Bottom" 
+			Margin="20,0,0,20"
+			Padding="15,8"
+			FontSize="14"
+			FontWeight="SemiBold"
+			Click="VolverMenu_Click"
+			Panel.ZIndex="999"
+			ToolTip="Volver al menú principal"
+			Style="{StaticResource SuccessButtonStyle}"/>
+
+    </Grid>
+</Window>

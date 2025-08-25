@@ -2,7 +2,7 @@ using System;
 using System.Globalization;
 using System.Windows.Data;
 
-namespace SaludTotal.Desktop.Converters
+namespace SaludTotal.Converters
 {
     public class BooleanToSiNoConverter : IValueConverter
     {

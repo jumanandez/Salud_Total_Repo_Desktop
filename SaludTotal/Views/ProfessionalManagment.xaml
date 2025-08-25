@@ -6,9 +6,8 @@
         xmlns:local="clr-namespace:SaludTotal.Views"
         xmlns:components="clr-namespace:SaludTotal.Components"
         mc:Ignorable="d"
-        UseLayoutRounding="True"
         Title="Salud Total - Gestión de Profesionales" Height="800" Width="1400" 
-        WindowStartupLocation="CenterScreen" WindowStyle="None" Loaded="Window_Loaded" ResizeMode="CanResizeWithGrip">
+        WindowStartupLocation="CenterScreen" WindowStyle="None" Loaded="Window_Loaded" ResizeMode="CanResizeWithGrip" UseLayoutRounding="True">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="80"/>

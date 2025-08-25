@@ -4,7 +4,7 @@ using System.Windows;
 using System.Windows.Data;
 using System.Windows.Media;
 
-namespace SaludTotal.Desktop.Converters
+namespace SaludTotal.Converters
 {
     public class EspecialidadToBrushConverter : IValueConverter
     {

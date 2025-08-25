@@ -3,7 +3,7 @@ using System.Windows;
 using System.Windows.Controls;
 using SaludTotal.Models;
 using SaludTotal.Services;
-using SaludTotal.Desktop.Converters;
+using SaludTotal.Converters;
 using System.Globalization;
 using System.Linq;
 using System.Text;

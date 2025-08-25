@@ -11,27 +11,25 @@ namespace SaludTotal.Commands
     {
         public event EventHandler? CanExecuteChanged;
 
-        private bool _isExecuting;
         private readonly Func<object?, bool>? _canExecute;
+        private readonly HashSet<object?> _executingParameters = new();
 
         protected AsyncCommandBase(Func<object?, bool>? canExecute = null)
         {
             _canExecute = canExecute;
         }
 
-        public bool IsExecuting
+        private bool IsExecuting(object? parameter)
         {
-            get => _isExecuting;
-            set
+            lock (_executingParameters)
             {
-                _isExecuting = value;
-                RaiseCanExecuteChanged();
+                return _executingParameters.Contains(parameter);
             }
         }
 
         public bool CanExecute(object? parameter)
         {
-            return !_isExecuting && (_canExecute?.Invoke(parameter) ?? true);
+            return !IsExecuting(parameter) && (_canExecute?.Invoke(parameter) ?? true);
         }
 
         public async void Execute(object? parameter)
@@ -39,14 +37,23 @@ namespace SaludTotal.Commands
             if (!CanExecute(parameter))
                 return;
 
-            IsExecuting = true;
+            lock (_executingParameters)
+            {
+                _executingParameters.Add(parameter);
+            }
+            RaiseCanExecuteChanged();
+
             try
             {
                 await ExecuteAsync(parameter);
             }
             finally
             {
-                IsExecuting = false;
+                lock (_executingParameters)
+                {
+                    _executingParameters.Remove(parameter);
+                }
+                RaiseCanExecuteChanged();
             }
         }
 

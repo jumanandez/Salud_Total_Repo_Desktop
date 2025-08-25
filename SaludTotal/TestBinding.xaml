@@ -1,7 +1,7 @@
 <Window x:Class="SaludTotal.Desktop.Views.TestBinding"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:converters="clr-namespace:SaludTotal.Desktop.Converters"
+        xmlns:converters="clr-namespace:SaludTotal.Converters"
         Title="Test Binding" Height="200" Width="400">
     
     <Window.Resources>
